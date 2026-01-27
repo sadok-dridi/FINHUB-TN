@@ -97,45 +97,6 @@ public class UserDashboardController {
     @FXML
     private void handleLogout() {
         tn.finhub.util.UserSession.getInstance().cleanUserSession();
-        try {
-            StackPane contentArea = (StackPane) javafx.stage.Window.getWindows().stream()
-                    .filter(javafx.stage.Window::isShowing)
-                    .findFirst()
-                    .orElse(null)
-                    .getScene()
-                    .lookup("#contentArea");
-
-            if (contentArea != null) {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
-                Parent newView = loader.load();
-
-                if (!contentArea.getChildren().isEmpty()) {
-                    javafx.scene.Node currentView = contentArea.getChildren().get(0);
-                    javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
-                            javafx.util.Duration.millis(300), currentView);
-                    fadeOut.setFromValue(1.0);
-                    fadeOut.setToValue(0.0);
-                    fadeOut.setOnFinished(e -> {
-                        contentArea.getChildren().setAll(newView);
-                        fadeIn(newView);
-                    });
-                    fadeOut.play();
-                } else {
-                    contentArea.getChildren().setAll(newView);
-                    fadeIn(newView);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void fadeIn(javafx.scene.Node node) {
-        node.setOpacity(0);
-        javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(300),
-                node);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-        fadeIn.play();
+        tn.finhub.util.ViewUtils.setView(sidebar, "/view/login.fxml");
     }
 }

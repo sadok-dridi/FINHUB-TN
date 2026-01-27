@@ -3,11 +3,13 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+import javafx.application.Platform;
 import tn.finhub.util.*;
 import java.net.http.*;
 import java.net.URI;
 import org.json.JSONObject;
 import java.sql.*;
+import tn.finhub.service.FinancialProfileService;
 
 import java.net.http.HttpRequest;
 
@@ -66,6 +68,13 @@ public class LoginController {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error Loading View");
+                alert.setHeaderText("Could not load " + fxmlPath);
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            });
         }
     }
 
@@ -123,9 +132,30 @@ public class LoginController {
                     user.getInt("id"),
                     user.optString("full_name", ""),
                     user.getString("email"),
-                    user.getString("role")); // Navigate to Dashboard
-            String dashboardView = SessionManager.isAdmin() ? "/view/admin_users.fxml" : "/view/user_dashboard.fxml";
-            setView(dashboardView);
+                    user.getString("role"));
+
+            // Navigate based on role and profile status
+            if (SessionManager.isAdmin()) {
+                System.out.println("User is Admin. Navigating to Admin Dashboard.");
+                setView("/view/admin_users.fxml");
+            } else {
+                FinancialProfileService profileService = new FinancialProfileService();
+                int userId = user.getInt("id");
+
+                // Ensure profile exists (create with default values if not)
+                profileService.ensureProfile(userId);
+
+                boolean completed = profileService.isProfileCompleted(userId);
+                System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
+
+                if (!completed) {
+                    System.out.println("Redirecting to Complete Profile.");
+                    setView("/view/complete_profile.fxml");
+                } else {
+                    System.out.println("Redirecting to User Dashboard.");
+                    setView("/view/user_dashboard.fxml");
+                }
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

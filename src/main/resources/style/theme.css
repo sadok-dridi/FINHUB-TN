@@ -114,26 +114,81 @@
 }
 
 /* --- ComboBox --- */
+/* --- ComboBox --- */
 .combo-box {
     -fx-background-color: -input-bg;
     -fx-border-color: -input-border;
     -fx-border-radius: 12px;
     -fx-background-radius: 12px;
-    -fx-padding: 2;
-    /* fix alignment */
+    -fx-padding: 8 12;
+    /* More padding for a clickable feel */
+    -fx-min-height: 45px;
+    /* Consistent height */
 }
 
-.combo-box .cell {
-    -fx-text-fill: white;
+.combo-box:hover {
+    -fx-border-color: -color-text-secondary;
 }
 
+.combo-box:showing {
+    -fx-border-color: -color-primary;
+}
+
+/* The text field area inside the combo box */
 .combo-box .list-cell {
-    -fx-background-color: -color-card-bg;
+    -fx-background-color: transparent;
     -fx-text-fill: white;
+    -fx-padding: 0;
 }
 
-.combo-box .list-cell:hover {
+/* The arrow button on the right */
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10 0 0;
+}
+
+.combo-box .arrow {
+    -fx-background-color: -color-text-secondary;
+    -fx-mark-color: -color-text-secondary;
+}
+
+.combo-box:hover .arrow {
+    -fx-background-color: white;
+}
+
+/* The popup list */
+.combo-box-popup .list-view {
+    -fx-background-color: -color-card-bg;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 15, 0, 5, 5);
+    -fx-padding: 5;
+    -fx-background-radius: 8px;
+    /* Rounded corners for the dropdown */
+    -fx-border-radius: 8px;
+}
+
+/* Items in the dropdown */
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-padding: 10 15;
+    -fx-font-size: 14px;
+    -fx-background-radius: 4px;
+    /* Slight rounding for items */
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(139, 92, 246, 0.1);
+    /* Subtle primary tint */
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected,
+.combo-box-popup .list-view .list-cell:filled:selected:hover {
     -fx-background-color: -color-primary;
+    -fx-text-fill: white;
 }
 
 /* --- Sidebar --- */
