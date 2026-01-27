@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<AnchorPane style="-fx-background-color: transparent;" stylesheets="@../style/theme.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.finhub.controller.CustomDialogController">
+   <children>
+      <VBox alignment="CENTER" layoutX="10.0" layoutY="10.0" maxWidth="400.0" minWidth="350.0" spacing="20.0" styleClass="card">
+         <children>
+            <HBox alignment="CENTER" spacing="15.0">
+               <children>
+                  <VBox fx:id="iconContainer" alignment="CENTER" style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 50%; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;">
+                     <children>
+                        <SVGPath fx:id="iconPath" content="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" fill="TRANSPARENT" stroke="#ef4444" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="2.0" />
+                     </children>
+                  </VBox>
+                  <Label fx:id="titleLabel" styleClass="header-text" style="-fx-font-size: 20px;" text="Confirmation" wrapText="true" />
+               </children>
+            </HBox>
+            <Label fx:id="messageLabel" styleClass="sub-header-text" style="-fx-text-alignment: CENTER;" text="Are you sure you want to proceed with this action?" textAlignment="CENTER" wrapText="true" />
+            <HBox alignment="CENTER" spacing="15.0">
+               <children>
+                  <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleNo" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-border-color: -color-text-secondary; -fx-border-radius: 12px; -fx-background-radius: 12px; -fx-padding: 10 25; -fx-cursor: hand;" text="Cancel" />
+                  <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#handleYes" styleClass="button-primary" text="Confirm" />
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+         </padding>
+      </VBox>
+   </children>
+</AnchorPane>
