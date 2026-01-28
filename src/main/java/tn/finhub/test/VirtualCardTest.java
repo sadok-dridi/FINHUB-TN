@@ -1,3 +1,5 @@
+package tn.finhub.test;
+
 import tn.finhub.dao.VirtualCardDAO;
 import tn.finhub.dao.WalletDAO;
 import tn.finhub.model.VirtualCard;

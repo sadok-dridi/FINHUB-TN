@@ -242,10 +242,32 @@ public class WalletController {
         contentBox.getChildren().addAll(header, numberBox, footer);
         VBox.setVgrow(footer, javafx.scene.layout.Priority.ALWAYS); // Push footer down
 
+        // --- BLUR EFFECT ---
+        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(30);
+        contentBox.setEffect(blur); // Blurred by default
+
         cardNode.getChildren().add(contentBox);
 
-        // --- STYLE: Reverted to Dark Opaque ---
-        // --- STYLE: Gradient Background (Purple -> Pink -> Cyan) ---#4C1D95
+        // --- CLICK TO REVEAL (Smooth Animation) ---
+        cardNode.setOnMouseClicked(e -> {
+            double currentRadius = blur.getRadius();
+            double targetRadius = (currentRadius > 0) ? 0 : 30; // Toggle target
+
+            // Create Timeline for smooth animation
+            javafx.animation.Timeline timeline = new javafx.animation.Timeline();
+            javafx.animation.KeyValue kv = new javafx.animation.KeyValue(
+                    blur.radiusProperty(),
+                    targetRadius,
+                    javafx.animation.Interpolator.EASE_BOTH);
+            javafx.animation.KeyFrame kf = new javafx.animation.KeyFrame(
+                    javafx.util.Duration.millis(500),
+                    kv);
+
+            timeline.getKeyFrames().add(kf);
+            timeline.play();
+        });
+
+        // --- STYLE: Gradient Background (Purple -> Pink -> Cyan) ---
         cardNode.setStyle(
                 "-fx-background-color: linear-gradient(to bottom right, #22D3EE, #C026D3, #4C1D95); " +
                         "-fx-background-radius: 16; " +

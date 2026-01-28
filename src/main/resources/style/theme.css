@@ -86,7 +86,7 @@
 
 .button-icon {
     -fx-background-color: transparent;
-    -fx-text-fill: -color-text-secondary;
+    -fx-text-fill: white;
     -fx-cursor: hand;
     -fx-font-size: 14px;
 }
@@ -95,6 +95,10 @@
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-text-fill: white;
     -fx-background-radius: 50%;
+}
+
+.button-icon .sidebar-icon {
+    -fx-fill: white;
 }
 
 /* --- Text Fields --- */
@@ -194,11 +198,13 @@
 }
 
 /* --- Sidebar --- */
+/* --- Sidebar --- */
 .sidebar {
-    -fx-background-color: linear-gradient(to bottom right, #2D2A40, #1E1B2E);
+    /* Top color matches -color-card-bg (#1E1B2E) for seamless transition, fading to transparent bottom */
+    -fx-background-color: linear-gradient(to bottom, #1E1B2E 0%, rgba(30, 27, 46, 0.95) 15%, rgba(30, 27, 46, 0.8) 100%);
     -fx-padding: 25;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 15, 0, 0, 0);
-    -fx-border-color: transparent -color-card-border transparent transparent;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
+    -fx-border-color: transparent rgba(255, 255, 255, 0.05) transparent transparent;
     -fx-border-width: 0 1 0 0;
 }
 
@@ -505,7 +511,13 @@
 .scroll-bar:vertical .decrement-button {
     -fx-background-color: transparent;
     -fx-background-radius: 0em;
-    -fx-padding: 0 0 10 0;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
 }
 
 .scroll-bar:vertical .thumb {

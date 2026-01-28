@@ -13,12 +13,12 @@
         <VBox fx:id="sidebar" spacing="10" styleClass="sidebar" prefWidth="280">
             
             <!-- User Profile & Toggle -->
-            <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 0 0 20 0;">
-                <VBox alignment="CENTER_LEFT">
+            <HBox fx:id="sidebarHeader" alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 0 0 20 0;">
+                <VBox fx:id="userInfoBox" alignment="CENTER_LEFT">
                     <Label fx:id="userNameLabel" text="User" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary; -fx-font-size: 16px;"/>
                     <Label fx:id="userRoleLabel" text="Role" style="-fx-text-fill: -color-primary; -fx-font-size: 12px; -fx-font-weight: bold;"/>
                 </VBox>
-                <Region HBox.hgrow="ALWAYS"/>
+                <Region fx:id="headerSpacer" HBox.hgrow="ALWAYS"/>
                 <Button onAction="#toggleSidebar" styleClass="button-icon">
                     <graphic>
                         <javafx.scene.shape.SVGPath content="M3 6h18 M3 12h18 M3 18h18" styleClass="sidebar-icon"/>
