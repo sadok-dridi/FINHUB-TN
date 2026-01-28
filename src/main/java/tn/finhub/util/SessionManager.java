@@ -14,6 +14,10 @@ public class SessionManager {
         email = e;
         role = r;
         token = t;
+
+        // Populate UserSession
+        tn.finhub.model.User user = new tn.finhub.model.User(id, e, r, name);
+        UserSession.getInstance().setUser(user);
     }
 
     public static int getUserId() {
@@ -46,5 +50,6 @@ public class SessionManager {
         email = null;
         role = null;
         token = null;
+        UserSession.getInstance().cleanUserSession();
     }
 }

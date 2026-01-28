@@ -16,6 +16,7 @@ public class DialogUtil {
     public static boolean showConfirmation(String title, String message) {
         return showDialog(title, message, "CONFIRMATION");
     }
+
     public static void showInfo(String title, String message) {
         showDialog(title, message, "INFO");
     }
@@ -44,6 +45,7 @@ public class DialogUtil {
             }
 
             Scene scene = new Scene(root);
+            scene.getStylesheets().add(DialogUtil.class.getResource("/style/theme.css").toExternalForm());
             scene.setFill(Color.TRANSPARENT);
             dialogStage.setScene(scene);
 

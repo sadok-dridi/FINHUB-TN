@@ -1,11 +1,9 @@
 package tn.finhub.controller;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane;
 import tn.finhub.model.FinancialProfile;
 import tn.finhub.service.FinancialProfileService;
 import tn.finhub.util.SessionManager;

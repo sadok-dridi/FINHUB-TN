@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: transparent;" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.finhub.controller.WalletController">
+   <children>
+      <VBox spacing="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" style="-fx-padding: 30;">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="20.0">
+               <children>
+                  <Label text="My Wallet" styleClass="header-text"/>
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button text="Top Up" onAction="#handleDeposit" styleClass="button-primary">
+                     <graphic>
+                        <javafx.scene.shape.SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
+                     </graphic>
+                  </Button>
+               </children>
+            </HBox>
+            
+            <!-- Cards Container -->
+            <HBox spacing="20.0">
+               <children>
+                  <!-- Total Balance Card -->
+                  <VBox styleClass="card-balance" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label text="Available Balance" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
+                        <Label fx:id="availableBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                     </children>
+                  </VBox>
+
+                  <!-- Escrow Balance Card -->
+                   <VBox styleClass="card-escrow" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label text="In Escrow (Held)" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
+                        <Label fx:id="escrowBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+
+            <!-- Virtual Cards Section -->
+             <VBox spacing="15.0">
+                <children>
+                   <HBox alignment="CENTER_LEFT">
+                       <Label text="My Virtual Cards" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                       <Region HBox.hgrow="ALWAYS" />
+                       <Button fx:id="generateCardButton" text="Generate Card" onAction="#handleGenerateCard" styleClass="button-small-primary"/>
+                   </HBox>
+                   <HBox fx:id="cardsContainer" spacing="20.0" alignment="CENTER_LEFT" style="-fx-padding: 5 0;">
+                        <!-- Cards added here -->
+                   </HBox>
+                </children>
+             </VBox>
+            
+            <!-- Transactions Section -->
+            <VBox spacing="15.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label text="Recent Transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                  
+                  <javafx.scene.control.ScrollPane fitToWidth="true" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                      <content>
+                          <VBox fx:id="transactionContainer" spacing="15.0" style="-fx-padding: 5;">
+                              <!-- Transactions will be added here dynamically -->
+                          </VBox>
+                      </content>
+                  </javafx.scene.control.ScrollPane>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

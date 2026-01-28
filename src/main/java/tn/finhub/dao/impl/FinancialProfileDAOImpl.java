@@ -14,9 +14,9 @@ public class FinancialProfileDAOImpl implements FinancialProfileDAO {
     public FinancialProfile findByUserId(int userId) {
 
         String sql = """
-            SELECT * FROM financial_profiles_local
-            WHERE user_id = ?
-        """;
+                    SELECT * FROM financial_profiles_local
+                    WHERE user_id = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -44,11 +44,11 @@ public class FinancialProfileDAOImpl implements FinancialProfileDAO {
     public void create(FinancialProfile p) {
 
         String sql = """
-            INSERT INTO financial_profiles_local
-            (user_id, monthly_income, monthly_expenses, savings_goal,
-             risk_tolerance, currency, profile_completed)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """;
+                    INSERT INTO financial_profiles_local
+                    (user_id, monthly_income, monthly_expenses, savings_goal,
+                     risk_tolerance, currency, profile_completed)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, p.getUserId());
@@ -68,15 +68,15 @@ public class FinancialProfileDAOImpl implements FinancialProfileDAO {
     public void update(FinancialProfile p) {
 
         String sql = """
-            UPDATE financial_profiles_local
-            SET monthly_income = ?,
-                monthly_expenses = ?,
-                savings_goal = ?,
-                risk_tolerance = ?,
-                currency = ?,
-                profile_completed = ?
-            WHERE user_id = ?
-        """;
+                    UPDATE financial_profiles_local
+                    SET monthly_income = ?,
+                        monthly_expenses = ?,
+                        savings_goal = ?,
+                        risk_tolerance = ?,
+                        currency = ?,
+                        profile_completed = ?
+                    WHERE user_id = ?
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setDouble(1, p.getMonthlyIncome());

@@ -52,6 +52,7 @@ public class CustomDialogController {
         confirmButton.setText("Yes");
         cancelButton.setText("No");
     }
+
     public void setInfoData(String title, String message) {
         titleLabel.setText(title);
         messageLabel.setText(message);
@@ -77,8 +78,7 @@ public class CustomDialogController {
 
     private void setStyleWarning() {
         // Red Icon
-        iconContainer.setStyle(
-                "-fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 50%; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;");
+        iconContainer.getStyleClass().setAll("dialog-icon-container", "dialog-icon-warning");
         iconPath.setContent(
                 "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"); // Triangle
                                                                                                                                                          // Warning
@@ -87,16 +87,14 @@ public class CustomDialogController {
 
     private void setStyleError() {
         // Red Icon X
-        iconContainer.setStyle(
-                "-fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 50%; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;");
+        iconContainer.getStyleClass().setAll("dialog-icon-container", "dialog-icon-error");
         iconPath.setContent("M18 6L6 18M6 6l12 12"); // X
         iconPath.setStroke(javafx.scene.paint.Color.web("#ef4444"));
     }
 
     private void setStyleInfo() {
         // Primary Color Icon (Violet)
-        iconContainer.setStyle(
-                "-fx-background-color: rgba(139, 92, 246, 0.1); -fx-background-radius: 50%; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;");
+        iconContainer.getStyleClass().setAll("dialog-icon-container", "dialog-icon-info");
         iconPath.setContent("M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"); // Info Circle
         iconPath.setStroke(javafx.scene.paint.Color.web("#8B5CF6"));
     }

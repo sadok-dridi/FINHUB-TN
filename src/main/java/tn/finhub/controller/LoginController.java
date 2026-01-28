@@ -94,72 +94,89 @@ public class LoginController {
 
     @FXML
     public void handleLogin() {
-        try {
-            String json = """
-                    {
-                      "email": "%s",
-                      "password": "%s"
-                    }
-                    """.formatted(
-                    emailField.getText(),
-                    passwordField.getText());
+        System.out.println("[DEBUG] Login button clicked");
+        messageLabel.setText("Logging in...");
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(ApiClient.BASE_URL + "/login"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(json))
-                    .build();
+        new Thread(() -> {
+            try {
+                System.out.println("[DEBUG] Sending login request...");
+                String json = """
+                        {
+                          "email": "%s",
+                          "password": "%s"
+                        }
+                        """.formatted(
+                        emailField.getText(),
+                        passwordField.getText());
 
-            HttpResponse<String> response = ApiClient.getClient().send(request, HttpResponse.BodyHandlers.ofString());
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(ApiClient.BASE_URL + "/login"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
 
-            if (response.statusCode() != 200) {
-                messageLabel.setText(" Login failed");
-                return;
-            }
+                HttpResponse<String> response = ApiClient.getClient().send(request,
+                        HttpResponse.BodyHandlers.ofString());
+                System.out.println("[DEBUG] Login response code: " + response.statusCode());
 
-            JSONObject body = new JSONObject(response.body());
-
-            JSONObject user = body.getJSONObject("user");
-
-            SessionManager.login(
-                    user.getInt("id"),
-                    user.optString("full_name", ""), // Use optString for safety
-                    user.getString("email"),
-                    user.getString("role"),
-                    body.getString("access_token"));
-
-            syncUserLocal(
-                    user.getInt("id"),
-                    user.optString("full_name", ""),
-                    user.getString("email"),
-                    user.getString("role"));
-
-            // Navigate based on role and profile status
-            if (SessionManager.isAdmin()) {
-                System.out.println("User is Admin. Navigating to Admin Dashboard.");
-                setView("/view/admin_users.fxml");
-            } else {
-                FinancialProfileService profileService = new FinancialProfileService();
-                int userId = user.getInt("id");
-
-                // Ensure profile exists (create with default values if not)
-                profileService.ensureProfile(userId);
-
-                boolean completed = profileService.isProfileCompleted(userId);
-                System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
-
-                if (!completed) {
-                    System.out.println("Redirecting to Complete Profile.");
-                    setView("/view/complete_profile.fxml");
-                } else {
-                    System.out.println("Redirecting to User Dashboard.");
-                    setView("/view/user_dashboard.fxml");
+                if (response.statusCode() != 200) {
+                    Platform.runLater(() -> messageLabel.setText(" Login failed"));
+                    return;
                 }
-            }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            messageLabel.setText(" Server error");
-        }
+                JSONObject body = new JSONObject(response.body());
+                JSONObject user = body.getJSONObject("user");
+
+                System.out.println("[DEBUG] Login successful, initializing session...");
+                SessionManager.login(
+                        user.getInt("id"),
+                        user.optString("full_name", ""), // Use optString for safety
+                        user.getString("email"),
+                        user.getString("role"),
+                        body.getString("access_token"));
+
+                System.out.println("[DEBUG] Syncing local DB...");
+                syncUserLocal(
+                        user.getInt("id"),
+                        user.optString("full_name", ""),
+                        user.getString("email"),
+                        user.getString("role"));
+
+                // Navigate based on role and profile status
+                Platform.runLater(() -> {
+                    try {
+                        if (SessionManager.isAdmin()) {
+                            System.out.println("User is Admin. Navigating to Admin Dashboard.");
+                            setView("/view/admin_users.fxml");
+                        } else {
+                            System.out.println("[DEBUG] Checking profile completion...");
+                            FinancialProfileService profileService = new FinancialProfileService();
+                            int userId = user.getInt("id");
+
+                            // Ensure profile exists (create with default values if not)
+                            profileService.ensureProfile(userId);
+
+                            boolean completed = profileService.isProfileCompleted(userId);
+                            System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
+
+                            if (!completed) {
+                                System.out.println("Redirecting to Complete Profile.");
+                                setView("/view/complete_profile.fxml");
+                            } else {
+                                System.out.println("Redirecting to User Dashboard.");
+                                setView("/view/user_dashboard.fxml");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        messageLabel.setText("Error loading view");
+                    }
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> messageLabel.setText(" Server error"));
+            }
+        }).start();
     }
 }

@@ -31,7 +31,7 @@
             <Label fx:id="menuLabel" text="MENU" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px; -fx-font-weight: bold;"/>
             
             <!-- Dashboard (Wallet) -->
-            <Button fx:id="btnDashboard" text="Dashboard" maxWidth="Infinity" styleClass="sidebar-button">
+            <Button fx:id="btnDashboard" text="Dashboard" onAction="#handleDashboard" maxWidth="Infinity" styleClass="sidebar-button">
                 <graphic>
                     <javafx.scene.shape.SVGPath content="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" styleClass="sidebar-icon"/>
                 </graphic>
@@ -66,7 +66,7 @@
             </Button>
 
             <!-- Settings -->
-            <Button fx:id="btnSettings" text="Settings" maxWidth="Infinity" styleClass="sidebar-button">
+            <Button fx:id="btnSettings" text="Profile" onAction="#handleSettings" maxWidth="Infinity" styleClass="sidebar-button">
                 <graphic>
                     <javafx.scene.shape.SVGPath content="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L5.09 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" styleClass="sidebar-icon"/>
                 </graphic>
@@ -85,44 +85,7 @@
 
     <!-- Main Content -->
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
-            <content>
-                <VBox spacing="20" style="-fx-padding: 30; -fx-background-color: transparent;">
-                    
-                    <Label text="Overview" styleClass="header-text"/>
-                    
-                    <HBox spacing="20">
-                        <VBox styleClass="card" HBox.hgrow="ALWAYS">
-                            <Label text="Total Balance" styleClass="sub-header-text"/>
-                            <Label text="\$12,450.00" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                            <Label text="+2.5% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 12px;"/>
-                        </VBox>
-                        
-                        <VBox styleClass="card" HBox.hgrow="ALWAYS">
-                            <Label text="Active Cards" styleClass="sub-header-text"/>
-                            <Label text="2" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                        </VBox>
-                    </HBox>
-                    
-                    <Label text="Recent Transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
-                    
-                    <VBox styleClass="card" spacing="15">
-                        <HBox spacing="10" alignment="CENTER_LEFT">
-                            <Circle radius="15" fill="#2D2A40"/>
-                            <VBox>
-                                <Label text="Netflix Subscription" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                                <Label text="Entertainment" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
-                            </VBox>
-                            <Region HBox.hgrow="ALWAYS"/>
-                            <Label text="-\$15.00" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-<!-- ... -->
-                            <Label text="-\$9.99" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                        </HBox>
-                    </VBox>
-                    
-                </VBox>
-            </content>
-        </ScrollPane>
+        <StackPane fx:id="dashboardContent"/>
     </center>
 
 </BorderPane>

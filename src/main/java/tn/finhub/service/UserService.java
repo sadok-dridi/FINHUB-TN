@@ -39,7 +39,9 @@ public class UserService {
         // Insert fresh data
         for (User u : serverUsers) {
             userDAO.insert(u);
+
         }
+
     }
 
 

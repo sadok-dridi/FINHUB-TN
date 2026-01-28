@@ -1,11 +1,6 @@
 package tn.finhub.controller;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.layout.StackPane;
-
-import java.io.IOException;
 
 public class UserDashboardController {
 
@@ -39,6 +34,9 @@ public class UserDashboardController {
     private final double COLLAPSED_WIDTH = 60; // 60px minimum for icons
 
     @FXML
+    private javafx.scene.layout.StackPane dashboardContent;
+
+    @FXML
     public void initialize() {
         sidebar.setPrefWidth(EXPANDED_WIDTH);
         sidebar.setMinWidth(EXPANDED_WIDTH);
@@ -48,12 +46,23 @@ public class UserDashboardController {
         // Load User Data from Session (Database Local)
         tn.finhub.model.User currentUser = tn.finhub.util.UserSession.getInstance().getUser();
         if (currentUser != null) {
-            // Extract display name from email (e.g., "john.doe" from
-            // "john.doe@example.com")
             String displayName = currentUser.getEmail().split("@")[0];
             userNameLabel.setText(displayName);
             userRoleLabel.setText(currentUser.getRole());
         }
+
+        // Load Default View
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/wallet_dashboard.fxml");
+    }
+
+    @FXML
+    private void handleDashboard() {
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/wallet_dashboard.fxml");
+    }
+
+    @FXML
+    private void handleSettings() {
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/profile.fxml");
     }
 
     @FXML
