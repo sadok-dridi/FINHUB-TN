@@ -7,21 +7,28 @@ public class WalletTransaction {
 
     private int id;
     private int walletId;
-    private String type;       // CREDIT | DEBIT | HOLD | RELEASE
+    private String type; // CREDIT | DEBIT | HOLD | RELEASE
     private BigDecimal amount;
     private String reference;
     private LocalDateTime createdAt;
 
-    public WalletTransaction() {}
+    private String prevHash;
+    private String txHash;
+
+    public WalletTransaction() {
+    }
 
     public WalletTransaction(int id, int walletId, String type,
-                             BigDecimal  amount, String reference,
-                             LocalDateTime createdAt) {
+            BigDecimal amount, String reference,
+            String prevHash, String txHash,
+            LocalDateTime createdAt) {
         this.id = id;
         this.walletId = walletId;
         this.type = type;
         this.amount = amount;
         this.reference = reference;
+        this.prevHash = prevHash;
+        this.txHash = txHash;
         this.createdAt = createdAt;
     }
 
@@ -38,12 +45,20 @@ public class WalletTransaction {
         return type;
     }
 
-    public BigDecimal  getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
     public String getReference() {
         return reference;
+    }
+
+    public String getPrevHash() {
+        return prevHash;
+    }
+
+    public String getTxHash() {
+        return txHash;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -63,12 +78,20 @@ public class WalletTransaction {
         this.type = type;
     }
 
-    public void setAmount(BigDecimal  amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
     public void setReference(String reference) {
         this.reference = reference;
+    }
+
+    public void setPrevHash(String prevHash) {
+        this.prevHash = prevHash;
+    }
+
+    public void setTxHash(String txHash) {
+        this.txHash = txHash;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

@@ -31,12 +31,21 @@ public class WalletController {
     @FXML
     private Button generateCardButton;
 
+    @FXML
+    private VBox frozenAlertBox;
+
+    @FXML
+    private Button topUpButton;
+
     private final WalletService walletService = new WalletService();
     private final VirtualCardService virtualCardService = new VirtualCardService();
     private Wallet currentWallet;
 
     @FXML
     private void handleDeposit() {
+        if (currentWallet != null && "FROZEN".equals(currentWallet.getStatus())) {
+            return; // Security check
+        }
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/deposit_dialog.fxml"));
@@ -71,6 +80,10 @@ public class WalletController {
 
             stage.showAndWait();
 
+            // Force refresh after dialog closes to capture any status changes (e.g.,
+            // frozen)
+            loadWalletData();
+
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
@@ -79,6 +92,9 @@ public class WalletController {
     @FXML
     private void handleGenerateCard() {
         if (currentWallet != null) {
+            if ("FROZEN".equals(currentWallet.getStatus()))
+                return; // Security check
+
             virtualCardService.createCardForWallet(currentWallet.getId());
             refreshVirtualCards(currentWallet.getId());
         }
@@ -100,8 +116,30 @@ public class WalletController {
 
         currentWallet = walletService.getWallet(userId);
         if (currentWallet != null) {
+
             escrowBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getEscrowBalance());
             availableBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getBalance());
+
+            // Check Status
+            boolean isFrozen = "FROZEN".equals(currentWallet.getStatus());
+
+            if (frozenAlertBox != null) {
+                frozenAlertBox.setVisible(isFrozen);
+                frozenAlertBox.setManaged(isFrozen);
+            } else {
+                System.err.println("DEBUG: frozenAlertBox is null!");
+            }
+
+            if (topUpButton != null)
+                topUpButton.setDisable(isFrozen);
+            if (generateCardButton != null)
+                generateCardButton.setDisable(isFrozen);
+
+            // Check for specific tampered transaction if frozen
+            int badTxId = -1;
+            if (isFrozen) {
+                badTxId = walletService.getTamperedTransactionId(currentWallet.getId());
+            }
 
             // Load Virtual Cards
             refreshVirtualCards(currentWallet.getId());
@@ -111,7 +149,7 @@ public class WalletController {
             List<WalletTransaction> transactions = walletService.getTransactionHistory(currentWallet.getId());
 
             for (WalletTransaction tx : transactions) {
-                transactionContainer.getChildren().add(createTransactionCard(tx));
+                transactionContainer.getChildren().add(createTransactionCard(tx, badTxId));
             }
         }
     }
@@ -281,7 +319,7 @@ public class WalletController {
     }
 
     private String formatCardNumber(String number) {
-        // Format as XXXX XXXX XXXX XXXX
+        // ... (unchanged) ...
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < number.length(); i++) {
             if (i > 0 && i % 4 == 0)
@@ -291,15 +329,23 @@ public class WalletController {
         return sb.toString();
     }
 
-    private javafx.scene.Node createTransactionCard(WalletTransaction tx) {
+    private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId) {
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // Highlight if tampering detected
+        if (tx.getId() == badTxId) {
+            card.setStyle(
+                    "-fx-border-color: #EF4444; -fx-border-width: 2; -fx-background-color: rgba(239, 68, 68, 0.1);");
+        }
 
         // Icon
         javafx.scene.layout.StackPane iconBg = new javafx.scene.layout.StackPane();
         iconBg.getStyleClass().add("transaction-icon-bg");
         iconBg.setPrefSize(40, 40);
+        iconBg.setMinSize(40, 40); // Force circle shape
+        iconBg.setMaxSize(40, 40); // Prevent stretching
 
         javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
         icon.setContent(getIconPath(tx.getType()));
@@ -316,6 +362,13 @@ public class WalletController {
         dateLabel.getStyleClass().add("transaction-date");
 
         details.getChildren().addAll(refLabel, dateLabel);
+
+        // Add "TAMPERED" Badge if applicable
+        if (tx.getId() == badTxId) {
+            Label tamperLabel = new Label("TAMPER DETECTED");
+            tamperLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 10px;");
+            details.getChildren().add(tamperLabel);
+        }
 
         // Spacer
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();

@@ -11,12 +11,12 @@ public class WalletTransactionDAO {
     private Connection connection = DBConnection.getInstance();
 
     public void insert(int walletId, String type,
-            BigDecimal amount, String reference) {
+            BigDecimal amount, String reference, String prevHash, String txHash, java.time.LocalDateTime createdAt) {
 
         String sql = """
                     INSERT INTO wallet_transactions
-                    (wallet_id, type, amount, reference)
-                    VALUES (?, ?, ?, ?)
+                    (wallet_id, type, amount, reference, prev_hash, tx_hash, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -24,6 +24,9 @@ public class WalletTransactionDAO {
             ps.setString(2, type);
             ps.setBigDecimal(3, amount);
             ps.setString(4, reference);
+            ps.setString(5, prevHash);
+            ps.setString(6, txHash);
+            ps.setTimestamp(7, java.sql.Timestamp.valueOf(createdAt));
             ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException("Transaction insert failed", e);
@@ -44,6 +47,8 @@ public class WalletTransactionDAO {
                             rs.getString("type"),
                             rs.getBigDecimal("amount"),
                             rs.getString("reference"),
+                            rs.getString("prev_hash"),
+                            rs.getString("tx_hash"),
                             rs.getTimestamp("created_at").toLocalDateTime());
                     list.add(tx);
                 }

@@ -57,7 +57,7 @@ public class UserDashboardController {
         // Load User Data from Session (Database Local)
         tn.finhub.model.User currentUser = tn.finhub.util.UserSession.getInstance().getUser();
         if (currentUser != null) {
-            String displayName = currentUser.getEmail().split("@")[0];
+            String displayName = currentUser.getFullName();
             userNameLabel.setText(displayName);
             userRoleLabel.setText(currentUser.getRole());
         }

@@ -21,11 +21,13 @@ public class WalletService {
 
     // ✅ CREDIT
     public void credit(int walletId, BigDecimal amount, String ref) {
+        checkStatus(walletId);
         executeAtomic(walletId, amount, "CREDIT", ref);
     }
 
     // ✅ DEBIT
     public void debit(int walletId, BigDecimal amount, String ref) {
+        checkStatus(walletId);
         Wallet wallet = walletDAO.findById(walletId);
 
         if (wallet.getBalance().compareTo(amount) < 0) {
@@ -37,6 +39,7 @@ public class WalletService {
 
     // ✅ HOLD (ESCROW)
     public void hold(int walletId, BigDecimal amount, String ref) {
+        checkStatus(walletId);
         Wallet wallet = walletDAO.findById(walletId);
 
         if (wallet.getBalance().compareTo(amount) < 0) {
@@ -44,13 +47,55 @@ public class WalletService {
         }
 
         walletDAO.hold(walletId, amount);
-        txDAO.insert(walletId, "HOLD", amount, ref);
+        recordTransaction(walletId, "HOLD", amount, ref);
     }
 
     // ✅ RELEASE
     public void release(int walletId, BigDecimal amount, String ref) {
+        checkStatus(walletId);
         walletDAO.release(walletId, amount);
-        txDAO.insert(walletId, "RELEASE", amount, ref);
+        recordTransaction(walletId, "RELEASE", amount, ref);
+    }
+
+    // 💸 TRANSFER (Wallet → Wallet)
+    public void transfer(int fromWalletId, int toWalletId, BigDecimal amount, String ref) {
+        if (fromWalletId == toWalletId) {
+            throw new RuntimeException("Cannot transfer to same wallet");
+        }
+
+        checkStatus(fromWalletId);
+        checkStatus(toWalletId);
+
+        Wallet fromWallet = walletDAO.findById(fromWalletId);
+        if (fromWallet.getBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        Connection conn = walletDAO.getConnection();
+        try {
+            conn.setAutoCommit(false);
+
+            // 1. Debit Sender
+            walletDAO.updateBalance(fromWalletId, amount.negate());
+            recordTransaction(fromWalletId, "TRANSFER_SENT", amount, ref + " to " + toWalletId);
+
+            // 2. Credit Receiver
+            walletDAO.updateBalance(toWalletId, amount);
+            recordTransaction(toWalletId, "TRANSFER_RECEIVED", amount, ref + " from " + fromWalletId);
+
+            conn.commit();
+        } catch (Exception e) {
+            try {
+                conn.rollback();
+            } catch (Exception ignored) {
+            }
+            throw new RuntimeException("Transfer failed: " + e.getMessage(), e);
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     // 🔐 ATOMIC OPERATION
@@ -64,7 +109,7 @@ public class WalletService {
         try {
             conn.setAutoCommit(false);
             walletDAO.updateBalance(walletId, amount);
-            txDAO.insert(walletId, type, amount.abs(), ref);
+            recordTransaction(walletId, type, amount.abs(), ref);
             conn.commit();
         } catch (Exception e) {
             try {
@@ -86,5 +131,144 @@ public class WalletService {
 
     public java.util.List<tn.finhub.model.WalletTransaction> getTransactionHistory(int walletId) {
         return txDAO.findByWalletId(walletId);
+    }
+
+    private void recordTransaction(int walletId, String type, BigDecimal amount, String ref) {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        String prevHash = getLastHash(walletId);
+
+        String data = formatForHash(prevHash, walletId, type, amount, ref, now);
+
+        String txHash = tn.finhub.util.HashUtils.sha256(data);
+        txDAO.insert(walletId, type, amount, ref, prevHash, txHash, now);
+    }
+
+    private String getLastHash(int walletId) {
+        java.util.List<tn.finhub.model.WalletTransaction> list = txDAO.findByWalletId(walletId);
+        if (list.isEmpty()) {
+            return "0000000000000000000000000000000000000000000000000000000000000000";
+        }
+        return list.get(0).getTxHash();
+    }
+
+    // 🛡️ LEDGER VERIFICATION
+    public boolean verifyLedger(int walletId) {
+        java.util.List<tn.finhub.model.WalletTransaction> txs = txDAO.findByWalletId(walletId);
+        java.util.Collections.reverse(txs);
+
+        String previousHash = "0000000000000000000000000000000000000000000000000000000000000000";
+
+        for (tn.finhub.model.WalletTransaction tx : txs) {
+            String data = formatForHash(
+                    previousHash,
+                    tx.getWalletId(),
+                    tx.getType(),
+                    tx.getAmount(),
+                    tx.getReference(),
+                    tx.getCreatedAt());
+            String expectedHash = tn.finhub.util.HashUtils.sha256(data);
+
+            if (!expectedHash.equals(tx.getTxHash())) {
+                System.err.println("❌ Tamper detected at TX ID: " + tx.getId());
+                System.err.println("Expected: " + expectedHash);
+                System.err.println("Actual:   " + tx.getTxHash());
+                return false;
+            }
+            previousHash = tx.getTxHash();
+        }
+        return true;
+    }
+
+    public int getTamperedTransactionId(int walletId) {
+        java.util.List<tn.finhub.model.WalletTransaction> txs = txDAO.findByWalletId(walletId);
+        java.util.Collections.reverse(txs);
+
+        String previousHash = "0000000000000000000000000000000000000000000000000000000000000000";
+
+        for (tn.finhub.model.WalletTransaction tx : txs) {
+            String data = formatForHash(
+                    previousHash,
+                    tx.getWalletId(),
+                    tx.getType(),
+                    tx.getAmount(),
+                    tx.getReference(),
+                    tx.getCreatedAt());
+            String expectedHash = tn.finhub.util.HashUtils.sha256(data);
+
+            if (!expectedHash.equals(tx.getTxHash())) {
+                return tx.getId();
+            }
+            previousHash = tx.getTxHash();
+        }
+        return -1;
+    }
+
+    // ⚖️ BALANCE VERIFICATION
+    public boolean verifyBalance(int walletId) {
+        java.util.List<tn.finhub.model.WalletTransaction> txs = txDAO.findByWalletId(walletId);
+
+        BigDecimal calculatedBalance = BigDecimal.ZERO;
+        BigDecimal calculatedEscrow = BigDecimal.ZERO;
+
+        for (tn.finhub.model.WalletTransaction tx : txs) {
+            BigDecimal amt = tx.getAmount();
+            switch (tx.getType()) {
+                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED" -> calculatedBalance = calculatedBalance.add(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT" -> calculatedBalance = calculatedBalance.subtract(amt);
+            }
+
+            if ("HOLD".equals(tx.getType()))
+                calculatedEscrow = calculatedEscrow.add(amt);
+            if ("RELEASE".equals(tx.getType()))
+                calculatedEscrow = calculatedEscrow.subtract(amt);
+        }
+
+        Wallet wallet = walletDAO.findById(walletId);
+
+        // Use compareTo for BigDecimal equality to ignore scale differences
+        boolean balanceMatch = wallet.getBalance().compareTo(calculatedBalance) == 0;
+        boolean escrowMatch = wallet.getEscrowBalance().compareTo(calculatedEscrow) == 0;
+
+        if (!balanceMatch || !escrowMatch) {
+            System.err.println("❌ Balance Mismatch!");
+            System.err.println("DB Balance: " + wallet.getBalance() + " | Calc: " + calculatedBalance);
+            System.err.println("DB Escrow: " + wallet.getEscrowBalance() + " | Calc: " + calculatedEscrow);
+            return false;
+        }
+        return true;
+    }
+
+    private String formatForHash(String prevHash, int walletId, String type, BigDecimal amount, String ref,
+            java.time.LocalDateTime createdAt) {
+        // Enforce 3 decimal places for consistency with DB DECIMAL(15,3)
+        String amountStr = amount.setScale(3, java.math.RoundingMode.HALF_UP).toString();
+        // Truncate timestamp to seconds to avoid nanosecond mismatches
+        java.time.LocalDateTime truncatedTime = createdAt.truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+
+        return prevHash + walletId + type + amountStr + ref + truncatedTime;
+    }
+
+    // 🧊 FREEZE WALLET
+    public void freezeWallet(int walletId) {
+        walletDAO.updateStatus(walletId, "FROZEN");
+    }
+
+    public boolean isFrozen(int walletId) {
+        Wallet w = walletDAO.findById(walletId);
+        return "FROZEN".equals(w.getStatus());
+    }
+
+    private void checkStatus(int walletId) {
+        if (isFrozen(walletId)) {
+            throw new RuntimeException("Wallet is FROZEN. Contact support.");
+        }
+        if (!verifyLedger(walletId)) {
+            freezeWallet(walletId);
+            throw new RuntimeException("Security Alert: Ledger integrity failed. Wallet frozen.");
+        }
+        if (!verifyBalance(walletId)) {
+            freezeWallet(walletId);
+            throw new RuntimeException("Security Alert: Balance mismatch detected. Wallet frozen.");
+        }
     }
 }
