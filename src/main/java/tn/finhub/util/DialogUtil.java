@@ -58,5 +58,38 @@ public class DialogUtil {
             e.printStackTrace();
             return false;
         }
+
+    }
+
+    public static String showPasswordInput(String title, String message) {
+        try {
+            FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource("/view/CustomDialog.fxml"));
+            Parent root = loader.load();
+            CustomDialogController controller = loader.getController();
+
+            Stage dialogStage = new Stage();
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initStyle(StageStyle.TRANSPARENT);
+
+            controller.setDialogStage(dialogStage);
+            controller.setPasswordMode(title, message);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(DialogUtil.class.getResource("/style/theme.css").toExternalForm());
+            scene.setFill(Color.TRANSPARENT);
+            dialogStage.setScene(scene);
+
+            dialogStage.centerOnScreen();
+            dialogStage.showAndWait();
+
+            if (controller.isConfirmed()) {
+                return controller.getResultInput();
+            }
+            return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

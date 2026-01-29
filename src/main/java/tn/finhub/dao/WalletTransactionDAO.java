@@ -8,8 +8,6 @@ import java.sql.PreparedStatement;
 
 public class WalletTransactionDAO {
 
-    private Connection connection = DBConnection.getInstance();
-
     public void insert(int walletId, String type,
             BigDecimal amount, String reference, String prevHash, String txHash, java.time.LocalDateTime createdAt) {
 
@@ -19,7 +17,7 @@ public class WalletTransactionDAO {
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ps.setString(2, type);
             ps.setBigDecimal(3, amount);
@@ -37,7 +35,7 @@ public class WalletTransactionDAO {
         java.util.List<tn.finhub.model.WalletTransaction> list = new java.util.ArrayList<>();
         String sql = "SELECT * FROM wallet_transactions WHERE wallet_id = ? ORDER BY created_at DESC";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             try (java.sql.ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -57,5 +55,24 @@ public class WalletTransactionDAO {
             throw new RuntimeException("Error fetching transactions", e);
         }
         return list;
+    }
+
+    public void deleteByWalletId(int walletId) {
+        String sql = "DELETE FROM wallet_transactions WHERE wallet_id = ?";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.setInt(1, walletId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting transactions", e);
+        }
+    }
+
+    public void deleteAll() {
+        String sql = "DELETE FROM wallet_transactions";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting all transactions", e);
+        }
     }
 }

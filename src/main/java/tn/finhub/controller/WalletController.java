@@ -126,6 +126,14 @@ public class WalletController {
             if (frozenAlertBox != null) {
                 frozenAlertBox.setVisible(isFrozen);
                 frozenAlertBox.setManaged(isFrozen);
+
+                if (isFrozen && frozenAlertBox.getChildren().size() > 1) {
+                    tn.finhub.model.LedgerFlag flag = walletService.getLatestFlag(currentWallet.getId());
+                    if (flag != null) {
+                        javafx.scene.Node descNode = frozenAlertBox.getChildren().get(1); // 2nd child is description
+
+                    }
+                }
             } else {
                 System.err.println("DEBUG: frozenAlertBox is null!");
             }

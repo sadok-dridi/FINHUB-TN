@@ -11,6 +11,8 @@ public class WalletService {
 
     private WalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO txDAO = new WalletTransactionDAO();
+    private tn.finhub.dao.LedgerDAO ledgerDAO = new tn.finhub.dao.LedgerDAO(); // Mistake in package name, fix below or
+                                                                               // use fully qualified if I can't import
 
     public void createWalletIfNotExists(int userId) {
         Wallet wallet = walletDAO.findByUserId(userId);
@@ -154,6 +156,14 @@ public class WalletService {
     // 🛡️ LEDGER VERIFICATION
     public boolean verifyLedger(int walletId) {
         java.util.List<tn.finhub.model.WalletTransaction> txs = txDAO.findByWalletId(walletId);
+
+        // Ensure we process from Genesis to Latest
+        // Assuming findByWalletId returns [Latest ... Genesis] (DESC), we reverse to
+        // [Genesis ... Latest]
+        // If it returns [Genesis ... Latest] (ASC), we shouldn't reverse.
+        // Based on existing code iterating with "000...000" start, we need Genesis
+        // first.
+        // Existing code: Collections.reverse(txs).
         java.util.Collections.reverse(txs);
 
         String previousHash = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -169,13 +179,20 @@ public class WalletService {
             String expectedHash = tn.finhub.util.HashUtils.sha256(data);
 
             if (!expectedHash.equals(tx.getTxHash())) {
-                System.err.println("❌ Tamper detected at TX ID: " + tx.getId());
+                String msg = "Hash mismatch detected at transaction " + tx.getId();
+                System.err.println("❌ " + msg);
                 System.err.println("Expected: " + expectedHash);
                 System.err.println("Actual:   " + tx.getTxHash());
+
+                // Log failure
+                ledgerDAO.insertAuditLog(new tn.finhub.model.LedgerAuditLog(walletId, false, msg));
                 return false;
             }
             previousHash = tx.getTxHash();
         }
+
+        // Log success
+        ledgerDAO.insertAuditLog(new tn.finhub.model.LedgerAuditLog(walletId, true, "Ledger integrity verified"));
         return true;
     }
 
@@ -253,22 +270,46 @@ public class WalletService {
         walletDAO.updateStatus(walletId, "FROZEN");
     }
 
+    public void unfreezeWallet(int walletId) {
+        // Only ACTIVE is supported as alternative for now, assuming unfreeze -> active
+        walletDAO.updateStatus(walletId, "ACTIVE");
+    }
+
     public boolean isFrozen(int walletId) {
         Wallet w = walletDAO.findById(walletId);
         return "FROZEN".equals(w.getStatus());
     }
 
+    public java.util.List<tn.finhub.model.LedgerAuditLog> getAuditLogs(int walletId) {
+        return ledgerDAO.getAuditLogs(walletId);
+    }
+
+    public tn.finhub.model.LedgerFlag getLatestFlag(int walletId) {
+        return ledgerDAO.getLatestFlag(walletId);
+    }
+
     private void checkStatus(int walletId) {
+        // Check Ledger Flags (Enforcement)
+        if (ledgerDAO.hasActiveFlags(walletId)) {
+            throw new RuntimeException("Wallet is frozen due to integrity violation");
+        }
+
         if (isFrozen(walletId)) {
             throw new RuntimeException("Wallet is FROZEN. Contact support.");
         }
+
         if (!verifyLedger(walletId)) {
+            String reason = "Ledger integrity violation – wallet frozen";
+            ledgerDAO.insertFlag(new tn.finhub.model.LedgerFlag(walletId, reason));
             freezeWallet(walletId);
-            throw new RuntimeException("Security Alert: Ledger integrity failed. Wallet frozen.");
+            throw new RuntimeException("Security Alert: " + reason);
         }
+
         if (!verifyBalance(walletId)) {
+            String reason = "Balance mismatch detected – wallet frozen";
+            ledgerDAO.insertFlag(new tn.finhub.model.LedgerFlag(walletId, reason));
             freezeWallet(walletId);
-            throw new RuntimeException("Security Alert: Balance mismatch detected. Wallet frozen.");
+            throw new RuntimeException("Security Alert: " + reason);
         }
     }
 }

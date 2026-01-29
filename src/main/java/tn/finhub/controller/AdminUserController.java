@@ -54,6 +54,7 @@ public class AdminUserController {
 
         refreshUserCards(filteredList);
     }
+
     @FXML
     public void handleRefresh() {
         try {
@@ -62,14 +63,12 @@ public class AdminUserController {
 
             tn.finhub.util.DialogUtil.showInfo(
                     "Sync Completed",
-                    "Users successfully refreshed from server."
-            );
+                    "Users successfully refreshed from server.");
         } catch (Exception e) {
             e.printStackTrace();
             tn.finhub.util.DialogUtil.showError(
                     "Sync Failed",
-                    "Could not refresh users from server."
-            );
+                    "Could not refresh users from server.");
         }
     }
 
@@ -142,14 +141,29 @@ public class AdminUserController {
             actions.getChildren().add(makeAdminBtn);
         }
 
-        if (!isSelf && !isAdmin ) {
+        if (!isSelf && !isAdmin) {
             Button deleteBtn = new Button("Delete");
             deleteBtn.getStyleClass().add("button-small-danger");
             deleteBtn.setOnAction(e -> handleDelete(user));
             actions.getChildren().add(deleteBtn);
         }
 
-        // Add Hover Effect
+        // Add Hover Effect & Click Action
+        card.setCursor(javafx.scene.Cursor.HAND);
+        card.setOnMouseClicked(e -> {
+            // Avoid triggering when clicking buttons inside the card
+            if (e.getTarget() instanceof javafx.scene.Node) {
+                javafx.scene.Node target = (javafx.scene.Node) e.getTarget();
+                // Traverse up to check if we clicked a button
+                while (target != null && target != card) {
+                    if (target instanceof Button)
+                        return;
+                    target = target.getParent();
+                }
+            }
+            handleShowDetails(user);
+        });
+
         card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
         card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
 
@@ -210,6 +224,29 @@ public class AdminUserController {
     public void loadUsers() {
         allUsers = FXCollections.observableArrayList(userService.getAllUsers());
         filterUsers(searchField.getText());
+    }
+
+    private void handleShowDetails(User user) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/admin_user_details.fxml"));
+            javafx.scene.Parent view = loader.load();
+
+            AdminUserDetailsController controller = loader.getController();
+            controller.setUser(user);
+
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
+                    .lookup("#contentArea");
+            if (contentArea != null) {
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(view);
+            } else {
+                usersContainer.getScene().setRoot(view);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            tn.finhub.util.DialogUtil.showError("Navigation Error", "Could not load user details.");
+        }
     }
 
     @FXML

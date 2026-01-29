@@ -104,7 +104,41 @@ public class CustomDialogController {
     }
 
     @FXML
+    private javafx.scene.control.PasswordField inputField;
+
+    private String resultInput = null;
+
+    public void setPasswordMode(String title, String message) {
+        titleLabel.setText(title);
+        messageLabel.setText(message);
+
+        // Security Icon
+        iconContainer.getStyleClass().setAll("dialog-icon-container", "dialog-icon-warning");
+        iconPath.setContent(
+                "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"); // Lock
+        iconPath.setStroke(javafx.scene.paint.Color.web("#F59E0B")); // Amber
+
+        inputField.setVisible(true);
+        inputField.setManaged(true);
+        inputField.setText("");
+
+        cancelButton.setVisible(true);
+        cancelButton.setManaged(true);
+        confirmButton.setText("Verify");
+
+        // Focus
+        javafx.application.Platform.runLater(() -> inputField.requestFocus());
+    }
+
+    public String getResultInput() {
+        return resultInput;
+    }
+
+    @FXML
     private void handleYes() {
+        if (inputField.isVisible()) {
+            resultInput = inputField.getText();
+        }
         confirmed = true;
         dialogStage.close();
     }
@@ -112,6 +146,7 @@ public class CustomDialogController {
     @FXML
     private void handleNo() {
         confirmed = false;
+        resultInput = null;
         dialogStage.close();
     }
 }

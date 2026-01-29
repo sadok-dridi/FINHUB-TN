@@ -8,10 +8,8 @@ import java.sql.*;
 
 public class WalletDAO {
 
-    private Connection connection = DBConnection.getInstance();
-
     public Connection getConnection() {
-        return connection;
+        return DBConnection.getInstance();
     }
 
     // CREATE WALLET
@@ -21,7 +19,7 @@ public class WalletDAO {
                     VALUES (?, 'TND', 0, 0)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
@@ -33,7 +31,7 @@ public class WalletDAO {
     public Wallet findById(int walletId) {
         String sql = "SELECT * FROM wallets WHERE id = ?";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ResultSet rs = ps.executeQuery();
 
@@ -55,7 +53,7 @@ public class WalletDAO {
     // UPDATE STATUS
     public void updateStatus(int walletId, String status) {
         String sql = "UPDATE wallets SET status = ? WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, walletId);
             ps.executeUpdate();
@@ -72,7 +70,7 @@ public class WalletDAO {
                     WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setBigDecimal(1, amount);
             ps.setInt(2, walletId);
             ps.executeUpdate();
@@ -87,7 +85,7 @@ public class WalletDAO {
                     WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setBigDecimal(1, amount);
             ps.setBigDecimal(2, amount);
             ps.setInt(3, walletId);
@@ -105,7 +103,7 @@ public class WalletDAO {
                     WHERE id = ?
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setBigDecimal(1, amount);
             ps.setBigDecimal(2, amount);
             ps.setInt(3, walletId);
@@ -118,7 +116,7 @@ public class WalletDAO {
     public Wallet findByUserId(int userId) {
         String sql = "SELECT * FROM wallets WHERE user_id = ?";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
 
@@ -135,5 +133,24 @@ public class WalletDAO {
             throw new RuntimeException("Wallet lookup failed", e);
         }
         return null;
+    }
+
+    public void deleteById(int walletId) {
+        String sql = "DELETE FROM wallets WHERE id = ?";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.setInt(1, walletId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting wallet", e);
+        }
+    }
+
+    public void deleteAll() {
+        String sql = "DELETE FROM wallets";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting all wallets", e);
+        }
     }
 }
