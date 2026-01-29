@@ -27,29 +27,19 @@ public class UserService {
         return userDAO.findAll();
     }
 
+    public void saveUser(User u) {
+        userDAO.insert(u);
+    }
+
     public void syncUsersFromServer() {
         List<User> serverUsers = ApiClient.fetchUsersFromServer();
 
-        // Clear local table and ALL dependencies
-        deleteAllLocalData();
-
-        // Insert fresh data
+        // Updated Strategy: UPSERT
+        // We do NOT delete all data anymore because it wipes local wallets.
+        // We just update the users cache.
         for (User u : serverUsers) {
             userDAO.insert(u);
         }
-    }
-
-    private void deleteAllLocalData() {
-        // 1. Audit Logs
-        new tn.finhub.dao.LedgerDAO().deleteAllLogs();
-        // 2. Ledger Flags
-        new tn.finhub.dao.LedgerDAO().deleteAllFlags();
-        // 3. Transactions
-        new tn.finhub.dao.WalletTransactionDAO().deleteAll();
-        // 4. Wallets
-        new tn.finhub.dao.WalletDAO().deleteAll();
-        // 5. Users
-        userDAO.deleteAll();
     }
 
     public void deleteUser(int id) {

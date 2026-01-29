@@ -91,4 +91,16 @@ public class FinancialProfileDAOImpl implements FinancialProfileDAO {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void updateUserId(int currentUserId, int newUserId) {
+        String sql = "UPDATE financial_profiles_local SET user_id = ? WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, newUserId);
+            ps.setInt(2, currentUserId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -146,8 +146,15 @@ public class LoginController {
                 Platform.runLater(() -> {
                     try {
                         if (SessionManager.isAdmin()) {
-                            System.out.println("User is Admin. Navigating to Admin Dashboard.");
-                            setView("/view/admin_users.fxml");
+                            // CHECK MIGRATION REQUIREMENT
+                            tn.finhub.service.WalletService ws = new tn.finhub.service.WalletService();
+                            if (ws.hasWallet(user.getInt("id"))) {
+                                System.out.println("Admin has a personal wallet. Redirecting to Migration Wizard.");
+                                setView("/view/migrate_wallet.fxml");
+                            } else {
+                                System.out.println("User is Admin. Navigating to Admin Dashboard.");
+                                setView("/view/admin_users.fxml");
+                            }
                         } else {
                             System.out.println("[DEBUG] Checking profile completion...");
                             FinancialProfileService profileService = new FinancialProfileService();

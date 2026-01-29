@@ -153,4 +153,15 @@ public class WalletDAO {
             throw new RuntimeException("Error deleting all wallets", e);
         }
     }
+
+    public void updateUserId(int walletId, int newUserId) {
+        String sql = "UPDATE wallets SET user_id = ? WHERE id = ?";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.setInt(1, newUserId);
+            ps.setInt(2, walletId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error transferring wallet ownership", e);
+        }
+    }
 }

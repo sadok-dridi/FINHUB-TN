@@ -9,4 +9,6 @@ public interface FinancialProfileDAO {
     void create(FinancialProfile profile);
 
     void update(FinancialProfile profile);
+
+    void updateUserId(int currentUserId, int newUserId);
 }

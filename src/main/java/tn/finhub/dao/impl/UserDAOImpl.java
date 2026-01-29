@@ -12,8 +12,7 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(UserDAOImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserDAOImpl.class);
 
     Connection connection = DBConnection.getInstance();
 
@@ -23,15 +22,14 @@ public class UserDAOImpl implements UserDAO {
         String sql = "SELECT user_id, email, role, full_name FROM users_local";
 
         try (Statement st = connection.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
                 users.add(new User(
                         rs.getInt("user_id"),
                         rs.getString("email"),
                         rs.getString("role"),
-                        rs.getString("full_name")
-                ));
+                        rs.getString("full_name")));
             }
         } catch (SQLException e) {
             logger.error("Error retrieving users", e);
@@ -51,6 +49,7 @@ public class UserDAOImpl implements UserDAO {
             logger.error("Error deleting user", e);
         }
     }
+
     public void deleteAll() {
         String sql = "DELETE FROM users_local";
 
@@ -68,9 +67,13 @@ public class UserDAOImpl implements UserDAO {
 
     public void insert(User u) {
         String sql = """
-            INSERT INTO users_local (user_id, email, role, full_name)
-            VALUES (?, ?, ?, ?)
-        """;
+                    INSERT INTO users_local (user_id, email, role, full_name)
+                    VALUES (?, ?, ?, ?)
+                    ON DUPLICATE KEY UPDATE
+                    email = VALUES(email),
+                    role = VALUES(role),
+                    full_name = VALUES(full_name)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, u.getId());
@@ -79,11 +82,9 @@ public class UserDAOImpl implements UserDAO {
             ps.setString(4, u.getFullName());
             ps.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Error inserting user {}", u.getEmail(), e);
+            logger.error("Error upserting user {}", u.getEmail(), e);
         }
     }
-
-
 
     @Override
     public User findByEmail(String email) {
@@ -98,8 +99,7 @@ public class UserDAOImpl implements UserDAO {
                         rs.getInt("user_id"),
                         rs.getString("email"),
                         rs.getString("role"),
-                        rs.getString("full_name")
-                );
+                        rs.getString("full_name"));
             }
         } catch (SQLException e) {
             logger.error("Error finding user", e);

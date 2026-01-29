@@ -312,4 +312,23 @@ public class WalletService {
             throw new RuntimeException("Security Alert: " + reason);
         }
     }
+
+    public boolean hasWallet(int userId) {
+        return walletDAO.findByUserId(userId) != null;
+    }
+
+    public void transferWalletToUser(int currentUserId, int newUserId) {
+        Wallet wallet = walletDAO.findByUserId(currentUserId);
+        if (wallet == null) {
+            throw new RuntimeException("No wallet found to transfer.");
+        }
+
+        // Ensure new user doesn't already have one
+        if (walletDAO.findByUserId(newUserId) != null) {
+            throw new RuntimeException("Target user already has a wallet.");
+        }
+
+        // Transfer
+        walletDAO.updateUserId(wallet.getId(), newUserId);
+    }
 }
