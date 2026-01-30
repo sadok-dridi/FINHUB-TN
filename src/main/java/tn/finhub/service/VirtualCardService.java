@@ -66,6 +66,18 @@ public class VirtualCardService {
         }
     }
 
+    public Wallet findCardOwner(String cardNumber) {
+        VirtualCard card = cardDAO.findByCardNumber(cardNumber);
+        if (card == null) {
+            return null;
+        }
+        return walletDAO.findById(card.getWalletId());
+    }
+
+    public VirtualCard findCard(String cardNumber) {
+        return cardDAO.findByCardNumber(cardNumber);
+    }
+
     private String generateLuhnCardNumber() {
         // Start with 4 (Visa)
         StringBuilder builder = new StringBuilder("4");

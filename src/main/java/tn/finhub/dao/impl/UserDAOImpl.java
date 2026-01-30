@@ -106,4 +106,19 @@ public class UserDAOImpl implements UserDAO {
         }
         return null;
     }
+
+    public User findById(int id) {
+        String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return new User(rs.getInt("user_id"), rs.getString("email"), rs.getString("role"),
+                        rs.getString("full_name"));
+            }
+        } catch (SQLException e) {
+            logger.error("Error finding user by id", e);
+        }
+        return null;
+    }
 }

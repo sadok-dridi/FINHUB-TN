@@ -39,6 +39,11 @@
                               <javafx.scene.shape.SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
                            </graphic>
                         </Button>
+                        <Button fx:id="transferButton" text="Transfer Money" onAction="#handleTransfer" styleClass="button-primary" style="-fx-background-color: #8B5CF6;">
+                           <graphic>
+                              <javafx.scene.shape.SVGPath content="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" style="-fx-fill: white;"/>
+                           </graphic>
+                        </Button>
                      </children>
                   </HBox>
                   

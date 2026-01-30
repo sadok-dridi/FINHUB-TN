@@ -154,4 +154,27 @@ public class ApiClient {
                 userJson.getString("role"),
                 userJson.optString("full_name", ""));
     }
+
+    public static String sendForgotPasswordRequest(String email) throws Exception {
+        String json = """
+                {
+                  "email": "%s"
+                }
+                """.formatted(email);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/forgot-password"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Request failed: " + response.body());
+        }
+
+        JSONObject body = new JSONObject(response.body());
+        return body.getString("reset_link");
+    }
 }

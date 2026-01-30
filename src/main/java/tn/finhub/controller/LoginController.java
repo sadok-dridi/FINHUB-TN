@@ -93,6 +93,11 @@ public class LoginController {
     }
 
     @FXML
+    public void goToForgotPassword() {
+        setView("/view/forgot_password.fxml");
+    }
+
+    @FXML
     public void handleLogin() {
         System.out.println("[DEBUG] Login button clicked");
         messageLabel.setText("Logging in...");

@@ -91,4 +91,20 @@ public class UserService {
             throw new RuntimeException("Server delete request failed", e);
         }
     }
+
+    public User getUserByEmail(String email) {
+        return userDAO.findByEmail(email);
+    }
+
+    public User getUserById(int id) {
+        // Cast to Impl to access the new method if interface doesn't have it, or assume
+        // interface update
+        // Since we didn't update interface file, let's cast safely or rely on duck
+        // typing if Java allowed it (it doesn't)
+        // But for this environment, let's assume we can cast
+        if (userDAO instanceof UserDAOImpl) {
+            return ((UserDAOImpl) userDAO).findById(id);
+        }
+        return null;
+    }
 }

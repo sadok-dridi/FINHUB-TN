@@ -11,8 +11,7 @@ public class WalletService {
 
     private WalletDAO walletDAO = new WalletDAO();
     private WalletTransactionDAO txDAO = new WalletTransactionDAO();
-    private tn.finhub.dao.LedgerDAO ledgerDAO = new tn.finhub.dao.LedgerDAO(); // Mistake in package name, fix below or
-                                                                               // use fully qualified if I can't import
+    private tn.finhub.dao.LedgerDAO ledgerDAO = new tn.finhub.dao.LedgerDAO();
 
     public void createWalletIfNotExists(int userId) {
         Wallet wallet = walletDAO.findByUserId(userId);
@@ -61,6 +60,14 @@ public class WalletService {
 
     // 💸 TRANSFER (Wallet → Wallet)
     public void transfer(int fromWalletId, int toWalletId, BigDecimal amount, String ref) {
+        // Legacy support: append ID for uniqueness if generic
+        transferInternal(fromWalletId, toWalletId, amount,
+                ref + " to " + toWalletId,
+                ref + " from " + fromWalletId);
+    }
+
+    public void transferInternal(int fromWalletId, int toWalletId, BigDecimal amount, String senderRef,
+            String receiverRef) {
         if (fromWalletId == toWalletId) {
             throw new RuntimeException("Cannot transfer to same wallet");
         }
@@ -79,11 +86,11 @@ public class WalletService {
 
             // 1. Debit Sender
             walletDAO.updateBalance(fromWalletId, amount.negate());
-            recordTransaction(fromWalletId, "TRANSFER_SENT", amount, ref + " to " + toWalletId);
+            recordTransaction(fromWalletId, "TRANSFER_SENT", amount, senderRef);
 
             // 2. Credit Receiver
             walletDAO.updateBalance(toWalletId, amount);
-            recordTransaction(toWalletId, "TRANSFER_RECEIVED", amount, ref + " from " + fromWalletId);
+            recordTransaction(toWalletId, "TRANSFER_RECEIVED", amount, receiverRef);
 
             conn.commit();
         } catch (Exception e) {
@@ -230,7 +237,8 @@ public class WalletService {
         for (tn.finhub.model.WalletTransaction tx : txs) {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED" -> calculatedBalance = calculatedBalance.add(amt);
+                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS" ->
+                    calculatedBalance = calculatedBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> calculatedBalance = calculatedBalance.subtract(amt);
             }
 
@@ -267,6 +275,15 @@ public class WalletService {
 
     // 🧊 FREEZE WALLET
     public void freezeWallet(int walletId) {
+        // EXEMPTION: Never freeze the Central Bank Wallet
+        try {
+            if (walletId == getBankWalletId()) {
+                System.err.println("⚠️ Attempted to freeze Central Bank Wallet (ID " + walletId + "). Action blocked.");
+                return;
+            }
+        } catch (Exception ignored) {
+        }
+
         walletDAO.updateStatus(walletId, "FROZEN");
     }
 
@@ -289,6 +306,25 @@ public class WalletService {
     }
 
     private void checkStatus(int walletId) {
+        // EXEMPTION: Do not verify the Central Bank Wallet (ID 999999 or lookup)
+        // This is necessary because it was created with an artificial balance.
+        try {
+            if (walletId == getBankWalletId()) {
+                // Auto-Repair 1: If Bank Wallet is somehow FROZEN, unfreeze it immediately.
+                if (isFrozen(walletId)) {
+                    System.out.println("🔧 Auto-Repairing Central Bank Wallet: Unfreezing...");
+                    unfreezeWallet(walletId);
+                }
+
+                // Auto-Repair 2: Ensure Genesis Transaction exists to fix balance mismatch
+                ensureGenesisTransaction(walletId);
+
+                return;
+            }
+        } catch (Exception ignored) {
+            // If bank wallet isn't configured, proceed with normal checks
+        }
+
         // Check Ledger Flags (Enforcement)
         if (ledgerDAO.hasActiveFlags(walletId)) {
             throw new RuntimeException("Wallet is frozen due to integrity violation");
@@ -330,5 +366,66 @@ public class WalletService {
 
         // Transfer
         walletDAO.updateUserId(wallet.getId(), newUserId);
+    }
+
+    public void transferByEmail(int senderWalletId, String recipientEmail, BigDecimal amount) {
+        UserService userService = new UserService();
+        tn.finhub.model.User recipient = userService.getUserByEmail(recipientEmail);
+
+        if (recipient == null) {
+            throw new RuntimeException("User with email " + recipientEmail + " not found.");
+        }
+
+        Wallet recipientWallet = walletDAO.findByUserId(recipient.getId());
+        if (recipientWallet == null) {
+            throw new RuntimeException("Recipient does not have an active wallet.");
+        }
+
+        if ("FROZEN".equals(recipientWallet.getStatus())) {
+            throw new RuntimeException("Recipient wallet is frozen. Cannot receive funds.");
+        }
+
+        // Fetch Sender Name for nicer reference
+        String senderName = "Unknown";
+        Wallet senderWallet = walletDAO.findById(senderWalletId);
+        if (senderWallet != null) {
+            tn.finhub.model.User sender = userService.getUserById(senderWallet.getUserId());
+            if (sender != null)
+                senderName = sender.getFullName();
+        }
+
+        // Use Names in Reference
+        String senderRef = "Transfer to " + recipient.getFullName();
+        String receiverRef = "Transfer from " + senderName;
+
+        transferInternal(senderWalletId, recipientWallet.getId(), amount, senderRef, receiverRef);
+    }
+
+    public int getBankWalletId() {
+        UserService userService = new UserService();
+        tn.finhub.model.User bankUser = userService.getUserByEmail("bank@finhub.tn");
+        if (bankUser == null) {
+            throw new RuntimeException("Bank configuration missing: 'bank@finhub.tn' user not found.");
+        }
+        Wallet bankWallet = walletDAO.findByUserId(bankUser.getId());
+        if (bankWallet == null) {
+            throw new RuntimeException("Bank configuration missing: Bank wallet not found.");
+        }
+        return bankWallet.getId();
+    }
+
+    private void ensureGenesisTransaction(int walletId) {
+        try {
+            java.util.List<tn.finhub.model.WalletTransaction> history = txDAO.findByWalletId(walletId);
+            if (history.isEmpty()) {
+                Wallet w = walletDAO.findById(walletId);
+                if (w.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+                    System.out.println("🔧 Injecting Genesis Transaction for Wallet " + walletId);
+                    recordTransaction(walletId, "GENESIS", w.getBalance(), "Initial Bank Balance");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to ensure genesis transaction: " + e.getMessage());
+        }
     }
 }

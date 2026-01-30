@@ -541,7 +541,7 @@
 }
 
 .amount-negative {
-    -fx-text-fill: -color-text-primary;
+    -fx-text-fill: #F59E0B;
     -fx-font-weight: bold;
     -fx-font-size: 16px;
 }
@@ -643,6 +643,14 @@
 
 .transaction-icon {
     -fx-fill: white;
+}
+
+.transaction-icon-positive {
+    -fx-fill: -color-success;
+}
+
+.transaction-icon-negative {
+    -fx-fill: #F59E0B;
 }
 
 /* --- Transparent Window & Controls --- */
