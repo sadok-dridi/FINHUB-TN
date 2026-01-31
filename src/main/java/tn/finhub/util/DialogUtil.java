@@ -13,6 +13,39 @@ import java.io.IOException;
 
 public class DialogUtil {
 
+    private static boolean lastResult = false;
+
+    public static void setLastDialogResult(boolean result) {
+        lastResult = result;
+    }
+
+    public static boolean showCustomDialog(String fxmlPath, String title) {
+        lastResult = false;
+        try {
+            FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource(fxmlPath));
+            Parent root = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle(title);
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initStyle(StageStyle.TRANSPARENT);
+
+            Scene scene = new Scene(root);
+            if (DialogUtil.class.getResource("/style/theme.css") != null) {
+                scene.getStylesheets().add(DialogUtil.class.getResource("/style/theme.css").toExternalForm());
+            }
+            scene.setFill(Color.TRANSPARENT);
+            dialogStage.setScene(scene);
+            dialogStage.centerOnScreen();
+            dialogStage.showAndWait();
+
+            return lastResult;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static boolean showConfirmation(String title, String message) {
         return showDialog(title, message, "CONFIRMATION");
     }

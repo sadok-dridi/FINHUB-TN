@@ -27,8 +27,16 @@
     /* States */
     -color-success: #10B981;
     /* Emerald 500 */
+    -color-success: #10B981;
+    /* Emerald 500 */
+    -color-warning: #F59E0B;
+    /* Amber 500 */
     -color-error: #EF4444;
     /* Red 500 */
+
+    /* Subtle Backgrounds */
+    -color-primary-subtle: rgba(139, 92, 246, 0.15);
+    -color-bg-subtle: rgba(255, 255, 255, 0.05);
 
     /* UI Elements */
     -input-bg: #2D2A40;
@@ -729,4 +737,191 @@
     -fx-font-style: italic;
     -fx-font-size: 28px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0, 2, 2);
+}
+
+/* --- Modern TabPane (Support Dashboard) --- */
+.modern-tab-pane {
+    -fx-tab-min-height: 40px;
+    -fx-tab-max-height: 40px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.modern-tab-pane>.tab-header-area {
+    -fx-padding: 0 0 10 0;
+}
+
+.modern-tab-pane>.tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.modern-tab-pane .tab {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 30px;
+    -fx-border-radius: 30px;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-padding: 8 20;
+    -fx-cursor: hand;
+    -fx-margin: 0 5 0 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.modern-tab-pane .tab:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.modern-tab-pane .tab:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.15);
+    -fx-border-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+.modern-tab-pane .tab-label {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER;
+}
+
+.modern-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.modern-tab-pane .tab:focused {
+    -fx-background-insets: 0;
+    -fx-background-radius: 30px;
+}
+
+.modern-tab-pane .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 10 0 0 0;
+}
+
+.modern-tab-pane>.tab-header-area {
+    -fx-alignment: CENTER;
+}
+
+.modern-tab-pane .tab-header-area .headers-region {
+    -fx-alignment: CENTER;
+}
+
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 10, 0, 0, 0);
+}
+
+.text-muted {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 14px;
+}
+
+/* --- Navigation Buttons (Support Dashboard) --- */
+.nav-button-container {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 10 0;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-background-radius: 30px;
+    -fx-border-radius: 30px;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-button:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.15);
+    -fx-text-fill: white;
+    -fx-border-color: -color-primary;
+}
+
+.nav-button .nav-icon {
+    -fx-fill: -color-text-secondary;
+    -fx-scale-x: 0.7;
+    -fx-scale-y: 0.7;
+}
+
+.nav-button:selected .nav-icon {
+    -fx-fill: -color-primary;
+}
+
+
+/* --- Dialogs --- */
+.dialog-root {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 20, 0, 0, 10);
+    -fx-padding: 0;
+}
+
+.dialog-header {
+    -fx-padding: 15 20;
+    -fx-border-color: transparent transparent -color-card-border transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.dialog-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.dialog-content {
+    -fx-padding: 20;
+}
+
+/* --- Text Area --- */
+.text-area {
+    -fx-background-color: -input-bg;
+    -fx-text-fill: white;
+}
+
+.text-area .content {
+    -fx-background-color: -input-bg;
+    -fx-background-radius: 12px;
+}
+
+.text-area:focused .content {
+    -fx-background-color: -input-bg;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .viewport {
+    -fx-background-color: -input-bg;
+}
+
+/* --- Subtle Button --- */
+.button-subtle {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-border-color: transparent;
+}
+
+.button-subtle:hover {
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8px;
 }

@@ -149,6 +149,11 @@ public class UserDashboardController {
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/contacts.fxml");
     }
 
+    @FXML
+    private void handleSupport() {
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/support_dashboard.fxml");
+    }
+
     private void setButtonStyle(javafx.scene.control.Button btn, javafx.scene.control.ContentDisplay display,
             javafx.geometry.Pos alignment) {
         btn.setContentDisplay(display);
