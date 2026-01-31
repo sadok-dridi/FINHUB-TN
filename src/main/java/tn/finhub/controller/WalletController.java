@@ -311,7 +311,10 @@ public class WalletController {
         dateCvvRow.getChildren().addAll(validBox, cvvBox);
 
         // Name Block
-        Label nameLabel = new Label("SADOK DRIDI");
+        tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
+        String holderName = (user != null && user.getFullName() != null) ? user.getFullName().toUpperCase()
+                : "VALUED USER";
+        Label nameLabel = new Label(holderName);
         nameLabel.setStyle(
                 "-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: normal; -fx-opacity: 0.9; -fx-font-family: 'Segoe UI', sans-serif;");
 
@@ -497,7 +500,56 @@ public class WalletController {
 
         // Assemble
         card.getChildren().addAll(iconBg, leftDetails, spacer, rightDetails);
+
+        // --- Click Action ---
+        card.setOnMouseClicked(e -> showTransactionDetails(tx));
+        card.setCursor(javafx.scene.Cursor.HAND);
+
         return card;
+    }
+
+    private void showTransactionDetails(WalletTransaction tx) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/transaction_details.fxml"));
+            javafx.scene.Parent root = loader.load();
+
+            TransactionDetailsController controller = loader.getController();
+            controller.setTransaction(tx);
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+            stage.setTitle("Transaction Details");
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setScene(scene);
+
+            // Close on lost focus (optional, but nice for details popups)
+            stage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+                if (!isNowFocused) {
+                    // stage.close(); // Uncomment if auto-close is desired
+                }
+            });
+
+            // Make window draggable
+            final double[] xOffset = { 0 };
+            final double[] yOffset = { 0 };
+            root.setOnMousePressed(event -> {
+                xOffset[0] = event.getSceneX();
+                yOffset[0] = event.getSceneY();
+            });
+            root.setOnMouseDragged(event -> {
+                stage.setX(event.getScreenX() - xOffset[0]);
+                stage.setY(event.getScreenY() - yOffset[0]);
+            });
+
+            stage.show();
+
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String getIconPath(String type) {

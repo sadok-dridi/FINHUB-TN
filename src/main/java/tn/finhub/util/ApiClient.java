@@ -71,7 +71,13 @@ public class ApiClient {
             conn.setRequestProperty("Accept", "application/json");
 
             if (conn.getResponseCode() != 200) {
-                throw new RuntimeException("Server error");
+                InputStream errorStream = conn.getErrorStream();
+                String errorBody = "";
+                if (errorStream != null) {
+                    errorBody = new BufferedReader(new InputStreamReader(errorStream)).lines()
+                            .collect(Collectors.joining());
+                }
+                throw new RuntimeException("Server error (" + conn.getResponseCode() + "): " + errorBody);
             }
 
             String json = new BufferedReader(

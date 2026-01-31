@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 public class TransferController {
 
     @FXML
-    private TextField emailField;
+    private TextField recipientField;
     @FXML
     private TextField amountField;
     @FXML
@@ -27,15 +27,27 @@ public class TransferController {
         this.onSuccessCallback = callback;
     }
 
+    public void setRecipient(tn.finhub.model.SavedContact contact) {
+        // Pre-fill the recipient field
+        recipientField.setText(contact.getContactEmail());
+        // Focus on amount field
+        javafx.application.Platform.runLater(() -> amountField.requestFocus());
+    }
+
+    @FXML
+    public void initialize() {
+        // No contacts to load
+    }
+
     @FXML
     private void handleTransfer() {
         try {
-            String email = emailField.getText();
+            final String email = recipientField.getText().trim();
             String amountText = amountField.getText();
 
             // Validation
             if (email.isEmpty() || amountText.isEmpty()) {
-                DialogUtil.showError("Validation Error", "Please fill in all fields.");
+                DialogUtil.showError("Validation Error", "Please provide a recipient and amount.");
                 return;
             }
 
@@ -46,14 +58,12 @@ public class TransferController {
             }
 
             int currentUserId = UserSession.getInstance().getUser().getId();
-            // Prevent self-transfer by email check?? The service might handle it but good
-            // to check here.
             if (email.equalsIgnoreCase(UserSession.getInstance().getUser().getEmail())) {
                 DialogUtil.showError("Error", "You cannot transfer money to yourself.");
                 return;
             }
 
-            // UI Feedback: Sending OTP
+            // UI Feedback
             sendButton.setDisable(true);
             cancelButton.setDisable(true);
             sendButton.setText("Sending Security Code...");
@@ -72,7 +82,6 @@ public class TransferController {
             };
 
             emailTask.setOnSucceeded(event -> {
-                // 3. Open OTP Dialog
                 try {
                     javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                             getClass().getResource("/view/otp_dialog.fxml"));
@@ -81,16 +90,11 @@ public class TransferController {
                     tn.finhub.controller.OtpController otpController = loader.getController();
                     otpController.setExpectedOtp(otp);
 
-                    // Verify Callback
                     otpController.setOnSuccessCallback(() -> {
-                        // 4. Proceed with Transfer
                         proceedWithTransfer(currentUserId, email, amount);
                     });
 
-                    // Cancel Callback
-                    otpController.setOnCancelCallback(() -> {
-                        resetUI();
-                    });
+                    otpController.setOnCancelCallback(this::resetUI);
 
                     Stage otpStage = new Stage();
                     otpStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
@@ -127,7 +131,6 @@ public class TransferController {
     private void proceedWithTransfer(int currentUserId, String email, BigDecimal amount) {
         sendButton.setText("Sending...");
 
-        // Background Task
         javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
             @Override
             protected Void call() throws Exception {
@@ -138,7 +141,7 @@ public class TransferController {
         };
 
         task.setOnSucceeded(e -> {
-            handleCancel(); // Close current dialog
+            handleCancel();
             javafx.application.Platform.runLater(() -> {
                 DialogUtil.showInfo("Success", "Money sent successfully to " + email);
                 if (onSuccessCallback != null) {
@@ -165,7 +168,7 @@ public class TransferController {
 
     @FXML
     private void handleCancel() {
-        Stage stage = (Stage) emailField.getScene().getWindow();
+        Stage stage = (Stage) amountField.getScene().getWindow();
         stage.close();
     }
 }

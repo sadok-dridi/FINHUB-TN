@@ -35,7 +35,7 @@
         <VBox spacing="15">
              <VBox spacing="8">
                  <Label text="Recipient Email" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
-                 <TextField fx:id="emailField" promptText="Enter user email (e.g. friend@finhub.tn)" 
+                 <TextField fx:id="recipientField" promptText="Enter recipient email"
                             style="-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;"/>
              </VBox>
 

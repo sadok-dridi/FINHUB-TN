@@ -139,6 +139,16 @@ public class UserDashboardController {
         setButtonStyle(btnLogout, display, alignment);
     }
 
+    @FXML
+    private void handleTransactions() {
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/transactions.fxml");
+    }
+
+    @FXML
+    private void handleContacts() {
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/contacts.fxml");
+    }
+
     private void setButtonStyle(javafx.scene.control.Button btn, javafx.scene.control.ContentDisplay display,
             javafx.geometry.Pos alignment) {
         btn.setContentDisplay(display);

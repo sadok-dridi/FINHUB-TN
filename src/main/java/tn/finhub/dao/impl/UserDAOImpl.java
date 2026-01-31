@@ -14,14 +14,16 @@ public class UserDAOImpl implements UserDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(UserDAOImpl.class);
 
-    Connection connection = DBConnection.getInstance();
+    private Connection getConnection() {
+        return DBConnection.getInstance();
+    }
 
     @Override
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT user_id, email, role, full_name FROM users_local";
 
-        try (Statement st = connection.createStatement();
+        try (Statement st = getConnection().createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -41,7 +43,7 @@ public class UserDAOImpl implements UserDAO {
     public void delete(int id) {
         String sql = "DELETE FROM users_local WHERE user_id = ?";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
             logger.info("User deleted with id {}", id);
@@ -53,7 +55,7 @@ public class UserDAOImpl implements UserDAO {
     public void deleteAll() {
         String sql = "DELETE FROM users_local";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.executeUpdate();
             logger.info("All local users deleted (sync reset)");
         } catch (SQLException e) {
@@ -75,7 +77,7 @@ public class UserDAOImpl implements UserDAO {
                     full_name = VALUES(full_name)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, u.getId());
             ps.setString(2, u.getEmail());
             ps.setString(3, u.getRole());
@@ -88,9 +90,9 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public User findByEmail(String email) {
-        String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE email = ?";
+        String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE LOWER(email) = LOWER(?)";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
 
@@ -109,7 +111,7 @@ public class UserDAOImpl implements UserDAO {
 
     public User findById(int id) {
         String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE user_id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
