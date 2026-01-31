@@ -237,7 +237,49 @@ public class TransactionsController {
         rightDetails.getChildren().addAll(amountLabel, dateLabel);
 
         card.getChildren().addAll(iconBg, leftDetails, spacer, rightDetails);
+
+        // --- Click Action ---
+        card.setOnMouseClicked(e -> showTransactionDetails(tx));
+        card.setCursor(javafx.scene.Cursor.HAND);
+
         return card;
+    }
+
+    private void showTransactionDetails(WalletTransaction tx) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/transaction_details.fxml"));
+            javafx.scene.Parent root = loader.load();
+
+            TransactionDetailsController controller = loader.getController();
+            controller.setTransaction(tx);
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+            stage.setTitle("Transaction Details");
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.setScene(scene);
+
+            // Make window draggable
+            final double[] xOffset = { 0 };
+            final double[] yOffset = { 0 };
+            root.setOnMousePressed(event -> {
+                xOffset[0] = event.getSceneX();
+                yOffset[0] = event.getSceneY();
+            });
+            root.setOnMouseDragged(event -> {
+                stage.setX(event.getScreenX() - xOffset[0]);
+                stage.setY(event.getScreenY() - yOffset[0]);
+            });
+
+            stage.show();
+
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String getIconPath(String type) {

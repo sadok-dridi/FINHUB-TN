@@ -9,46 +9,44 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="tn.finhub.controller.TransactionsController"
-      spacing="20" style="-fx-background-color: transparent;">
-    
-    <padding>
-        <Insets top="30" right="30" bottom="30" left="30"/>
-    </padding>
-
-    <!-- Quick Send Section -->
-    <VBox spacing="10">
-        <HBox alignment="CENTER_LEFT" spacing="15">
-             <Label text="Quick Send" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-             <Region HBox.hgrow="ALWAYS"/>
-             <javafx.scene.control.Button text="Add Contact" onAction="#handleAddContact" 
-                    style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 5 10; -fx-cursor: hand; -fx-font-size: 12px;"/>
-        </HBox>
-        
-        <ScrollPane fitToHeight="true" vbarPolicy="NEVER" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;">
-            <content>
-                <javafx.scene.layout.HBox fx:id="contactsContainer" spacing="15" style="-fx-background-color: transparent; -fx-padding: 5;">
-                </javafx.scene.layout.HBox>
-            </content>
-        </ScrollPane>
-    </VBox>
-
-    <javafx.scene.control.Separator style="-fx-background-color: #374151;"/>
-
-    <!-- Header -->
-    <Label text="Transaction History" 
-           style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 1);"/>
-
-    <!-- Scrollable Transaction List -->
-    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;" VBox.vgrow="ALWAYS">
-        <content>
-            <VBox fx:id="transactionContainer" spacing="12" style="-fx-background-color: transparent;">
-                <padding>
-                    <Insets right="10" bottom="10"/> <!-- Padding for scrollbar buffer -->
-                </padding>
+<ScrollPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.finhub.controller.TransactionsController"
+            fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">
+    <content>
+        <VBox spacing="30" style="-fx-background-color: transparent; -fx-padding: 30;">
+            
+            <!-- Quick Send Section -->
+            <VBox spacing="15">
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                     <Label text="Quick Send" style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+                     <Region HBox.hgrow="ALWAYS"/>
+                     <javafx.scene.control.Button text="+ New Contact" onAction="#handleAddContact" 
+                            style="-fx-background-color: rgba(16, 185, 129, 0.1); -fx-text-fill: #10B981; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 13px; -fx-border-color: #10B981; -fx-border-radius: 8;"/>
+                </HBox>
+                
+                <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;" minHeight="130" prefHeight="130">
+                    <content>
+                        <javafx.scene.layout.HBox fx:id="contactsContainer" spacing="20" style="-fx-background-color: transparent; -fx-padding: 5;">
+                            <!-- Contacts populated here -->
+                        </javafx.scene.layout.HBox>
+                    </content>
+                </ScrollPane>
             </VBox>
-        </content>
-    </ScrollPane>
 
-</VBox>
+            <javafx.scene.control.Separator style="-fx-opacity: 0.1; -fx-background-color: white;"/>
+
+            <!-- History Section -->
+            <VBox spacing="15">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Transaction History" 
+                       style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 1);"/>
+                </HBox>
+                
+                <VBox fx:id="transactionContainer" spacing="12" style="-fx-background-color: transparent;">
+                    <!-- Transactions populated here -->
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </content>
+</ScrollPane>

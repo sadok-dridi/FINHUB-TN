@@ -196,12 +196,13 @@ public class WalletController {
             // Load Virtual Cards
             refreshVirtualCards(currentWallet.getId());
 
-            // Load Transactions
+            // Load Transactions (Limit to 5 for Dashboard)
             transactionContainer.getChildren().clear();
             List<WalletTransaction> transactions = walletService.getTransactionHistory(currentWallet.getId());
 
-            for (WalletTransaction tx : transactions) {
-                transactionContainer.getChildren().add(createTransactionCard(tx, badTxId));
+            int limit = Math.min(transactions.size(), 4);
+            for (int i = 0; i < limit; i++) {
+                transactionContainer.getChildren().add(createTransactionCard(transactions.get(i), badTxId));
             }
         }
     }
