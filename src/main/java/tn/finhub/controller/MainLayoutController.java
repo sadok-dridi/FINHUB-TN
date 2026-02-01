@@ -32,6 +32,12 @@ public class MainLayoutController {
         // Load initial view (Login)
         setView("/view/splash.fxml");
         startBackgroundAnimation();
+
+        // Clip content to background pane
+        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
+        clip.widthProperty().bind(backgroundAnimationPane.widthProperty());
+        clip.heightProperty().bind(backgroundAnimationPane.heightProperty());
+        backgroundAnimationPane.setClip(clip);
     }
 
     private void startBackgroundAnimation() {
@@ -86,23 +92,42 @@ public class MainLayoutController {
     private void spawnShootingStar() {
         java.util.Random rand = new java.util.Random();
         double paneWidth = backgroundAnimationPane.getWidth();
-        // Start on right side (60% to 100% of width)
-        double startX = paneWidth * (0.6 + rand.nextDouble() * 0.4);
-        double startY = rand.nextDouble() * 300; // Start in top area (0-300)
+        double paneHeight = backgroundAnimationPane.getHeight();
+
+        // Randomize direction: true = Left-to-Right, false = Right-to-Left
+        boolean leftToRight = rand.nextBoolean();
+
+        double startX, startY;
+        if (leftToRight) {
+            // Start on left side (0% to 40% of width)
+            startX = paneWidth * (rand.nextDouble() * 0.4) - 100; // Offset by line length
+            startY = rand.nextDouble() * (paneHeight * 0.4); // Top 40%
+        } else {
+            // Start on right side (60% to 100% of width)
+            startX = paneWidth * (0.6 + rand.nextDouble() * 0.4);
+            startY = rand.nextDouble() * (paneHeight * 0.4); // Top 40%
+        }
 
         // fast moving "streak"
         javafx.scene.shape.Line streak = new javafx.scene.shape.Line(0, 0, 100, 0); // 100px long streak
-        streak.setStroke(
-                new javafx.scene.paint.LinearGradient(0, 0, 1, 0, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
-                        new javafx.scene.paint.Stop(0, javafx.scene.paint.Color.TRANSPARENT),
-                        new javafx.scene.paint.Stop(1, javafx.scene.paint.Color.WHITE))); // Head (Stop 1) is white
+
+        // Gradient matches direction: Head (Stop 1) is white
+        javafx.scene.paint.LinearGradient gradient;
+        if (leftToRight) {
+            gradient = new javafx.scene.paint.LinearGradient(0, 0, 1, 0, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, javafx.scene.paint.Color.TRANSPARENT),
+                    new javafx.scene.paint.Stop(1, javafx.scene.paint.Color.WHITE));
+            streak.setRotate(45); // Pointing Down-Right
+        } else {
+            gradient = new javafx.scene.paint.LinearGradient(0, 0, 1, 0, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                    new javafx.scene.paint.Stop(0, javafx.scene.paint.Color.TRANSPARENT),
+                    new javafx.scene.paint.Stop(1, javafx.scene.paint.Color.WHITE));
+            streak.setRotate(135); // Pointing Down-Left
+        }
+
+        streak.setStroke(gradient);
         streak.setStrokeWidth(2);
-
-        // Rotate to point Top-Right to Bottom-Left (approx 135 degrees)
-        // Line default is 0 deg (Right). 135 deg points Down-Left.
-        streak.setRotate(135);
-
-        streak.setOpacity(0.8);
+        streak.setOpacity(0.0); // Start invisible
         streak.setEffect(new javafx.scene.effect.Glow(0.8));
 
         // Position
@@ -112,20 +137,34 @@ public class MainLayoutController {
         backgroundAnimationPane.getChildren().add(streak);
 
         // Animate
-        double travelDist = 500 + rand.nextDouble() * 300;
-        double duration = 0.8 + rand.nextDouble() * 0.5;
+        double travelDist = 400 + rand.nextDouble() * 600;
+        double duration = 1.5 + rand.nextDouble() * 1.0; // Slower: 1.5s to 2.5s
 
         javafx.animation.TranslateTransition move = new javafx.animation.TranslateTransition(
                 javafx.util.Duration.seconds(duration), streak);
-        move.setByX(-travelDist); // Move LEFT (Negative X)
-        move.setByY(travelDist); // Move DOWN (Positive Y)
 
-        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(
-                javafx.util.Duration.seconds(duration), streak);
-        fade.setFromValue(1.0);
-        fade.setToValue(0.0);
+        if (leftToRight) {
+            move.setByX(travelDist); // Move RIGHT
+        } else {
+            move.setByX(-travelDist); // Move LEFT
+        }
+        move.setByY(travelDist * 0.8); // Move DOWN (slightly less steep)
 
-        javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(move, fade);
+        // Fade In (Appear slowly)
+        javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                javafx.util.Duration.seconds(duration * 0.2), streak);
+        fadeIn.setFromValue(0.0);
+        fadeIn.setToValue(0.8);
+
+        // Fade Out (Disappear)
+        javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                javafx.util.Duration.seconds(duration * 0.8), streak);
+        fadeOut.setFromValue(0.8);
+        fadeOut.setToValue(0.0);
+
+        javafx.animation.SequentialTransition fadeSeq = new javafx.animation.SequentialTransition(fadeIn, fadeOut);
+
+        javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(move, fadeSeq);
         pt.setOnFinished(e -> backgroundAnimationPane.getChildren().remove(streak));
         pt.play();
     }

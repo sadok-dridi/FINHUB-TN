@@ -109,6 +109,38 @@
     -fx-fill: white;
 }
 
+.button-success {
+    -fx-background-color: -color-success;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.3), 10, 0, 0, 3);
+}
+
+.button-success:hover {
+    -fx-background-color: derive(-color-success, -10%);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button-danger {
+    -fx-background-color: -color-error;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.3), 10, 0, 0, 3);
+}
+
+.button-danger:hover {
+    -fx-background-color: derive(-color-error, -10%);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
 /* --- Text Fields --- */
 .text-field {
     -fx-background-color: -input-bg;
@@ -161,9 +193,78 @@
     -fx-padding: 0 10 0 0;
 }
 
-.combo-box .arrow {
-    -fx-background-color: -color-text-secondary;
-    -fx-mark-color: -color-text-secondary;
+
+/* --- Asset List View --- */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* Hide Horizontal Scrollbar */
+.list-view .scroll-bar:horizontal {
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 6 10;
+    /* Reduced padding */
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8px;
+    /* Slightly smaller radius */
+    -fx-border-radius: 8px;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-cursor: hand;
+}
+
+.list-cell:filled:selected,
+.list-cell:filled:selected:focused {
+    -fx-background-color: linear-gradient(to right, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    -fx-border-width: 0;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.1), 5, 0, 0, 1);
+    /* subtler shadow */
+}
+
+.asset-symbol {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    /* Slightly smaller font */
+}
+
+.asset-price {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-family: 'Monospaced';
+    /* Better for numbers */
+}
+
+.asset-change {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.asset-change-pos {
+    -fx-text-fill: -color-success;
+    -fx-background-color: rgba(16, 185, 129, 0.1);
+    -fx-background-radius: 6px;
+    -fx-padding: 2 6;
+}
+
+.asset-change-neg {
+    -fx-text-fill: -color-error;
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+    -fx-background-radius: 6px;
+    -fx-padding: 2 6;
 }
 
 .combo-box:hover .arrow {
@@ -820,6 +921,35 @@
     -fx-font-size: 14px;
 }
 
+/* Styled ScrollBar for Asset List */
+.asset-list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    /* Critically important for JavaFX views */
+    -fx-padding: 0;
+}
+
+.asset-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-padding: 10;
+    -fx-border-color: #2E2A45;
+    -fx-border-width: 0 0 1 0;
+}
+
+.asset-list-view .list-cell:filled:selected {
+    -fx-background-color: rgba(46, 189, 133, 0.15);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: #2ebd85;
+    -fx-border-width: 0 0 1 2;
+}
+
+.asset-list-view .list-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-cursor: hand;
+}
+
 /* --- Navigation Buttons (Support Dashboard) --- */
 .nav-button-container {
     -fx-background-color: transparent;
@@ -924,4 +1054,91 @@
     -fx-text-fill: white;
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-background-radius: 8px;
+}
+
+/* Candlestick Chart Styles */
+.candle-bullish {
+    -fx-background-color: #10b981;
+    /* Green */
+    -fx-stroke: #10b981;
+}
+
+.candle-bearish {
+    -fx-background-color: #ef4444;
+    /* Red */
+    -fx-stroke: #ef4444;
+}
+
+.candle-body {
+    -fx-background-radius: 0;
+}
+
+.candle-line {
+    -fx-stroke-width: 1px;
+}
+
+/* --- Explicit Chart Transparency --- */
+.chart {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-content {
+    -fx-background-color: transparent;
+}
+
+.axis {
+    -fx-tick-label-fill: -color-text-secondary;
+    -fx-tick-mark-stroke: transparent;
+}
+
+.axis:left {
+    -fx-border-color: transparent;
+}
+
+.axis:bottom {
+    -fx-border-color: transparent;
+}
+
+.chart-vertical-grid-lines,
+.chart-horizontal-grid-lines {
+    -fx-stroke: rgba(255, 255, 255, 0.05);
+    /* Faint grid lines */
+}
+
+/* --- Trading Buttons --- */
+.btn-buy-long {
+    -fx-background-color: linear-gradient(to right, #10B981, #059669);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.4), 8, 0, 0, 2);
+}
+
+.btn-buy-long:hover {
+    -fx-background-color: linear-gradient(to right, #34D399, #10B981);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.btn-sell-short {
+    -fx-background-color: linear-gradient(to right, #EF4444, #B91C1C);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.4), 8, 0, 0, 2);
+}
+
+.btn-sell-short:hover {
+    -fx-background-color: linear-gradient(to right, #F87171, #EF4444);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
 }

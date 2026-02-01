@@ -75,4 +75,27 @@ public class WalletTransactionDAO {
             throw new RuntimeException("Error deleting all transactions", e);
         }
     }
+
+    public tn.finhub.model.WalletTransaction getLastTransaction(int walletId) {
+        String sql = "SELECT * FROM wallet_transactions WHERE wallet_id = ? ORDER BY created_at DESC LIMIT 1";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.setInt(1, walletId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new tn.finhub.model.WalletTransaction(
+                            rs.getInt("id"),
+                            rs.getInt("wallet_id"),
+                            rs.getString("type"),
+                            rs.getBigDecimal("amount"),
+                            rs.getString("reference"),
+                            rs.getString("prev_hash"),
+                            rs.getString("tx_hash"),
+                            rs.getTimestamp("created_at").toLocalDateTime());
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching last transaction", e);
+        }
+        return null; // Genesis
+    }
 }
