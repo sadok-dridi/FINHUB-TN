@@ -14,7 +14,7 @@ public class DBConnection {
     private static final String USER = "root";
     private static final String PASSWORD = ""; // put password if you have one
 
-    private DBConnection() {
+        private DBConnection() {
     }
     private static final Logger logger =
             LoggerFactory.getLogger(DBConnection.class);

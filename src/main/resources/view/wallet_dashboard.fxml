@@ -51,7 +51,7 @@
                   <HBox spacing="20.0">
                      <children>
                         <!-- Total Balance Card -->
-                        <VBox styleClass="card-balance" HBox.hgrow="ALWAYS">
+                        <VBox styleClass="card-balance" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
                            <children>
                               <Label text="Available Balance" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
                               <Label fx:id="availableBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
@@ -59,7 +59,7 @@
                         </VBox>
       
                         <!-- Escrow Balance Card -->
-                         <VBox styleClass="card-escrow" HBox.hgrow="ALWAYS">
+                         <VBox styleClass="card-escrow" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
                            <children>
                               <Label text="In Escrow (Held)" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
                               <Label fx:id="escrowBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>

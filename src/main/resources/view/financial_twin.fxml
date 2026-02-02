@@ -17,7 +17,7 @@
                        styleClass="sub-header-text"/>
             </VBox>
 
-            <TabPane styleClass="modern-tab-pane" tabClosingPolicy="UNAVAILABLE">
+            <TabPane fx:id="mainTabPane" styleClass="modern-tab-pane" tabClosingPolicy="UNAVAILABLE">
                 
                 <!-- TAB 1: Financial Health (Existing) -->
                 <Tab text="Financial Health">
@@ -94,7 +94,7 @@
                 </Tab>
 
                 <!-- TAB 2: Market Simulator (Pro Design - Short & Compact) -->
-                <Tab text="Market Simulator">
+                <Tab fx:id="marketTab" text="Market Simulator">
                     <HBox style="-fx-padding: 5 0 0 0;" spacing="6" alignment="TOP_CENTER">
                         <!-- Left: Asset List -->
                         <VBox styleClass="trading-sidebar" minWidth="160" maxWidth="180" maxHeight="450" spacing="0">

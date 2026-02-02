@@ -39,6 +39,8 @@ public class WalletController {
 
     private final WalletService walletService = new WalletService();
     private final VirtualCardService virtualCardService = new VirtualCardService();
+    private final tn.finhub.dao.MarketDAO marketDAO = new tn.finhub.dao.MarketDAO();
+    private final tn.finhub.service.MarketDataService marketDataService = new tn.finhub.service.MarketDataService();
     private Wallet currentWallet;
 
     @FXML
@@ -147,6 +149,14 @@ public class WalletController {
     @FXML
     public void initialize() {
         loadWalletData();
+        startAutoRefresh();
+    }
+
+    private void startAutoRefresh() {
+        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(31), e -> loadWalletData()));
+        timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        timeline.play();
     }
 
     private void loadWalletData() {
@@ -174,8 +184,7 @@ public class WalletController {
                 if (isFrozen && frozenAlertBox.getChildren().size() > 1) {
                     tn.finhub.model.LedgerFlag flag = walletService.getLatestFlag(currentWallet.getId());
                     if (flag != null) {
-                        javafx.scene.Node descNode = frozenAlertBox.getChildren().get(1); // 2nd child is description
-
+                        // Logic for setting flag description if needed
                     }
                 }
             } else {
@@ -211,9 +220,31 @@ public class WalletController {
         cardsContainer.getChildren().clear();
         List<VirtualCard> cards = virtualCardService.getCardsByWallet(walletId);
 
+        // Left Wrapper (Aligns with Available Balance Card)
+        javafx.scene.layout.HBox leftWrapper = new javafx.scene.layout.HBox(15);
+        leftWrapper.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        javafx.scene.layout.HBox.setHgrow(leftWrapper, javafx.scene.layout.Priority.ALWAYS);
+        leftWrapper.setMinWidth(0);
+        leftWrapper.setPrefWidth(0); // Force equal distribution start point
+
         for (VirtualCard card : cards) {
-            cardsContainer.getChildren().add(createVirtualCardNode(card));
+            leftWrapper.getChildren().add(createVirtualCardNode(card));
         }
+
+        // Right Wrapper (Aligns with Escrow Card - Centers Portfolio Card)
+        javafx.scene.layout.VBox rightWrapper = new javafx.scene.layout.VBox();
+        javafx.scene.layout.HBox.setHgrow(rightWrapper, javafx.scene.layout.Priority.ALWAYS);
+        rightWrapper.setMinWidth(0);
+        rightWrapper.setPrefWidth(0); // Force equal distribution start point
+        rightWrapper.setAlignment(javafx.geometry.Pos.TOP_LEFT); // Default VBox fill behavior works best without
+                                                                 // centering alignment on the box itself if we want
+                                                                 // fill. But child is max_value.
+
+        if (walletId > 0) {
+            rightWrapper.getChildren().add(createPortfolioPerformanceNode(walletId));
+        }
+
+        cardsContainer.getChildren().addAll(leftWrapper, rightWrapper);
 
         // Disable/Hide generate button if a card exists (Max 1)
         if (!cards.isEmpty()) {
@@ -565,5 +596,225 @@ public class WalletController {
             default ->
                 "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z";
         };
+    }
+
+    private javafx.scene.Node createPortfolioPerformanceNode(int walletId) {
+        VBox node = new VBox(15);
+        node.setPrefHeight(220);
+        node.setMinHeight(220);
+        node.setMaxWidth(Double.MAX_VALUE); // Allow growing to fill width
+        node.getStyleClass().add("card-total"); // Use consistent theme style
+
+        // Header
+        HBox header = new HBox();
+        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        Label title = new Label("Market Portfolio");
+        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;");
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        // Live Indicator
+        javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(3, javafx.scene.paint.Color.valueOf("#10B981"));
+        Label live = new Label(" LIVE");
+        live.setStyle("-fx-text-fill: #10B981; -fx-font-size: 10px; -fx-font-weight: bold;");
+        HBox badge = new HBox(dot, live);
+        badge.setAlignment(javafx.geometry.Pos.CENTER);
+        badge.setStyle("-fx-background-color: rgba(16, 185, 129, 0.1); -fx-padding: 4 8; -fx-background-radius: 10;");
+
+        header.getChildren().addAll(title, spacer, badge);
+
+        // Calculate PnL
+        tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
+        int userId = user != null ? user.getId() : 0;
+
+        java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal currentValue = java.math.BigDecimal.ZERO;
+
+        java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.valueOf(-9999);
+        String bestAsset = "None";
+        int assetCount = 0;
+
+        java.util.List<tn.finhub.model.PortfolioItem> items = marketDAO.getPortfolio(userId);
+        java.math.BigDecimal exchangeRate = marketDataService.getUsdToTndRate(); // Ensure TND conversion
+
+        for (tn.finhub.model.PortfolioItem item : items) {
+            if (item.getQuantity().compareTo(java.math.BigDecimal.ZERO) > 0) {
+                assetCount++;
+                // Invested (Cost Basis) - Stored in USD usually, convert to TND
+                // But wait, averageCost in SimulationService was stored in USD.
+                // Let's assume averageCost is USD.
+                java.math.BigDecimal investedUSD = item.getAverageCost().multiply(item.getQuantity());
+                totalInvested = totalInvested.add(investedUSD.multiply(exchangeRate));
+
+                // Current Value
+                tn.finhub.model.MarketPrice price = marketDataService.getPrice(item.getSymbol());
+                if (price != null) {
+                    java.math.BigDecimal valUSD = price.getPrice().multiply(item.getQuantity());
+                    currentValue = currentValue.add(valUSD.multiply(exchangeRate));
+
+                    // Check Logic for Best Performer (based on individual item PnL %)
+                    if (item.getAverageCost().doubleValue() > 0) {
+                        java.math.BigDecimal itemPnlPct = (price.getPrice().subtract(item.getAverageCost()))
+                                .divide(item.getAverageCost(), 4, java.math.RoundingMode.HALF_UP)
+                                .multiply(java.math.BigDecimal.valueOf(100));
+
+                        if (itemPnlPct.compareTo(maxPnlPercent) > 0) {
+                            maxPnlPercent = itemPnlPct;
+                            bestAsset = item.getSymbol();
+                        }
+                    }
+                }
+            }
+        }
+
+        java.math.BigDecimal pnl = currentValue.subtract(totalInvested);
+        double pnlValue = pnl.doubleValue();
+        double percent = (totalInvested.doubleValue() > 0) ? (pnlValue / totalInvested.doubleValue()) * 100 : 0;
+
+        // Limit PnL decimal points
+        String pnlStr = String.format("%.2f", pnlValue);
+        String pctStr = String.format("%.2f%%", percent);
+        boolean isProfit = pnlValue >= 0;
+        String color = isProfit ? "#10B981" : "#EF4444";
+        String sign = isProfit ? "+" : "";
+
+        // --- Main Content Row (Horizontal Split) ---
+        HBox contentRow = new HBox(20);
+        contentRow.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT); // Align to bottom baseline
+        VBox.setVgrow(contentRow, javafx.scene.layout.Priority.ALWAYS); // Fill height
+
+        // 1. Left Side: Total Value
+        VBox leftSide = new VBox(5);
+        leftSide.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT); // Bottom aligned
+
+        String valText = "TND " + String.format("%.2f", currentValue.doubleValue());
+        Label valLabel = new Label(valText);
+
+        // Auto-Resize Logic (Simple Length Heuristic)
+        int len = valText.length();
+        int fontSize = 32;
+        if (len > 18)
+            fontSize = 18;
+        else if (len > 14)
+            fontSize = 22;
+        else if (len > 10)
+            fontSize = 26;
+
+        valLabel.setStyle("-fx-text-fill: white; -fx-font-size: " + fontSize + "px; -fx-font-weight: bold;");
+
+        Label subLabel = new Label("Total Asset Value");
+        subLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 12px;");
+
+        leftSide.getChildren().addAll(valLabel, subLabel);
+
+        // Spacer between left and right
+        javafx.scene.layout.Region midSpacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(midSpacer, javafx.scene.layout.Priority.ALWAYS);
+
+        // 2. Right Side: PnL & Invested
+        VBox rightSide = new VBox(8);
+        rightSide.setAlignment(javafx.geometry.Pos.BOTTOM_RIGHT); // Bottom aligned (Baseline match)
+
+        // PnL Badge (Row)
+        HBox pnlBadge = new HBox(10);
+        pnlBadge.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        String pnlText = sign + "TND " + pnlStr;
+        Label pnlAmtLabel = new Label(pnlText);
+
+        // PnL Resize Logic
+        int pnlSize = 14;
+        if (pnlText.length() > 12)
+            pnlSize = 11;
+
+        pnlAmtLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: " + pnlSize + "px; -fx-font-weight: bold;");
+
+        Label pnlPctLabel = new Label(sign + pctStr);
+        pnlPctLabel.setStyle("-fx-text-fill: " + color + "; -fx-background-color: "
+                + (isProfit ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)")
+                + "; -fx-padding: 3 8; -fx-background-radius: 6; -fx-font-size: 12px; -fx-font-weight: bold;");
+
+        pnlBadge.getChildren().addAll(pnlAmtLabel, pnlPctLabel);
+
+        // Invested Label
+        Label investedLabel = new Label("Est. Cost: TND " + String.format("%.2f", totalInvested.doubleValue()));
+        investedLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+
+        rightSide.getChildren().addAll(pnlBadge, investedLabel);
+
+        contentRow.getChildren().addAll(leftSide, midSpacer, rightSide);
+
+        // --- Footer Row (New Details) ---
+        javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
+        sep.setStyle("-fx-opacity: 0.1; -fx-background-color: white;");
+
+        HBox footerRow = new HBox(20);
+        footerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // Detail 1: Asset Count
+        HBox assetDetail = new HBox(5);
+        assetDetail.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        javafx.scene.shape.SVGPath assetIcon = new javafx.scene.shape.SVGPath();
+        assetIcon.setContent("M4 6h16v2H4zm2 4h12v2H6zm2 4h8v2H8z"); // Simple stack icon
+        assetIcon.setStyle("-fx-fill: #9CA3AF;");
+        Label assetLbl = new Label(assetCount + " Assets");
+        assetLbl.setStyle("-fx-text-fill: #D1D5DB; -fx-font-size: 11px; -fx-font-weight: bold;");
+        assetDetail.getChildren().addAll(assetIcon, assetLbl);
+
+        // Detail 2: Best Performer
+        HBox perfDetail = new HBox(5);
+        perfDetail.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        javafx.scene.shape.SVGPath starIcon = new javafx.scene.shape.SVGPath();
+        starIcon.setContent(
+                "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z");
+        starIcon.setStyle("-fx-fill: #F59E0B;"); // Gold/Orange star
+
+        String perfText = "Top: " + (bestAsset.equals("None") ? bestAsset : bestAsset.toUpperCase());
+        if (!"None".equals(bestAsset)) {
+            perfText += String.format(" (%+.2f%%)", maxPnlPercent.doubleValue());
+        }
+        Label perfLbl = new Label(perfText);
+        perfLbl.setStyle("-fx-text-fill: #D1D5DB; -fx-font-size: 11px; -fx-font-weight: bold;");
+        perfDetail.getChildren().addAll(starIcon, perfLbl);
+
+        footerRow.getChildren().addAll(assetDetail, perfDetail);
+
+        node.getChildren().addAll(header, contentRow, sep, footerRow);
+
+        // Make Clickable
+        node.setCursor(javafx.scene.Cursor.HAND);
+        node.setOnMouseClicked(e -> navigateToMarket());
+
+        return node;
+    }
+
+    private void navigateToMarket() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/financial_twin.fxml"));
+            javafx.scene.Parent view = loader.load();
+
+            javafx.scene.Scene scene = cardsContainer.getScene();
+            if (scene != null) {
+                // Target the inner dashboard content container (inside UserDashboard)
+                // This preserves the sidebar!
+                javafx.scene.layout.StackPane dashboardContent = (javafx.scene.layout.StackPane) scene
+                        .lookup("#dashboardContent");
+
+                if (dashboardContent != null) {
+                    dashboardContent.getChildren().setAll(view);
+                } else {
+                    // Fallback: If we assume we are not in dashboard (shouldn't happen), try main
+                    // content
+                    javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) scene
+                            .lookup("#contentArea");
+                    if (contentArea != null) {
+                        contentArea.getChildren().setAll(view);
+                    }
+                }
+            }
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
     }
 }

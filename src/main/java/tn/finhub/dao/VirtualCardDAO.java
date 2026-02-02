@@ -9,8 +9,6 @@ import java.util.List;
 
 public class VirtualCardDAO {
 
-    private Connection connection = DBConnection.getInstance();
-
     public VirtualCardDAO() {
         createTableIfNotExists();
     }
@@ -28,7 +26,8 @@ public class VirtualCardDAO {
                         FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
                     )
                 """;
-        try (Statement stmt = connection.createStatement()) {
+        try (Connection connection = DBConnection.getInstance();
+                Statement stmt = connection.createStatement()) {
             stmt.execute(sql);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create virtual_cards table", e);
@@ -37,7 +36,8 @@ public class VirtualCardDAO {
 
     public void save(VirtualCard card) {
         String sql = "INSERT INTO virtual_cards (wallet_id, card_number, cvv, expiry_date, status) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = DBConnection.getInstance();
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, card.getWalletId());
             ps.setString(2, card.getCardNumber());
             ps.setString(3, card.getCvv());
@@ -57,7 +57,8 @@ public class VirtualCardDAO {
     public List<VirtualCard> findByWalletId(int walletId) {
         List<VirtualCard> cards = new ArrayList<>();
         String sql = "SELECT * FROM virtual_cards WHERE wallet_id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DBConnection.getInstance();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -78,7 +79,8 @@ public class VirtualCardDAO {
 
     public VirtualCard findByCardNumber(String cardNumber) {
         String sql = "SELECT * FROM virtual_cards WHERE card_number = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DBConnection.getInstance();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, cardNumber);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {

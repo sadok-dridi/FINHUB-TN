@@ -55,10 +55,20 @@ public class FinancialTwinController {
     private double currentExpenses = 0;
 
     @FXML
+    private TabPane mainTabPane;
+    @FXML
+    private Tab marketTab;
+
+    @FXML
     public void initialize() {
         setupListeners();
         loadUserProfile();
         setupMarket();
+
+        // Default to Market Tab
+        if (mainTabPane != null && marketTab != null) {
+            mainTabPane.getSelectionModel().select(marketTab);
+        }
     }
 
     private void setupListeners() {
@@ -386,18 +396,36 @@ public class FinancialTwinController {
         // Initial fetch
         handleRefreshMarket();
         updatePortfolioSummary();
+
+        // Auto-Select Bitcoin
+        assetListView.getSelectionModel().select("bitcoin");
+
+        startAutoRefresh();
+    }
+
+    // Auto-Refresh Logic
+    private void startAutoRefresh() {
+        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(30), e -> handleRefreshMarket()));
+        timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        timeline.play();
+    }
+
+    private void handleRefreshMarket() {
+        new Thread(() -> {
+            // FORCE refresh in background to bypass the 60s read cache
+            marketDataService.getPrices(TRACKED_ASSETS, true);
+            javafx.application.Platform.runLater(() -> {
+                if (selectedAsset != null)
+                    selectAsset(selectedAsset); // Will read from fresh cache
+                assetListView.refresh();
+            });
+        }).start();
     }
 
     @FXML
-    private void handleRefreshMarket() {
-        new Thread(() -> {
-            marketDataService.getPrices(TRACKED_ASSETS);
-            javafx.application.Platform.runLater(() -> {
-                if (selectedAsset != null)
-                    selectAsset(selectedAsset);
-                assetListView.refresh(); // Triggers cell factory if we had one
-            });
-        }).start();
+    public void handleRefreshMarket(javafx.event.ActionEvent actionEvent) {
+        // Disabled manual refresh as per user request
     }
 
     private void selectAsset(String symbol) {
@@ -578,16 +606,11 @@ public class FinancialTwinController {
     private final String[] TRACKED_ASSETS = {
             "bitcoin", "ethereum", "binancecoin", "solana", "ripple",
             "cardano", "avalanche-2", "dogecoin", "polkadot", "tron",
-            "chainlink", "matic-network", "shiba-inu", "litecoin", "bitcoin-cash",
+            "chainlink", "shiba-inu", "litecoin", "bitcoin-cash",
             "uniswap", "stellar", "monero", "ethereum-classic", "near",
             "filecoin", "internet-computer", "apecoin", "algorand", "vechain",
             "cosmos", "decentraland", "the-sandbox", "aave", "tezos"
     };
-
-    @FXML
-    public void handleRefreshMarket(javafx.event.ActionEvent actionEvent) {
-        handleRefreshMarket();
-    }
 
     private String getTicker(String symbol) {
         if (symbol == null)

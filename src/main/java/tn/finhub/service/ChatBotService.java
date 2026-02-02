@@ -10,8 +10,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class ChatBotService {
 
@@ -22,12 +23,27 @@ public class ChatBotService {
     // "Consumes OS usage" instead of "API Quota"
     private static final boolean USE_LOCAL_LLM = true;
 
-    private static final String GEMINI_API_KEY = "AIzaSyAxRwRvXVIib04wCqCxm9XoX7JRaY24aMs";
+    private static final String GEMINI_API_KEY = "AIzaSyAKBNkr6eyRpt93Cglish-LG0WXJp1Gw8g";
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
             + GEMINI_API_KEY;
 
-    private static final String OLLAMA_URL = "http://localhost:11434/api/generate";
-    private static final String OLLAMA_MODEL = "mistral"; // Standard fast model, user must have this pulled
+    // Ollama Configuration
+    private static final String OLLAMA_CHAT_URL = "http://localhost:11434/api/chat";
+    private static final String OLLAMA_MODEL = "mistral:7b-instruct"; // Optimized model for 3060 6GB
+    private static final int MAX_HISTORY = 10; // Keep last 10 messages for context
+    private static final int CONTEXT_WINDOW = 4096; // 4k context fits well in 6GB VRAM with minimal offloading issues
+
+    // Conversation History (in-memory per session)
+    private final JSONArray conversationHistory;
+
+    public ChatBotService() {
+        this.conversationHistory = new JSONArray();
+        // Initialize with system prompt
+        JSONObject systemMessage = new JSONObject();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", getSystemPrompt());
+        this.conversationHistory.put(systemMessage);
+    }
 
     public String getResponse(String userMessage) {
         if (userMessage == null || userMessage.trim().isEmpty()) {
@@ -36,16 +52,20 @@ public class ChatBotService {
 
         // 1. Local Knowledge Base (Always check first for speed)
         List<KnowledgeBase> matches = kbDAO.searchArticles(userMessage);
-        // If we want to strictly use AI, we can skip this, but it's good practice.
-        // For now, let's just use it as context if needed, or return if extremely
-        // confident.
+
+        // Append context from KB if found (Optional enhancement: inject KB results into
+        // system prompt)
+        String finalPrompt = userMessage;
+        if (!matches.isEmpty()) {
+            finalPrompt += "\n\n(Relevant Context from FinHub Knowledge Base: " + matches.get(0).getAnswer() + ")";
+        }
 
         // 2. Determine AI Provider
         try {
             if (USE_LOCAL_LLM) {
-                return callOllamaAPI(userMessage);
+                return callOllamaChatAPI(finalPrompt);
             } else {
-                return callGeminiAPI(userMessage);
+                return callGeminiAPI(finalPrompt);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,6 +81,9 @@ public class ChatBotService {
 
     // --- Google Gemini (Cloud) ---
     private String callGeminiAPI(String prompt) throws Exception {
+        // Gemini REST API is stateless, so we just send the current prompt (unless we
+        // implement full history there too)
+        // For now maintaining statelessness for Cloud to save tokens.
         String systemContext = getSystemPrompt();
         String fullPrompt = systemContext + "\n\nUser: " + prompt;
 
@@ -96,19 +119,41 @@ public class ChatBotService {
     }
 
     // --- Ollama (Local OS Usage) ---
-    private String callOllamaAPI(String prompt) throws Exception {
-        String systemContext = getSystemPrompt();
+    private String callOllamaChatAPI(String userText) throws Exception {
+        // 1. Add User Message to History
+        JSONObject userMsg = new JSONObject();
+        userMsg.put("role", "user");
+        userMsg.put("content", userText);
+        conversationHistory.put(userMsg);
 
-        // Ollama JSON format: { "model": "mistral", "prompt": "...", "stream": false }
+        // 2. Prune History if too long (Keep System Prompt at index 0)
+        while (conversationHistory.length() > MAX_HISTORY) {
+            // Remove the second item (index 1), keeping the System Prompt (index 0)
+            conversationHistory.remove(1);
+        }
+
+        // 3. Build Payload
         JSONObject payload = new JSONObject();
         payload.put("model", OLLAMA_MODEL);
-        payload.put("prompt", systemContext + "\n\nUser: " + prompt + "\nAssistant:");
+        payload.put("messages", conversationHistory);
         payload.put("stream", false);
 
-        HttpClient client = HttpClient.newHttpClient();
+        // Optimization Options for RTX 3060 / Ryzen 9
+        JSONObject options = new JSONObject();
+        options.put("num_ctx", CONTEXT_WINDOW); // 4096 context window
+        options.put("temperature", 0.7); // Balanced creativity
+        // options.put("num_gpu", -1); // -1 = Auto. Ollama usually handles this well.
+        payload.put("options", options);
+
+        // 4. Send Request
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10)) // Fast connect
+                .build();
+
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(OLLAMA_URL))
+                .uri(URI.create(OLLAMA_CHAT_URL))
                 .header("Content-Type", "application/json")
+                .timeout(Duration.ofMinutes(2)) // Long timeout for generation
                 .POST(HttpRequest.BodyPublishers.ofString(payload.toString(), StandardCharsets.UTF_8))
                 .build();
 
@@ -116,17 +161,47 @@ public class ChatBotService {
 
         if (response.statusCode() == 200) {
             JSONObject json = new JSONObject(response.body());
-            if (json.has("response")) {
-                return json.getString("response");
+            if (json.has("message")) {
+                JSONObject msgContent = json.getJSONObject("message");
+                String assistantResponse = msgContent.getString("content");
+
+                // 5. Add Assistant Response to History
+                JSONObject assistMsg = new JSONObject();
+                assistMsg.put("role", "assistant");
+                assistMsg.put("content", assistantResponse);
+                conversationHistory.put(assistMsg);
+
+                return assistantResponse;
             }
         }
-        return "Ollama Error: " + response.statusCode();
+        return "Ollama Error: " + response.statusCode() + " - " + response.body();
     }
 
     private String getSystemPrompt() {
-        return "You are the FinHub Assistant. " +
-                "Help users with wallets, transactions, escrow, and security. " +
-                "Keep answers concise and helpful.";
+        return "You are **FinHub Prime**, the advanced AI guardian of the FinHub Financial Ecosystem. " +
+                "You are running locally on high-performance hardware (Ryzen 9 5900HX, RTX 3060), ensuring maximum privacy and speed.\n\n"
+                +
+
+                "**YOUR MISSION:**\n" +
+                "1. **Empower Users**: Guide them through complex financial tasks (wallets, transactions, escrow) with absolute clarity.\n"
+                +
+                "2. **Guard Security**: relentlessly warn against scams, verify transaction details, and explain security features like 2FA and cold storage.\n"
+                +
+                "3. **Analyze Data**: When asked, interpret market trends or portfolio performance using your deep financial knowledge.\n\n"
+                +
+
+                "**YOUR PERSONALITY:**\n" +
+                "- **Professional & Precise**: Use financial terminology correcty but explain it simply if asked.\n" +
+                "- **Proactive**: Don't just answer; suggest the next logical step (e.g., 'Your wallet is created. Would you like to enable 2FA now?').\n"
+                +
+                "- **Concise**: Your users are busy traders. Get to the point.\n\n" +
+
+                "**CRITICAL INSTRUCTIONS:**\n" +
+                "- If the user asks about the 'Financial Twin', explain it is their AI-powered market simulation clone.\n"
+                +
+                "- If asked about 'Frozen Wallets', explain it's a security measure against suspicious activity.\n" +
+                "- NEVER ask for private keys or passwords.\n" +
+                "- Use Markdown formatting (bolding key terms, lists) to make your answers readable.";
     }
 
     private String parseGeminiResponse(String jsonBody) {

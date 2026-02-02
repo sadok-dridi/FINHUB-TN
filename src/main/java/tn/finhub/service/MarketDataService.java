@@ -19,10 +19,11 @@ import java.util.Map;
 public class MarketDataService {
 
     private final MarketDAO marketDAO = new MarketDAO();
-    private static final long CACHE_DURATION_MS = 60 * 1000; // 1 minute cache
+    private static final long CACHE_DURATION_MS = 60 * 1000; // 60s Cache (Read Validity) to prevent click-fetches
 
     // CoinGecko API
     private static final String API_URL = "https://api.coingecko.com/api/v3/simple/price";
+    private static final String API_KEY = "CG-JVAMazhKMhpBEtBn7wRQ4iY7"; // User API Key
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -30,36 +31,47 @@ public class MarketDataService {
     private static long apiBlockedUntil = 0;
     private static final long BLOCK_DURATION_MS = 60 * 1000; // Block for 1 min if 429 occurs
 
+    public void forceRefreshPrices(String[] symbols) {
+        if (System.currentTimeMillis() < apiBlockedUntil)
+            return;
+
+        // Unconditionally fetch and update cache
+        // Unconditionally fetch and update cache
+        fetchFromApi(symbols);
+        // fetchFromApi already saves to marketDAO
+    }
+
     public MarketPrice getPrice(String symbol) {
         // CoinGecko uses IDs (e.g., "bitcoin"), assume symbol is the ID here
         // 1. Check local DB/Cache
         MarketPrice cached = marketDAO.getPrice(symbol);
-        boolean isCacheValid = false;
 
+        // ALWAYS return cached if available (assume background loop keeps it fresh)
+        // Only fetch if absolutely nothing exists
         if (cached != null) {
-            long age = System.currentTimeMillis() - cached.getLastUpdated().getTime();
-            if (age < CACHE_DURATION_MS) {
-                isCacheValid = true;
-            }
-        }
-
-        // Return cached if valid OR if API is blocked
-        if (isCacheValid || System.currentTimeMillis() < apiBlockedUntil) {
             return cached;
         }
 
-        // 2. Fetch from API (Individual fetch is inefficient on CoinGecko, but
-        // supported)
+        // Return cached if valid OR if API is blocked
+        if (System.currentTimeMillis() < apiBlockedUntil) {
+            return cached;
+        }
+
+        // 2. Fetch from API (Fallback for first load)
         return fetchFromApi(new String[] { symbol }).get(symbol);
     }
 
     public Map<String, MarketPrice> getPrices(String[] symbols) {
+        return getPrices(symbols, false);
+    }
+
+    public Map<String, MarketPrice> getPrices(String[] symbols, boolean forceRefresh) {
         Map<String, MarketPrice> results = new HashMap<>();
 
         // 1. Check if we really need to fetch
         // Collect symbols that need updating
         StringBuilder idsToFetch = new StringBuilder();
-        boolean needsFetch = false;
+        boolean needsFetch = forceRefresh; // Start true if forcing
 
         for (String s : symbols) {
             MarketPrice cached = marketDAO.getPrice(s);
@@ -72,7 +84,7 @@ public class MarketDataService {
                 }
             }
 
-            if (!valid) {
+            if (!valid && !forceRefresh) {
                 if (idsToFetch.length() > 0)
                     idsToFetch.append(",");
                 idsToFetch.append(s);
@@ -80,11 +92,18 @@ public class MarketDataService {
             }
         }
 
+        if (forceRefresh) {
+            // Fetch ALL requested
+            Map<String, MarketPrice> fresh = fetchFromApi(symbols);
+            results.putAll(fresh);
+            return results;
+        }
+
         if (!needsFetch || System.currentTimeMillis() < apiBlockedUntil) {
             return results;
         }
 
-        // 2. Fetch from API
+        // 2. Fetch from API (Partial)
         Map<String, MarketPrice> freshPrices = fetchFromApi(idsToFetch.toString().split(","));
         results.putAll(freshPrices);
 
@@ -97,7 +116,9 @@ public class MarketDataService {
             return fetched;
 
         String ids = String.join(",", symbols);
-        String uri = API_URL + "?ids=" + ids + "&vs_currencies=usd&include_24hr_change=true";
+        // Append API Key
+        String uri = API_URL + "?ids=" + ids + "&vs_currencies=usd&include_24hr_change=true" + "&x_cg_demo_api_key="
+                + API_KEY;
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -155,7 +176,8 @@ public class MarketDataService {
         if (System.currentTimeMillis() < apiBlockedUntil)
             return history;
 
-        String uri = "https://api.coingecko.com/api/v3/coins/" + symbol + "/market_chart?vs_currency=usd&days=1";
+        String uri = "https://api.coingecko.com/api/v3/coins/" + symbol + "/market_chart?vs_currency=usd&days=1"
+                + "&x_cg_demo_api_key=" + API_KEY;
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -198,7 +220,8 @@ public class MarketDataService {
         if (System.currentTimeMillis() < apiBlockedUntil)
             return ohlcList;
 
-        String uri = "https://api.coingecko.com/api/v3/coins/" + symbol + "/ohlc?vs_currency=usd&days=1";
+        String uri = "https://api.coingecko.com/api/v3/coins/" + symbol + "/ohlc?vs_currency=usd&days=1"
+                + "&x_cg_demo_api_key=" + API_KEY;
 
         try {
             HttpRequest request = HttpRequest.newBuilder()

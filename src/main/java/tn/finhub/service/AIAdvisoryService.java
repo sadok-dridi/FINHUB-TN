@@ -16,13 +16,13 @@ public class AIAdvisoryService {
 
         if (riskProfile.equalsIgnoreCase("LOW")) {
             if (highVol)
-                return "⚠️ High Volatility. WAIT.";
+                return " High Volatility. WAIT.";
             if (upTrend)
-                return "✅ Steady Growth. BUY.";
+                return " Steady Growth. BUY.";
             return "HOLD";
         } else if (riskProfile.equalsIgnoreCase("HIGH")) {
             if (highVol && !upTrend)
-                return "🚀 Dip Opportunity. BUY.";
+                return " Dip Opportunity. BUY.";
             if (upTrend)
                 return "takeprofit? CONSIDER SELL.";
             return "HOLD";
