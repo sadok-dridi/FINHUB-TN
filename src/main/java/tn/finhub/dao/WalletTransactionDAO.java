@@ -98,4 +98,19 @@ public class WalletTransactionDAO {
         }
         return null; // Genesis
     }
+
+    public void update(int txId, BigDecimal amount, String type, String reference, String txHash, String prevHash) {
+        String sql = "UPDATE wallet_transactions SET amount = ?, type = ?, reference = ?, tx_hash = ?, prev_hash = ? WHERE id = ?";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.setBigDecimal(1, amount);
+            ps.setString(2, type);
+            ps.setString(3, reference);
+            ps.setString(4, txHash);
+            ps.setString(5, prevHash);
+            ps.setInt(6, txId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error updating transaction", e);
+        }
+    }
 }

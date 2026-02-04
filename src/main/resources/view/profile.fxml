@@ -66,6 +66,32 @@
                     <Button text="Update Financial Profile" onAction="#handleUpdateProfile" styleClass="button-primary"/>
                 </HBox>
             </VBox>
+
+            <!-- Application Settings Section -->
+            <VBox styleClass="card" spacing="15">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="Application Settings" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <Label text="Configure application behavior and connections." styleClass="sub-header-text"/>
+
+                <GridPane hgap="20" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="100" prefWidth="150"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="Database Connection" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="dbModeBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                    <Label text="Market Data API Key" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="apiKeyField" promptText="Leave empty to use .env default" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                </GridPane>
+                
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                   <Button text="Save Settings" onAction="#handleSaveSettings" styleClass="button-primary"/>
+                </HBox>
+            </VBox>
             
         </VBox>
     </content>

@@ -31,11 +31,17 @@ public class ProfileController {
     private ComboBox<String> riskBox;
     @FXML
     private ComboBox<String> currencyBox;
+    @FXML
+    private ComboBox<String> dbModeBox;
+    @FXML
+    private TextField apiKeyField;
 
     @FXML
     private Label statusLabel;
 
     private final FinancialProfileService profileService = new FinancialProfileService();
+    private static final String PREF_DB_MODE = "db_mode";
+    private static final String PREF_API_KEY = "market_api_key";
 
     @FXML
     public void initialize() {
@@ -50,11 +56,27 @@ public class ProfileController {
         // Load Financial Profile
         setupFinancialFields();
         loadFinancialData();
+
+        // Load App Settings
+        setupSettings();
     }
 
     private void setupFinancialFields() {
         riskBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
         currencyBox.getItems().addAll("TND", "EUR", "USD");
+    }
+
+    private void setupSettings() {
+        dbModeBox.getItems().addAll("Hosted", "Local");
+        java.util.prefs.Preferences dbPrefs = java.util.prefs.Preferences
+                .userNodeForPackage(tn.finhub.util.DBConnection.class);
+        String currentMode = dbPrefs.get(PREF_DB_MODE, "Hosted");
+        dbModeBox.setValue(currentMode);
+
+        java.util.prefs.Preferences apiPrefs = java.util.prefs.Preferences
+                .userNodeForPackage(tn.finhub.service.MarketDataService.class);
+        String currentKey = apiPrefs.get(PREF_API_KEY, "");
+        apiKeyField.setText(currentKey);
     }
 
     private void loadFinancialData() {
@@ -107,11 +129,50 @@ public class ProfileController {
         }
     }
 
+    @FXML
+    private void handleSaveSettings() {
+        try {
+            // DB Settings
+            String selectedMode = dbModeBox.getValue();
+            if (selectedMode != null) {
+                java.util.prefs.Preferences dbPrefs = java.util.prefs.Preferences
+                        .userNodeForPackage(tn.finhub.util.DBConnection.class);
+                String currentMode = dbPrefs.get(PREF_DB_MODE, "Hosted");
+
+                if (!selectedMode.equals(currentMode)) {
+                    dbPrefs.put(PREF_DB_MODE, selectedMode);
+                    // Reset connection to force reconnection with new settings
+                    tn.finhub.util.DBConnection.resetConnection();
+                    showStatus("Switched to " + selectedMode + " DB. Restart recommended.");
+                } else {
+                    showStatus("Settings saved.");
+                }
+            }
+
+            // API Key Settings
+            String newApiKey = apiKeyField.getText();
+            java.util.prefs.Preferences apiPrefs = java.util.prefs.Preferences
+                    .userNodeForPackage(tn.finhub.service.MarketDataService.class);
+            if (newApiKey == null || newApiKey.isBlank()) {
+                apiPrefs.remove(PREF_API_KEY);
+            } else {
+                apiPrefs.put(PREF_API_KEY, newApiKey.trim());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            showStatus("Error saving settings.");
+            statusLabel.setTextFill(javafx.scene.paint.Color.RED);
+        }
+    }
+
     private void showStatus(String message) {
         statusLabel.setText(message);
         statusLabel.setVisible(true);
-        if (message.contains("Successfully")) {
+        if (message.contains("Successfully") || message.contains("saved") || message.contains("Switched")) {
             statusLabel.setTextFill(javafx.scene.paint.Color.web("#10B981"));
+        } else {
+            statusLabel.setTextFill(javafx.scene.paint.Color.RED);
         }
 
         PauseTransition pause = new PauseTransition(Duration.seconds(3));

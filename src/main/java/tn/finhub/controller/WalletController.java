@@ -165,8 +165,10 @@ public class WalletController {
             return;
         int userId = user.getId();
 
-        // Ensure wallet exists
-        walletService.createWalletIfNotExists(userId);
+        // Ensure wallet exists ONLY for regular users
+        if ("USER".equalsIgnoreCase(user.getRole())) {
+            walletService.createWalletIfNotExists(userId);
+        }
 
         currentWallet = walletService.getWallet(userId);
         if (currentWallet != null) {

@@ -262,4 +262,19 @@ public class AdminUserController {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    public void handleGoToTransactions() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/admin_transactions.fxml"));
+            javafx.scene.Parent view = loader.load();
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
+                    .lookup("#contentArea");
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(view);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

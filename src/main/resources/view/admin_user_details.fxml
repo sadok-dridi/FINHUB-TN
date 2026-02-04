@@ -27,6 +27,7 @@
             
             <!-- Highlight Users button as active/related -->
             <Button text="Users" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 8px; -fx-padding: 10; -fx-cursor: hand;"/>
+            <Button text="Transactions" onAction="#handleGoToTransactions" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Analytics" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Settings" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             

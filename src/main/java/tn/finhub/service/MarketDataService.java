@@ -23,7 +23,21 @@ public class MarketDataService {
 
     // CoinGecko API
     private static final String API_URL = "https://api.coingecko.com/api/v3/simple/price";
-    private static final String API_KEY = "CG-JVAMazhKMhpBEtBn7wRQ4iY7"; // User API Key
+
+    private String getApiKey() {
+        // 1. Check User Preferences (Overridden by UI)
+        java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(MarketDataService.class);
+        String prefKey = prefs.get("market_api_key", null);
+        if (prefKey != null && !prefKey.isBlank()) {
+            return prefKey;
+        }
+
+        // 2. Check .env
+        io.github.cdimascio.dotenv.Dotenv dotenv = io.github.cdimascio.dotenv.Dotenv.configure().ignoreIfMissing()
+                .load();
+        return dotenv.get("MARKET_API_KEY");
+    }
+
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -118,7 +132,7 @@ public class MarketDataService {
         String ids = String.join(",", symbols);
         // Append API Key
         String uri = API_URL + "?ids=" + ids + "&vs_currencies=usd&include_24hr_change=true" + "&x_cg_demo_api_key="
-                + API_KEY;
+                + getApiKey();
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -177,7 +191,7 @@ public class MarketDataService {
             return history;
 
         String uri = "https://api.coingecko.com/api/v3/coins/" + symbol + "/market_chart?vs_currency=usd&days=1"
-                + "&x_cg_demo_api_key=" + API_KEY;
+                + "&x_cg_demo_api_key=" + getApiKey();
 
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -221,7 +235,7 @@ public class MarketDataService {
             return ohlcList;
 
         String uri = "https://api.coingecko.com/api/v3/coins/" + symbol + "/ohlc?vs_currency=usd&days=1"
-                + "&x_cg_demo_api_key=" + API_KEY;
+                + "&x_cg_demo_api_key=" + getApiKey();
 
         try {
             HttpRequest request = HttpRequest.newBuilder()

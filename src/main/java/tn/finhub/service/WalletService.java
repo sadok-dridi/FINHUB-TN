@@ -428,4 +428,86 @@ public class WalletService {
             System.err.println("Failed to ensure genesis transaction: " + e.getMessage());
         }
     }
+
+    // 🔧 REPAIR TRANSACTION (Data Restoration)
+    public void repairTransaction(int walletId, int txId, BigDecimal newAmount, String newRef) {
+        // Fetch the specific transaction to get its existing hashes
+        // We use the DAO's list method for now as we don't have findById
+        java.util.List<tn.finhub.model.WalletTransaction> txs = txDAO.findByWalletId(walletId);
+        tn.finhub.model.WalletTransaction targetTx = null;
+
+        for (tn.finhub.model.WalletTransaction tx : txs) {
+            if (tx.getId() == txId) {
+                targetTx = tx;
+                break;
+            }
+        }
+
+        if (targetTx == null) {
+            throw new RuntimeException("Transaction ID " + txId + " not found in wallet " + walletId);
+        }
+
+        // Update ONLY the data fields (Amount, Reference)
+        // We preserve the existing Hashes (TxHash, PrevHash) exactly as they are.
+        // The goal is to restore the data so it matches these hashes again.
+        txDAO.update(
+                targetTx.getId(),
+                newAmount,
+                targetTx.getType(),
+                newRef,
+                targetTx.getTxHash(), // Keep existing hash
+                targetTx.getPrevHash() // Keep existing prev hash
+        );
+
+        // Verify if this fix restored integrity
+        tryResolveFlags(walletId);
+    }
+
+    // 🕵️ AUDIT HEURISTIC: Calculate expected value based on balance discrepancy
+    public BigDecimal calculateDiscrepancy(int walletId, int txId, BigDecimal currentWrongAmount, String type) {
+        Wallet wallet = walletDAO.findById(walletId);
+        java.util.List<tn.finhub.model.WalletTransaction> txs = txDAO.findByWalletId(walletId);
+
+        BigDecimal calculatedBalance = BigDecimal.ZERO;
+
+        // 1. Calculate sum of all transactions as they currently are (including the
+        // error)
+        for (tn.finhub.model.WalletTransaction tx : txs) {
+            BigDecimal amt = tx.getAmount();
+            switch (tx.getType()) {
+                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS" ->
+                    calculatedBalance = calculatedBalance.add(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT" ->
+                    calculatedBalance = calculatedBalance.subtract(amt);
+            }
+        }
+
+        // 2. The difference between Calc and Real Balance is the error magnitude
+        // Error = Calc - Real
+        // If Error is Positive, the Ledger thinks we have MORE than we do -> One
+        // 'Credit' is too high or 'Debit' too low
+        BigDecimal error = calculatedBalance.subtract(wallet.getBalance());
+
+        // 3. Apply error correction to the specific transaction type
+        // If type adds to balance (Credit), we subtract the error to fix it.
+        // If type subtracts from balance (Debit), we add the error to fix it.
+        switch (type) {
+            case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS":
+                return currentWrongAmount.subtract(error);
+            case "DEBIT", "HOLD", "TRANSFER_SENT":
+                return currentWrongAmount.add(error); // (Debit is negative impact, so adding error reduces magnitude)
+            default:
+                return BigDecimal.ZERO;
+        }
+    }
+
+    public void tryResolveFlags(int walletId) {
+        if (verifyLedger(walletId) && verifyBalance(walletId)) {
+            ledgerDAO.deleteFlagsByWalletId(walletId);
+            unfreezeWallet(walletId);
+            System.out.println("✅ Wallet " + walletId + " repaired and unfrozen.");
+        } else {
+            System.err.println("⚠️ Repair attempted but validation still failed for Wallet " + walletId);
+        }
+    }
 }
