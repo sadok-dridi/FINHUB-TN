@@ -51,7 +51,7 @@ public class DBConnection {
                 }
 
                 java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(DBConnection.class);
-                String mode = prefs.get(PREF_DB_MODE, "Hosted"); // Default to Hosted as per user context
+                String mode = prefs.get(PREF_DB_MODE, "Hosted"); // Default to Hosted
 
                 String url, user, password;
 
@@ -74,6 +74,24 @@ public class DBConnection {
             logger.error("Database connection failed", e);
         }
         return instance;
+    }
+
+    public static Connection getLocalConnection() {
+        try {
+            return DriverManager.getConnection(URL_LOCAL, USER_LOCAL, PASSWORD_LOCAL);
+        } catch (SQLException e) {
+            logger.error("Failed to connect to LOCAL DB", e);
+            return null;
+        }
+    }
+
+    public static Connection getHostedConnection() {
+        try {
+            return DriverManager.getConnection(URL_HOSTED, USER_HOSTED, PASSWORD_HOSTED);
+        } catch (SQLException e) {
+            logger.error("Failed to connect to HOSTED DB", e);
+            throw new RuntimeException("Hosted DB Connection failed", e);
+        }
     }
 
     public static void resetConnection() {

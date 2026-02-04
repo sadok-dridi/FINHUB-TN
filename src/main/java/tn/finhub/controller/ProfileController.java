@@ -8,7 +8,8 @@ import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import tn.finhub.model.FinancialProfile;
 import tn.finhub.model.User;
-import tn.finhub.service.FinancialProfileService;
+import tn.finhub.model.FinancialProfileModel; // Added import
+
 import tn.finhub.util.SessionManager;
 import tn.finhub.util.UserSession;
 
@@ -39,7 +40,7 @@ public class ProfileController {
     @FXML
     private Label statusLabel;
 
-    private final FinancialProfileService profileService = new FinancialProfileService();
+    private final FinancialProfileModel profileModel = new FinancialProfileModel(); // Changed to Model
     private static final String PREF_DB_MODE = "db_mode";
     private static final String PREF_API_KEY = "market_api_key";
 
@@ -74,15 +75,15 @@ public class ProfileController {
         dbModeBox.setValue(currentMode);
 
         java.util.prefs.Preferences apiPrefs = java.util.prefs.Preferences
-                .userNodeForPackage(tn.finhub.service.MarketDataService.class);
+                .userNodeForPackage(tn.finhub.model.MarketModel.class);
         String currentKey = apiPrefs.get(PREF_API_KEY, "");
         apiKeyField.setText(currentKey);
     }
 
     private void loadFinancialData() {
         int userId = SessionManager.getUserId();
-        profileService.ensureProfile(userId); // Safety check
-        FinancialProfile profile = profileService.getByUserId(userId);
+        profileModel.ensureProfile(userId); // Safety check
+        FinancialProfile profile = profileModel.findByUserId(userId);
 
         if (profile != null) {
             incomeField.setText(String.valueOf(profile.getMonthlyIncome()));
@@ -115,7 +116,7 @@ public class ProfileController {
             // We need the ID for the update to work correctly if the DAO uses ID,
             // but the current update implementation uses userId so this is fine.
 
-            profileService.updateProfile(profile);
+            profileModel.update(profile);
 
             showStatus("Profile updated successfully!");
 
@@ -152,7 +153,7 @@ public class ProfileController {
             // API Key Settings
             String newApiKey = apiKeyField.getText();
             java.util.prefs.Preferences apiPrefs = java.util.prefs.Preferences
-                    .userNodeForPackage(tn.finhub.service.MarketDataService.class);
+                    .userNodeForPackage(tn.finhub.model.MarketModel.class);
             if (newApiKey == null || newApiKey.isBlank()) {
                 apiPrefs.remove(PREF_API_KEY);
             } else {

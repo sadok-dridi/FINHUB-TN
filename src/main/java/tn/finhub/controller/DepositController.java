@@ -3,7 +3,8 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.WalletModel; // Added import
+
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -25,7 +26,7 @@ public class DepositController {
     @FXML
     private javafx.scene.control.Button cancelButton;
 
-    private final WalletService walletService = new WalletService();
+    private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
     private Runnable onSuccessCallback;
 
     public void setOnSuccessCallback(Runnable callback) {
@@ -138,7 +139,7 @@ public class DepositController {
             }
 
             // 2. Luhn Algorithm
-            if (!tn.finhub.service.VirtualCardService.checkLuhn(cleanCardNumber)) {
+            if (!tn.finhub.model.VirtualCardModel.checkLuhn(cleanCardNumber)) {
                 DialogUtil.showError("Invalid Card", "Card number check failed (Luhn). Please check your card.");
                 return;
             }
@@ -196,18 +197,18 @@ public class DepositController {
                     String targetEmail = currentUser.getEmail();
 
                     // Check if card belongs to another internal user
-                    tn.finhub.service.VirtualCardService cardService = new tn.finhub.service.VirtualCardService();
-                    tn.finhub.model.Wallet cardOwnerWallet = cardService.findCardOwner(cleanCardNumber);
+                    tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                    tn.finhub.model.Wallet cardOwnerWallet = cardModel.findCardOwner(cleanCardNumber);
 
                     if (cardOwnerWallet != null) {
-                        tn.finhub.service.UserService userService = new tn.finhub.service.UserService();
-                        tn.finhub.model.User owner = userService.getUserById(cardOwnerWallet.getUserId());
+                        tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+                        tn.finhub.model.User owner = userModel.findById(cardOwnerWallet.getUserId());
                         if (owner != null) {
                             targetEmail = owner.getEmail();
                         }
                     }
 
-                    tn.finhub.service.MailService.sendOtpEmail(targetEmail, otp);
+                    tn.finhub.util.MailClient.sendOtpEmail(targetEmail, otp);
                     return null;
                 }
             };
@@ -278,10 +279,10 @@ public class DepositController {
 
                 // Actual Logic (DB Operations)
                 int userId = UserSession.getInstance().getUser().getId();
-                int userWalletId = walletService.getWallet(userId).getId();
+                int userWalletId = walletModel.findByUserId(userId).getId();
 
-                tn.finhub.service.VirtualCardService cardService = new tn.finhub.service.VirtualCardService();
-                tn.finhub.model.Wallet cardOwnerWallet = cardService.findCardOwner(cleanCardNumber);
+                tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                tn.finhub.model.Wallet cardOwnerWallet = cardModel.findCardOwner(cleanCardNumber);
 
                 if (cardOwnerWallet != null) {
                     // 1. Internal Transfer (P2P via Card)
@@ -290,7 +291,7 @@ public class DepositController {
                     }
 
                     // Verify CVV for Internal Cards matches DB
-                    tn.finhub.model.VirtualCard card = cardService.findCard(cleanCardNumber);
+                    tn.finhub.model.VirtualCard card = cardModel.findCard(cleanCardNumber);
                     if (!card.getCvv().equals(cvv)) {
                         throw new RuntimeException("Incorrect CVV.");
                     }
@@ -299,15 +300,15 @@ public class DepositController {
                     }
 
                     // Execute Transfer: Card Owner -> Current User
-                    walletService.transfer(cardOwnerWallet.getId(), userWalletId, amount,
+                    walletModel.transfer(cardOwnerWallet.getId(), userWalletId, amount,
                             "P2P Transfer via Card **** " + cleanCardNumber.substring(12));
 
                 } else {
                     // 2. External Transfer (Bank -> User) simulated
                     // Card is valid (Luhn checked), so we approve "External Payment"
                     try {
-                        int bankWalletId = walletService.getBankWalletId();
-                        walletService.transfer(bankWalletId, userWalletId, amount,
+                        int bankWalletId = walletModel.getBankWalletId();
+                        walletModel.transfer(bankWalletId, userWalletId, amount,
                                 "DEPOSIT via Card **** " + cleanCardNumber.substring(12));
                     } catch (RuntimeException re) {
                         throw new RuntimeException("Payment Gateway Error: " + re.getMessage());

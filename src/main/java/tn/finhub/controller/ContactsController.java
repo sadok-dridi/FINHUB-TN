@@ -12,7 +12,7 @@ import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import tn.finhub.dao.SavedContactDAO;
+import tn.finhub.model.SavedContactModel;
 import tn.finhub.model.SavedContact;
 import tn.finhub.model.User;
 import tn.finhub.util.DialogUtil;
@@ -26,7 +26,7 @@ public class ContactsController {
     @FXML
     private VBox contactsContainer;
 
-    private final SavedContactDAO contactDAO = new SavedContactDAO();
+    private final SavedContactModel contactModel = new SavedContactModel();
 
     @FXML
     public void initialize() {
@@ -38,7 +38,7 @@ public class ContactsController {
         if (user == null)
             return;
 
-        List<SavedContact> contacts = contactDAO.getContactsByUserId(user.getId());
+        List<SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
         contactsContainer.getChildren().clear();
 
         if (contacts.isEmpty()) {
@@ -98,7 +98,7 @@ public class ContactsController {
 
     private void handleDelete(SavedContact contact) {
         // Confirm delete? For now direct delete.
-        contactDAO.deleteContact(contact.getId());
+        contactModel.deleteContact(contact.getId());
         loadContacts();
     }
 

@@ -9,7 +9,7 @@ import java.net.http.*;
 import java.net.URI;
 import org.json.JSONObject;
 import java.sql.*;
-import tn.finhub.service.FinancialProfileService;
+import tn.finhub.model.FinancialProfileModel;
 
 import java.net.http.HttpRequest;
 
@@ -152,8 +152,8 @@ public class LoginController {
                     try {
                         if (SessionManager.isAdmin()) {
                             // CHECK MIGRATION REQUIREMENT
-                            tn.finhub.service.WalletService ws = new tn.finhub.service.WalletService();
-                            if (ws.hasWallet(user.getInt("id"))) {
+                            tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+                            if (walletModel.hasWallet(user.getInt("id"))) {
                                 System.out.println("Admin has a personal wallet. Redirecting to Migration Wizard.");
                                 setView("/view/migrate_wallet.fxml");
                             } else {
@@ -162,13 +162,13 @@ public class LoginController {
                             }
                         } else {
                             System.out.println("[DEBUG] Checking profile completion...");
-                            FinancialProfileService profileService = new FinancialProfileService();
+                            tn.finhub.model.FinancialProfileModel profileModel = new tn.finhub.model.FinancialProfileModel();
                             int userId = user.getInt("id");
 
                             // Ensure profile exists (create with default values if not)
-                            profileService.ensureProfile(userId);
+                            profileModel.ensureProfile(userId);
 
-                            boolean completed = profileService.isProfileCompleted(userId);
+                            boolean completed = profileModel.isProfileCompleted(userId);
                             System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
 
                             if (!completed) {

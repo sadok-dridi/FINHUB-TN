@@ -1,17 +1,17 @@
-package tn.finhub.service;
+package tn.finhub.model;
 
-import tn.finhub.dao.UserDAO;
-import tn.finhub.dao.impl.UserDAOImpl;
+import tn.finhub.util.DBConnection;
+import tn.finhub.util.MailClient;
 import tn.finhub.util.TokenGenerator;
 
 import java.sql.*;
 import java.time.LocalDateTime;
 
-public class VerificationService {
+public class VerificationModel {
 
-    private Connection connection = tn.finhub.util.DBConnection.getInstance();
-    private UserDAO userDAO = new UserDAOImpl();
-    private EmailService emailService = new EmailService();
+    private Connection getConnection() {
+        return DBConnection.getInstance();
+    }
 
     public void createAndSendToken(int userId, String email) {
 
@@ -23,13 +23,13 @@ public class VerificationService {
                     VALUES (?, ?, ?)
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, token);
             ps.setTimestamp(3, Timestamp.valueOf(expiresAt));
             ps.executeUpdate();
 
-            emailService.sendVerificationEmail(email, token);
+            MailClient.sendVerificationEmail(email, token); // Use MailClient
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -43,7 +43,7 @@ public class VerificationService {
                     WHERE token = ? AND expires_at > NOW() AND verified = FALSE
                 """;
 
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, token);
             ResultSet rs = ps.executeQuery();
 
@@ -62,10 +62,10 @@ public class VerificationService {
 
     private void markVerified(int userId, String token) throws SQLException {
 
-        connection.prepareStatement(
+        getConnection().prepareStatement(
                 "UPDATE email_verification SET verified = TRUE WHERE token = '" + token + "'").executeUpdate();
 
-        connection.prepareStatement(
-                "UPDATE user SET email_verified = TRUE WHERE id = " + userId).executeUpdate();
+        getConnection().prepareStatement(
+                "UPDATE users_local SET email_verified = TRUE WHERE user_id = " + userId).executeUpdate();
     }
 }

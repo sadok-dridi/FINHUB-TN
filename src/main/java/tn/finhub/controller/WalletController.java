@@ -8,8 +8,8 @@ import javafx.scene.control.Button;
 import tn.finhub.model.VirtualCard;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
-import tn.finhub.service.VirtualCardService;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.WalletModel;
+import tn.finhub.model.LedgerFlag; // Added import for LedgerFlag
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -37,10 +37,11 @@ public class WalletController {
     @FXML
     private Button topUpButton;
 
-    private final WalletService walletService = new WalletService();
-    private final VirtualCardService virtualCardService = new VirtualCardService();
-    private final tn.finhub.dao.MarketDAO marketDAO = new tn.finhub.dao.MarketDAO();
-    private final tn.finhub.service.MarketDataService marketDataService = new tn.finhub.service.MarketDataService();
+    private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
+    private final tn.finhub.model.VirtualCardModel virtualCardModel = new tn.finhub.model.VirtualCardModel();
+    // private final tn.finhub.dao.MarketDAO marketDAO = new
+    // tn.finhub.dao.MarketDAO(); // REMOVED (Use MarketModel)
+    private final tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
     private Wallet currentWallet;
 
     @FXML
@@ -141,7 +142,7 @@ public class WalletController {
             if ("FROZEN".equals(currentWallet.getStatus()))
                 return; // Security check
 
-            virtualCardService.createCardForWallet(currentWallet.getId());
+            virtualCardModel.createCardForWallet(currentWallet.getId());
             refreshVirtualCards(currentWallet.getId());
         }
     }
@@ -167,10 +168,10 @@ public class WalletController {
 
         // Ensure wallet exists ONLY for regular users
         if ("USER".equalsIgnoreCase(user.getRole())) {
-            walletService.createWalletIfNotExists(userId);
+            walletModel.createWalletIfNotExists(userId);
         }
 
-        currentWallet = walletService.getWallet(userId);
+        currentWallet = walletModel.findByUserId(userId);
         if (currentWallet != null) {
 
             escrowBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getEscrowBalance());
@@ -184,7 +185,7 @@ public class WalletController {
                 frozenAlertBox.setManaged(isFrozen);
 
                 if (isFrozen && frozenAlertBox.getChildren().size() > 1) {
-                    tn.finhub.model.LedgerFlag flag = walletService.getLatestFlag(currentWallet.getId());
+                    LedgerFlag flag = walletModel.getLatestFlag(currentWallet.getId());
                     if (flag != null) {
                         // Logic for setting flag description if needed
                     }
@@ -201,7 +202,7 @@ public class WalletController {
             // Check for specific tampered transaction if frozen
             int badTxId = -1;
             if (isFrozen) {
-                badTxId = walletService.getTamperedTransactionId(currentWallet.getId());
+                badTxId = walletModel.getTamperedTransactionId(currentWallet.getId());
             }
 
             // Load Virtual Cards
@@ -209,7 +210,9 @@ public class WalletController {
 
             // Load Transactions (Limit to 5 for Dashboard)
             transactionContainer.getChildren().clear();
-            List<WalletTransaction> transactions = walletService.getTransactionHistory(currentWallet.getId());
+            List<WalletTransaction> transactions = walletModel.getTransactionHistory(currentWallet.getId()); // Changed
+                                                                                                             // from
+                                                                                                             // walletService
 
             int limit = Math.min(transactions.size(), 4);
             for (int i = 0; i < limit; i++) {
@@ -220,7 +223,7 @@ public class WalletController {
 
     private void refreshVirtualCards(int walletId) {
         cardsContainer.getChildren().clear();
-        List<VirtualCard> cards = virtualCardService.getCardsByWallet(walletId);
+        List<VirtualCard> cards = virtualCardModel.getCardsByWallet(walletId);
 
         // Left Wrapper (Aligns with Available Balance Card)
         javafx.scene.layout.HBox leftWrapper = new javafx.scene.layout.HBox(15);
@@ -636,8 +639,8 @@ public class WalletController {
         String bestAsset = "None";
         int assetCount = 0;
 
-        java.util.List<tn.finhub.model.PortfolioItem> items = marketDAO.getPortfolio(userId);
-        java.math.BigDecimal exchangeRate = marketDataService.getUsdToTndRate(); // Ensure TND conversion
+        java.util.List<tn.finhub.model.PortfolioItem> items = marketModel.getPortfolio(userId);
+        java.math.BigDecimal exchangeRate = marketModel.getUsdToTndRate(); // Ensure TND conversion
 
         for (tn.finhub.model.PortfolioItem item : items) {
             if (item.getQuantity().compareTo(java.math.BigDecimal.ZERO) > 0) {
@@ -649,7 +652,7 @@ public class WalletController {
                 totalInvested = totalInvested.add(investedUSD.multiply(exchangeRate));
 
                 // Current Value
-                tn.finhub.model.MarketPrice price = marketDataService.getPrice(item.getSymbol());
+                tn.finhub.model.MarketPrice price = marketModel.getPrice(item.getSymbol());
                 if (price != null) {
                     java.math.BigDecimal valUSD = price.getPrice().multiply(item.getQuantity());
                     currentValue = currentValue.add(valUSD.multiply(exchangeRate));

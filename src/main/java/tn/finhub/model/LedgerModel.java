@@ -1,14 +1,10 @@
-package tn.finhub.dao;
-
-import tn.finhub.model.LedgerAuditLog;
-import tn.finhub.model.LedgerFlag;
-import tn.finhub.util.DBConnection;
+package tn.finhub.model;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LedgerDAO {
+public class LedgerModel {
 
     public void insertAuditLog(LedgerAuditLog log) {
         String sql = "INSERT INTO ledger_audit_log (wallet_id, verified, checked_at, message) VALUES (?, ?, ?, ?)";
@@ -129,5 +125,4 @@ public class LedgerDAO {
             throw new RuntimeException("Error deleting all flags: " + e.getMessage());
         }
     }
-
 }

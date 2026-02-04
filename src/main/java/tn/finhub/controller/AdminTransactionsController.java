@@ -5,8 +5,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import tn.finhub.model.User;
-import tn.finhub.service.UserService;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.UserModel;
+import tn.finhub.model.WalletModel;
 import tn.finhub.util.SessionManager;
 
 public class AdminTransactionsController {
@@ -17,13 +17,13 @@ public class AdminTransactionsController {
     @FXML
     private TextField searchField;
 
-    private UserService userService = new UserService();
-    private WalletService walletService = new WalletService();
+    private UserModel userModel = new UserModel();
+    private WalletModel walletModel = new WalletModel();
     private ObservableList<User> allUsers;
 
     @FXML
     public void initialize() {
-        allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+        allUsers = FXCollections.observableArrayList(userModel.findAll());
         refreshUserCards(allUsers);
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -51,7 +51,7 @@ public class AdminTransactionsController {
 
     @FXML
     public void handleRefresh() {
-        allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+        allUsers = FXCollections.observableArrayList(userModel.findAll());
         refreshUserCards(allUsers);
     }
 
@@ -97,9 +97,10 @@ public class AdminTransactionsController {
 
         // Check for flags
         boolean hasIssues = false;
-        if (walletService.hasWallet(user.getId())) {
-            int walletId = walletService.getWallet(user.getId()).getId();
-            if (walletService.isFrozen(walletId)) {
+        if (walletModel.findByUserId(user.getId()) != null) {
+            int walletId = walletModel.findByUserId(user.getId()).getId();
+            String status = walletModel.findByUserId(user.getId()).getStatus();
+            if ("FROZEN".equals(status)) {
                 javafx.scene.control.Label alertLabel = new javafx.scene.control.Label("⚠ FROZEN");
                 alertLabel.setStyle(
                         "-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 6; -fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 4px;");

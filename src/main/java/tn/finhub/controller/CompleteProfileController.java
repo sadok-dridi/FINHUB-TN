@@ -5,7 +5,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import tn.finhub.model.FinancialProfile;
-import tn.finhub.service.FinancialProfileService;
+import tn.finhub.model.FinancialProfileModel;
 import tn.finhub.util.SessionManager;
 
 public class CompleteProfileController {
@@ -56,8 +56,8 @@ public class CompleteProfileController {
                     currencyBox.getValue(),
                     true);
 
-            FinancialProfileService service = new FinancialProfileService();
-            service.updateProfile(profile);
+            FinancialProfileModel model = new FinancialProfileModel();
+            model.update(profile);
 
             // Navigate to Dashboard with fade animation
             tn.finhub.util.ViewUtils.setView(incomeField, "/view/user_dashboard.fxml");

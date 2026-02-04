@@ -8,7 +8,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.SupportTicket;
-import tn.finhub.service.SupportService;
+
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -20,7 +20,7 @@ public class SupportTicketsController {
     @FXML
     private VBox ticketsContainer;
 
-    private final SupportService supportService = new SupportService();
+    private final tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
 
     @FXML
     public void initialize() {
@@ -31,7 +31,7 @@ public class SupportTicketsController {
     private void refreshTickets() {
         ticketsContainer.getChildren().clear();
         int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
-        List<SupportTicket> tickets = supportService.getUserTickets(userId);
+        List<SupportTicket> tickets = supportModel.getTicketsByUserId(userId);
 
         if (tickets.isEmpty()) {
             Label emptyLabel = new Label("No tickets found. Need help? Create a new ticket.");

@@ -1,9 +1,7 @@
-package tn.finhub.service;
+package tn.finhub.model;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import tn.finhub.dao.KnowledgeBaseDAO;
-import tn.finhub.model.KnowledgeBase;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,12 +9,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
-public class ChatBotService {
+public class ChatAssistantModel {
 
-    private final KnowledgeBaseDAO kbDAO = new KnowledgeBaseDAO();
+    private final KnowledgeBaseModel kbModel = new KnowledgeBaseModel();
 
     // --- Configuration ---
     // Toggle this to true to use Local LLM (Ollama) and save API limits
@@ -36,7 +33,7 @@ public class ChatBotService {
     // Conversation History (in-memory per session)
     private final JSONArray conversationHistory;
 
-    public ChatBotService() {
+    public ChatAssistantModel() {
         this.conversationHistory = new JSONArray();
         // Initialize with system prompt
         JSONObject systemMessage = new JSONObject();
@@ -51,7 +48,7 @@ public class ChatBotService {
         }
 
         // 1. Local Knowledge Base (Always check first for speed)
-        List<KnowledgeBase> matches = kbDAO.searchArticles(userMessage);
+        List<KnowledgeBase> matches = kbModel.searchArticles(userMessage);
 
         // Append context from KB if found (Optional enhancement: inject KB results into
         // system prompt)

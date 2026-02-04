@@ -6,11 +6,7 @@ import javafx.application.Platform;
 import tn.finhub.util.ApiClient;
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.SessionManager;
-import tn.finhub.service.WalletService;
-import tn.finhub.service.MailService;
-import tn.finhub.service.UserService;
-import tn.finhub.dao.FinancialProfileDAO;
-import tn.finhub.dao.impl.FinancialProfileDAOImpl;
+import tn.finhub.util.MailClient;
 import tn.finhub.model.User;
 import javafx.fxml.FXMLLoader;
 
@@ -29,9 +25,9 @@ public class MigrateWalletController {
 
     // State management
     private boolean waitingForVerification = false;
-    private WalletService walletService = new WalletService();
-    private UserService userService = new UserService();
-    private FinancialProfileDAO profileDAO = new FinancialProfileDAOImpl();
+    private tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+    private tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+    private tn.finhub.model.FinancialProfileModel profileModel = new tn.finhub.model.FinancialProfileModel();
 
     @FXML
     public void handleMigration() {
@@ -60,7 +56,7 @@ public class MigrateWalletController {
 
                 // 2. Send Verification Email
                 System.out.println("Sending verification email to: " + email);
-                MailService.sendVerificationEmail(email, verificationLink);
+                MailClient.sendVerificationEmail(email, verificationLink);
                 System.out.println("Verification Link: " + verificationLink); // Log for debugging
 
                 // 3. Switch UI to verification mode
@@ -104,14 +100,19 @@ public class MigrateWalletController {
 
                 // IMPORTANT: Save user to local DB *before* transferring wallet
                 // to satisfy Foreign Key constraints.
-                userService.saveUser(newUser);
+                userModel.insert(newUser);
 
                 // 5. Transfer Wallet
                 int currentAdminId = SessionManager.getUserId();
-                walletService.transferWalletToUser(currentAdminId, newUser.getId());
+                // Find admin wallet logic customized here:
+                // We assume current session user is the one migrating FROM.
+                tn.finhub.model.Wallet adminWallet = walletModel.findByUserId(currentAdminId);
+                if (adminWallet != null) {
+                    walletModel.updateUserId(adminWallet.getId(), newUser.getId());
+                }
 
                 // 5b. Transfer Financial Profile
-                profileDAO.updateUserId(currentAdminId, newUser.getId());
+                profileModel.updateUserId(currentAdminId, newUser.getId());
 
                 // 6. Success
                 Platform.runLater(() -> {

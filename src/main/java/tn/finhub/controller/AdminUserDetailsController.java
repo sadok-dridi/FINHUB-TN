@@ -7,7 +7,8 @@ import tn.finhub.model.LedgerAuditLog;
 import tn.finhub.model.LedgerFlag;
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.WalletModel;
+import tn.finhub.model.UserModel;
 
 import java.util.List;
 
@@ -37,7 +38,8 @@ public class AdminUserDetailsController {
     private VBox auditLogsContainer;
 
     private User user;
-    private WalletService walletService = new WalletService();
+    private WalletModel walletModel = new WalletModel();
+    private UserModel userModel = new UserModel();
 
     public void setUser(User user) {
         this.user = user;
@@ -56,7 +58,7 @@ public class AdminUserDetailsController {
 
         // Wallet Info
         try {
-            Wallet wallet = walletService.getWallet(user.getId());
+            Wallet wallet = walletModel.findByUserId(user.getId());
             if (wallet != null) {
                 balanceLabel.setText(String.format("%.2f", wallet.getBalance()));
                 currencyLabel.setText(wallet.getCurrency());
@@ -99,7 +101,7 @@ public class AdminUserDetailsController {
 
     private void loadLedgerInfo(int walletId) {
         // Check for Flags
-        LedgerFlag flag = walletService.getLatestFlag(walletId);
+        LedgerFlag flag = walletModel.getLatestFlag(walletId);
         if (flag != null) {
             ledgerAlertBox.setVisible(true);
             ledgerAlertBox.setManaged(true);
@@ -110,7 +112,7 @@ public class AdminUserDetailsController {
         }
 
         // Audit Logs (Show last 5 for example)
-        List<LedgerAuditLog> logs = walletService.getAuditLogs(walletId);
+        List<LedgerAuditLog> logs = walletModel.getAuditLogs(walletId);
         auditLogsContainer.getChildren().clear();
 
         int count = 0;
@@ -135,7 +137,7 @@ public class AdminUserDetailsController {
         if (user == null)
             return;
         try {
-            Wallet wallet = walletService.getWallet(user.getId());
+            Wallet wallet = walletModel.findByUserId(user.getId());
             if (wallet == null)
                 return;
 
@@ -151,7 +153,7 @@ public class AdminUserDetailsController {
                     return;
 
                 if (verifyAdminPassword(password)) {
-                    walletService.unfreezeWallet(wallet.getId());
+                    walletModel.updateStatus(wallet.getId(), "ACTIVE");
                     updateUI();
                     tn.finhub.util.DialogUtil.showInfo("Success", "Wallet has been unfrozen.");
                 } else {
@@ -161,7 +163,7 @@ public class AdminUserDetailsController {
                 // Freeze
                 if (tn.finhub.util.DialogUtil.showConfirmation("Freeze Wallet",
                         "Are you sure you want to freeze this wallet?")) {
-                    walletService.freezeWallet(wallet.getId());
+                    walletModel.updateStatus(wallet.getId(), "FROZEN");
                     updateUI();
                     tn.finhub.util.DialogUtil.showInfo("Success", "Wallet has been frozen.");
                 }
@@ -193,8 +195,7 @@ public class AdminUserDetailsController {
         if (verifyAdminPassword(password)) {
             try {
                 // DELETE
-                tn.finhub.service.UserService userService = new tn.finhub.service.UserService();
-                userService.deleteUser(user.getId());
+                userModel.deleteUser(user.getId());
 
                 tn.finhub.util.DialogUtil.showInfo("User Deleted",
                         "The user and their data have been permanently removed.");

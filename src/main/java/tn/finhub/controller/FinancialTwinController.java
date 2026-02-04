@@ -7,13 +7,10 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
-import tn.finhub.dao.FinancialProfileDAO;
-import tn.finhub.dao.impl.FinancialProfileDAOImpl;
+
 import tn.finhub.model.FinancialProfile;
-import tn.finhub.service.AIAdvisoryService;
-import tn.finhub.service.FinancialTwinService;
-import tn.finhub.service.MarketDataService;
-import tn.finhub.service.SimulationService;
+import tn.finhub.model.FinancialProfileModel;
+
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -46,8 +43,9 @@ public class FinancialTwinController {
     @FXML
     private TextArea insightsArea;
 
-    private final FinancialTwinService twinService = new FinancialTwinService();
-    private final FinancialProfileDAO profileDAO = new FinancialProfileDAOImpl();
+    private final FinancialProfileModel profileModel = new FinancialProfileModel();
+    // private final FinancialTwinService twinService = new FinancialTwinService();
+    // private final FinancialProfileDAO profileDAO = new FinancialProfileDAOImpl();
     private FinancialProfile baseProfile;
 
     // Simulation State
@@ -116,7 +114,7 @@ public class FinancialTwinController {
 
     private void loadUserProfile() {
         int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
-        baseProfile = profileDAO.findByUserId(userId);
+        baseProfile = profileModel.findByUserId(userId);
 
         if (baseProfile == null) {
             // Initialize default/fresh profile
@@ -169,15 +167,15 @@ public class FinancialTwinController {
         }
 
         // 1. Calculate Health Score
-        int score = twinService.calculateHealthScore(currentIncome, currentExpenses);
+        int score = profileModel.calculateHealthScore(currentIncome, currentExpenses);
         updateHealthUI(score);
 
         // 2. Run Projection
-        List<Double> projection = twinService.runSimulation(currentIncome, currentExpenses, 12);
+        List<Double> projection = profileModel.runSimulation(currentIncome, currentExpenses, 12);
         updateChart(projection);
 
         // 3. Generate Insights
-        String insights = twinService.generateKeyInsights(currentIncome, currentExpenses, savingsGoal);
+        String insights = profileModel.generateKeyInsights(currentIncome, currentExpenses, savingsGoal);
         insightsArea.setText(insights);
     }
 
@@ -185,9 +183,9 @@ public class FinancialTwinController {
         healthScoreLabel.setText(String.valueOf(score));
         healthIndicator.setProgress(score / 100.0);
 
-        healthStatusLabel.setText(twinService.getHealthStatus(score));
+        healthStatusLabel.setText(profileModel.getHealthStatus(score));
 
-        String colorStyle = twinService.getHealthColor(score);
+        String colorStyle = profileModel.getHealthColor(score);
         // This requires the color variable name to be resolved or set via style class
         // Mapping variable name to hardcoded color for safety or use styleClass
         healthStatusLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: " + colorStyle + ";");
@@ -247,11 +245,14 @@ public class FinancialTwinController {
     @FXML
     private Label walletBalanceLabel;
 
-    private final MarketDataService marketDataService = new MarketDataService();
-    private final SimulationService simulationService = new SimulationService();
-    private final AIAdvisoryService aiService = new AIAdvisoryService();
-    private final tn.finhub.dao.WalletDAO walletDAO = new tn.finhub.dao.WalletDAO();
-    private final tn.finhub.dao.MarketDAO marketDAO = new tn.finhub.dao.MarketDAO();
+    private final tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
+    // private final SimulationService simulationService = new SimulationService();
+    // // Removed
+    // private final AIAdvisoryService aiService = new AIAdvisoryService(); //
+    // Removed
+    private final tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+    // private final tn.finhub.dao.MarketDAO marketDAO = new
+    // tn.finhub.dao.MarketDAO(); // Removed
 
     private String selectedAsset = null;
 
@@ -369,7 +370,7 @@ public class FinancialTwinController {
                     int userId = UserSession.getInstance().getUser() != null
                             ? UserSession.getInstance().getUser().getId()
                             : 0;
-                    tn.finhub.model.PortfolioItem item = marketDAO.getPortfolioItem(userId, symbol);
+                    tn.finhub.model.PortfolioItem item = marketModel.getPortfolioItem(userId, symbol);
                     boolean isOwned = item != null && item.getQuantity().doubleValue() > 0;
 
                     ownedLabel.setVisible(isOwned);
@@ -414,7 +415,7 @@ public class FinancialTwinController {
     private void handleRefreshMarket() {
         new Thread(() -> {
             // FORCE refresh in background to bypass the 60s read cache
-            marketDataService.getPrices(TRACKED_ASSETS, true);
+            marketModel.getPrices(TRACKED_ASSETS, true);
             javafx.application.Platform.runLater(() -> {
                 if (selectedAsset != null)
                     selectAsset(selectedAsset); // Will read from fresh cache
@@ -432,38 +433,50 @@ public class FinancialTwinController {
         this.selectedAsset = symbol;
         selectedAssetLabel.setText(symbol);
 
-        tn.finhub.model.MarketPrice price = marketDataService.getPrice(symbol);
-        if (price != null) {
-            java.math.BigDecimal rate = marketDataService.getUsdToTndRate();
-            java.math.BigDecimal priceTnd = price.getPrice().multiply(rate);
-            selectedPriceLabel.setText(String.format("%.2f TND", priceTnd));
-            selectedChangeLabel.setText(String.format("%.2f%%", price.getChangePercent()));
+        // Fetch Price and Rate in Background
+        javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                tn.finhub.model.MarketPrice price = marketModel.getPrice(symbol);
+                java.math.BigDecimal rate = marketModel.getUsdToTndRate(); // May block if cache expired
 
-            // Color for change
-            if (price.getChangePercent().doubleValue() >= 0) {
-                selectedChangeLabel.setStyle("-fx-text-fill: -color-success; -fx-font-size: 14px;");
-            } else {
-                selectedChangeLabel.setStyle("-fx-text-fill: -color-error; -fx-font-size: 14px;");
-            }
-
-            // AI Advice
-            String advice = aiService.getRecommendation(price, baseProfile.getRiskTolerance());
-            aiAdviceBox.setVisible(true);
-            aiAdviceLabel.setText(advice);
-
-            // Populate CandleStickChart
-            new Thread(() -> {
-                java.util.List<tn.finhub.model.CandleData> ohlc = marketDataService.getOHLC(symbol);
                 javafx.application.Platform.runLater(() -> {
-                    this.fullCandleData = ohlc;
-                    this.visibleCandleCount = ohlc.size(); // Reset zoom to full
-                    renderChart();
+                    if (price != null) {
+                        java.math.BigDecimal priceTnd = price.getPrice().multiply(rate);
+                        selectedPriceLabel.setText(String.format("%.2f TND", priceTnd));
+                        selectedChangeLabel.setText(String.format("%.2f%%", price.getChangePercent()));
+
+                        // Color for change
+                        if (price.getChangePercent().doubleValue() >= 0) {
+                            selectedChangeLabel.setStyle("-fx-text-fill: -color-success; -fx-font-size: 14px;");
+                        } else {
+                            selectedChangeLabel.setStyle("-fx-text-fill: -color-error; -fx-font-size: 14px;");
+                        }
+
+                        // AI Advice
+                        String advice = marketModel.getRecommendation(price, baseProfile.getRiskTolerance());
+                        aiAdviceBox.setVisible(true);
+                        aiAdviceLabel.setText(advice);
+
+                    }
                 });
-            }).start();
-        }
+                return null;
+            }
+        };
+        new Thread(task).start();
+
+        // Candle Stick Chart
+        new Thread(() -> {
+            java.util.List<tn.finhub.model.CandleData> ohlc = marketModel.getOHLC(symbol);
+            javafx.application.Platform.runLater(() -> {
+                this.fullCandleData = ohlc;
+                this.visibleCandleCount = ohlc.size(); // Reset zoom to full
+                renderChart();
+            });
+        }).start();
 
         updatePortfolioUIForAsset(symbol);
-        updateEstCost();
+        updateEstCost(); // This will spawn its own task now
     }
 
     private void renderChart() {
@@ -514,42 +527,94 @@ public class FinancialTwinController {
 
     private void updatePortfolioUIForAsset(String symbol) {
         int userId = UserSession.getInstance().getUser().getId();
-        tn.finhub.model.PortfolioItem item = marketDAO.getPortfolioItem(userId, symbol);
 
-        if (item != null) {
-            ownedQuantityLabel.setText(item.getQuantity().toString());
-            // Convert Avg Cost to TND for display
-            java.math.BigDecimal rate = marketDataService.getUsdToTndRate();
-            java.math.BigDecimal avgCostTnd = item.getAverageCost().multiply(rate);
-            avgCostLabel.setText(String.format("%.2f TND", avgCostTnd));
-        } else {
+        // Use a background task to fetch portfolio data
+        javafx.concurrent.Task<tn.finhub.model.PortfolioItem> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected tn.finhub.model.PortfolioItem call() throws Exception {
+                return marketModel.getPortfolioItem(userId, symbol);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            tn.finhub.model.PortfolioItem item = task.getValue();
+            if (item != null) {
+                ownedQuantityLabel.setText(item.getQuantity().toString());
+                // Convert Avg Cost to TND for display
+                java.math.BigDecimal rate = marketModel.getUsdToTndRate();
+                java.math.BigDecimal avgCostTnd = item.getAverageCost().multiply(rate);
+                avgCostLabel.setText(String.format("%.2f TND", avgCostTnd));
+            } else {
+                ownedQuantityLabel.setText("0");
+                avgCostLabel.setText("0.00");
+            }
+        });
+
+        task.setOnFailed(e -> {
+            // Silently fail or log, but reset UI to valid state
             ownedQuantityLabel.setText("0");
             avgCostLabel.setText("0.00");
-        }
+        });
+
+        new Thread(task).start();
     }
 
     private void updatePortfolioSummary() {
         int userId = UserSession.getInstance().getUser().getId();
-        tn.finhub.model.Wallet wallet = walletDAO.findByUserId(userId);
-        if (wallet != null) {
-            walletBalanceLabel.setText(wallet.getBalance() + " " + wallet.getCurrency());
-        }
+
+        javafx.concurrent.Task<tn.finhub.model.Wallet> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected tn.finhub.model.Wallet call() throws Exception {
+                return walletModel.findByUserId(userId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            tn.finhub.model.Wallet wallet = task.getValue();
+            if (wallet != null) {
+                walletBalanceLabel.setText(wallet.getBalance() + " " + wallet.getCurrency());
+            }
+        });
+
+        new Thread(task).start();
     }
+
+    // Track estimation task to cancel previous ones if typing fast
+    private javafx.concurrent.Task<String> estCostTask;
 
     private void updateEstCost() {
         if (selectedAsset == null)
             return;
-        try {
-            double qty = Double.parseDouble(quantityField.getText());
-            tn.finhub.model.MarketPrice price = marketDataService.getPrice(selectedAsset);
-            if (price != null) {
-                java.math.BigDecimal rate = marketDataService.getUsdToTndRate();
-                double cost = price.getPrice().multiply(rate).doubleValue() * qty;
-                estCostLabel.setText(String.format("%.2f TND", cost));
-            }
-        } catch (NumberFormatException e) {
-            estCostLabel.setText("0.00");
+
+        // Cancel previous calculation
+        if (estCostTask != null && estCostTask.isRunning()) {
+            estCostTask.cancel();
         }
+
+        String qtyText = quantityField.getText();
+        if (qtyText.isEmpty()) {
+            estCostLabel.setText("0.00");
+            return;
+        }
+
+        estCostTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected String call() throws Exception {
+                double qty = Double.parseDouble(qtyText);
+                tn.finhub.model.MarketPrice price = marketModel.getPrice(selectedAsset);
+                if (price != null) {
+                    java.math.BigDecimal rate = marketModel.getUsdToTndRate();
+                    double cost = price.getPrice().multiply(rate).doubleValue() * qty;
+                    return String.format("%.2f TND", cost);
+                }
+                return "0.00";
+            }
+        };
+
+        estCostTask.setOnSucceeded(e -> estCostLabel.setText(estCostTask.getValue()));
+        estCostTask.setOnFailed(e -> estCostLabel.setText("0.00")); // likely number format exception
+
+        new Thread(estCostTask).start();
     }
 
     @FXML
@@ -558,12 +623,30 @@ public class FinancialTwinController {
             DialogUtil.showError("Market", "Please select an asset.");
             return;
         }
+
+        String quantityText = quantityField.getText();
+        java.math.BigDecimal qty;
         try {
-            java.math.BigDecimal qty = new java.math.BigDecimal(quantityField.getText());
-            int userId = UserSession.getInstance().getUser().getId();
+            qty = new java.math.BigDecimal(quantityText);
+        } catch (NumberFormatException e) {
+            DialogUtil.showError("Error", "Invalid quantity.");
+            return;
+        }
 
-            String result = simulationService.buyAsset(userId, selectedAsset, qty);
+        int userId = UserSession.getInstance().getUser().getId();
 
+        // Show loading state (optional: disable button)
+        // Button buyBtn = ... (if bound)
+
+        javafx.concurrent.Task<String> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return marketModel.buyAsset(userId, selectedAsset, qty);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            String result = task.getValue();
             if ("SUCCESS".equals(result)) {
                 DialogUtil.showInfo("Trade Executed", "Bought " + qty + " of " + selectedAsset);
                 updatePortfolioUIForAsset(selectedAsset);
@@ -572,9 +655,13 @@ public class FinancialTwinController {
             } else {
                 DialogUtil.showError("Trade Failed", result);
             }
-        } catch (Exception e) {
-            DialogUtil.showError("Error", "Invalid quantity or system error: " + e.getMessage());
-        }
+        });
+
+        task.setOnFailed(e -> {
+            DialogUtil.showError("Error", "System error: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 
     @FXML
@@ -583,12 +670,27 @@ public class FinancialTwinController {
             DialogUtil.showError("Market", "Please select an asset.");
             return;
         }
+
+        String quantityText = quantityField.getText();
+        java.math.BigDecimal qty;
         try {
-            java.math.BigDecimal qty = new java.math.BigDecimal(quantityField.getText());
-            int userId = UserSession.getInstance().getUser().getId();
+            qty = new java.math.BigDecimal(quantityText);
+        } catch (NumberFormatException e) {
+            DialogUtil.showError("Error", "Invalid quantity.");
+            return;
+        }
 
-            String result = simulationService.sellAsset(userId, selectedAsset, qty);
+        int userId = UserSession.getInstance().getUser().getId();
 
+        javafx.concurrent.Task<String> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected String call() throws Exception {
+                return marketModel.sellAsset(userId, selectedAsset, qty);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            String result = task.getValue();
             if ("SUCCESS".equals(result)) {
                 DialogUtil.showInfo("Trade Executed", "Sold " + qty + " of " + selectedAsset);
                 updatePortfolioUIForAsset(selectedAsset);
@@ -597,9 +699,13 @@ public class FinancialTwinController {
             } else {
                 DialogUtil.showError("Trade Failed", result);
             }
-        } catch (Exception e) {
-            DialogUtil.showError("Error", "Invalid quantity or system error: " + e.getMessage());
-        }
+        });
+
+        task.setOnFailed(e -> {
+            DialogUtil.showError("Error", "System error: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
     }
 
     // Default assets to track (CoinGecko IDs)

@@ -1,10 +1,11 @@
-package tn.finhub.service;
+package tn.finhub.util;
 
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import java.util.Properties;
+import java.io.UnsupportedEncodingException;
 
-public class MailService {
+public class MailClient {
 
   private static final String SMTP_HOST = "smtp.gmail.com";
   private static final String SMTP_PORT = "587";
@@ -62,6 +63,16 @@ public class MailService {
   }
 
   // ===============================
+  // RESET PASSWORD EMAIL ✅ NEW
+  // ===============================
+  public static void sendResetPasswordEmail(String to, String link) {
+    sendHtmlEmail(
+        to,
+        "Reset your FINHUB password",
+        buildResetPasswordHtml(link));
+  }
+
+  // ===============================
   // CORE EMAIL SENDER
   // ===============================
   private static void sendHtmlEmail(String to, String subject, String html) {
@@ -79,7 +90,8 @@ public class MailService {
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new RuntimeException("Email sending failed", e);
+      // throw new RuntimeException("Email sending failed", e); // Don't throw to
+      // avoid crashing flow, just log.
     }
   }
 
@@ -364,16 +376,6 @@ public class MailService {
         """
         .replace("{{OTP}}", otp)
         .replace("{{YEAR}}", String.valueOf(java.time.Year.now().getValue()));
-  }
-
-  // ===============================
-  // RESET PASSWORD EMAIL ✅ NEW
-  // ===============================
-  public static void sendResetPasswordEmail(String to, String link) {
-    sendHtmlEmail(
-        to,
-        "Reset your FINHUB password",
-        buildResetPasswordHtml(link));
   }
 
   private static String buildResetPasswordHtml(String link) {

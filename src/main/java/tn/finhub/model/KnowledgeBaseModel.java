@@ -1,18 +1,20 @@
-package tn.finhub.dao;
+package tn.finhub.model;
 
-import tn.finhub.model.KnowledgeBase;
 import tn.finhub.util.DBConnection;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KnowledgeBaseDAO {
+public class KnowledgeBaseModel {
+
+    private Connection getConnection() {
+        return DBConnection.getInstance();
+    }
 
     public List<KnowledgeBase> getAllArticles() {
         List<KnowledgeBase> articles = new ArrayList<>();
         String sql = "SELECT * FROM knowledge_base ORDER BY category, created_at DESC";
-        try (Statement stmt = DBConnection.getInstance().createStatement();
+        try (Statement stmt = getConnection().createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 articles.add(mapResultSetToArticle(rs));
@@ -25,8 +27,10 @@ public class KnowledgeBaseDAO {
 
     public List<KnowledgeBase> searchArticles(String query) {
         List<KnowledgeBase> articles = new ArrayList<>();
+        // Simple search query, could be improved with Full Text Search if DB supports
+        // it
         String sql = "SELECT * FROM knowledge_base WHERE question LIKE ? OR answer LIKE ? ORDER BY created_at DESC";
-        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             String likeQuery = "%" + query + "%";
             stmt.setString(1, likeQuery);
             stmt.setString(2, likeQuery);
@@ -44,7 +48,7 @@ public class KnowledgeBaseDAO {
     public List<KnowledgeBase> getArticlesByCategory(String category) {
         List<KnowledgeBase> articles = new ArrayList<>();
         String sql = "SELECT * FROM knowledge_base WHERE category = ? ORDER BY created_at DESC";
-        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setString(1, category);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

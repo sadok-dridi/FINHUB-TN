@@ -6,7 +6,7 @@ import javafx.scene.control.*;
 import tn.finhub.util.ApiClient;
 import java.net.http.*;
 import java.net.URI;
-import tn.finhub.service.MailService;
+import tn.finhub.util.MailClient;
 import org.json.JSONObject;
 
 public class SignupController {
@@ -66,7 +66,7 @@ public class SignupController {
             String verificationLink = body.getString("verification_link");
 
             // 🚨 EMAIL SENT FROM JAVA (YES, WE KNOW)
-            MailService.sendVerificationEmail(
+            MailClient.sendVerificationEmail(
                     emailField.getText(),
                     verificationLink);
 

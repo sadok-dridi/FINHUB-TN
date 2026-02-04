@@ -3,7 +3,8 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.WalletModel; // Added import
+
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -20,7 +21,7 @@ public class TransferController {
     @FXML
     private javafx.scene.control.Button cancelButton;
 
-    private final WalletService walletService = new WalletService();
+    private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
     private Runnable onSuccessCallback;
 
     public void setOnSuccessCallback(Runnable callback) {
@@ -76,7 +77,7 @@ public class TransferController {
                 @Override
                 protected Void call() throws Exception {
                     tn.finhub.model.User user = UserSession.getInstance().getUser();
-                    tn.finhub.service.MailService.sendOtpEmail(user.getEmail(), otp);
+                    tn.finhub.util.MailClient.sendOtpEmail(user.getEmail(), otp);
                     return null;
                 }
             };
@@ -134,8 +135,9 @@ public class TransferController {
         javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
             @Override
             protected Void call() throws Exception {
-                int senderWalletId = walletService.getWallet(currentUserId).getId();
-                walletService.transferByEmail(senderWalletId, email, amount);
+                // Ensure helper method exists in walletModel or use findByUserId
+                int senderWalletId = walletModel.findByUserId(currentUserId).getId();
+                walletModel.transferByEmail(senderWalletId, email, amount);
                 return null;
             }
         };

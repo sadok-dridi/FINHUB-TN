@@ -1,17 +1,19 @@
-package tn.finhub.dao;
+package tn.finhub.model;
 
-import tn.finhub.model.SystemAlert;
 import tn.finhub.util.DBConnection;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SystemAlertDAO {
+public class SystemAlertModel {
+
+    private Connection getConnection() {
+        return DBConnection.getInstance();
+    }
 
     public void createAlert(SystemAlert alert) {
         String sql = "INSERT INTO system_alerts (user_id, severity, message, source) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, alert.getUserId());
             stmt.setString(2, alert.getSeverity());
             stmt.setString(3, alert.getMessage());
@@ -23,10 +25,14 @@ public class SystemAlertDAO {
         }
     }
 
+    public void createAlert(int userId, String severity, String message, String source) {
+        createAlert(new SystemAlert(userId, severity, message, source));
+    }
+
     public List<SystemAlert> getAlertsByUserId(int userId) {
         List<SystemAlert> alerts = new ArrayList<>();
         String sql = "SELECT * FROM system_alerts WHERE user_id = ? ORDER BY created_at DESC";
-        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

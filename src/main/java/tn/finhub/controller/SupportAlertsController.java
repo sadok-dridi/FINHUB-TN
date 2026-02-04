@@ -6,7 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.SystemAlert;
-import tn.finhub.service.SupportService;
+
 import tn.finhub.util.UserSession;
 
 import java.time.format.DateTimeFormatter;
@@ -17,7 +17,7 @@ public class SupportAlertsController {
     @FXML
     private VBox alertsContainer;
 
-    private final SupportService supportService = new SupportService();
+    private final tn.finhub.model.SystemAlertModel alertModel = new tn.finhub.model.SystemAlertModel();
 
     @FXML
     public void initialize() {
@@ -28,7 +28,7 @@ public class SupportAlertsController {
     private void refreshAlerts() {
         alertsContainer.getChildren().clear();
         int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
-        List<SystemAlert> alerts = supportService.getUserAlerts(userId);
+        List<SystemAlert> alerts = alertModel.getAlertsByUserId(userId);
 
         if (alerts.isEmpty()) {
             Label emptyLabel = new Label("No system alerts.");

@@ -4,9 +4,10 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+// import javafx.scene.Node; // Removed unused import
 import tn.finhub.model.User;
-import tn.finhub.service.MailService;
-import tn.finhub.service.UserService;
+import tn.finhub.util.MailClient;
+
 import tn.finhub.util.ApiClient;
 import tn.finhub.util.SessionManager;
 
@@ -18,13 +19,13 @@ public class AdminUserController {
     @FXML
     private TextField searchField;
 
-    private UserService userService = new UserService();
+    private tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
     private ObservableList<User> allUsers;
 
     @FXML
     public void initialize() {
         // Load all users initially
-        allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+        allUsers = FXCollections.observableArrayList(userModel.findAll());
         refreshUserCards(allUsers);
 
         // Add search listener
@@ -53,23 +54,6 @@ public class AdminUserController {
         }
 
         refreshUserCards(filteredList);
-    }
-
-    @FXML
-    public void handleRefresh() {
-        try {
-            userService.syncUsersFromServer();
-            loadUsers();
-
-            tn.finhub.util.DialogUtil.showInfo(
-                    "Sync Completed",
-                    "Users successfully refreshed from server.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            tn.finhub.util.DialogUtil.showError(
-                    "Sync Failed",
-                    "Could not refresh users from server.");
-        }
     }
 
     private void refreshUserCards(ObservableList<User> users) {
@@ -186,7 +170,7 @@ public class AdminUserController {
             String jsonResponse = ApiClient.inviteAdmin(user.getEmail());
             org.json.JSONObject json = new org.json.JSONObject(jsonResponse);
             String inviteLink = json.getString("invite_link");
-            MailService.sendAdminInviteEmail(user.getEmail(), inviteLink);
+            MailClient.sendAdminInviteEmail(user.getEmail(), inviteLink);
 
             tn.finhub.util.DialogUtil.showInfo(
                     "Admin Invitation Sent",
@@ -204,6 +188,25 @@ public class AdminUserController {
         }
     }
 
+    @FXML
+    public void handleRefresh() {
+        try {
+            userModel.syncUsersFromServer();
+            loadUsers();
+
+            tn.finhub.util.DialogUtil.showInfo(
+                    "Sync Completed",
+                    "Users successfully refreshed from server.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            tn.finhub.util.DialogUtil.showError(
+                    "Sync Failed",
+                    "Could not refresh users from server.");
+        }
+    }
+
+    // ...
+
     private void handleDelete(User user) {
         boolean confirmed = tn.finhub.util.DialogUtil.showConfirmation("Delete User",
                 "Are you sure you want to delete " + user.getFullName() + "?");
@@ -212,7 +215,7 @@ public class AdminUserController {
             return;
 
         try {
-            userService.deleteUser(user.getId());
+            userModel.deleteUser(user.getId());
             loadUsers();
         } catch (Exception e) {
             e.printStackTrace();
@@ -222,7 +225,7 @@ public class AdminUserController {
 
     // Helper to reload data
     public void loadUsers() {
-        allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+        allUsers = FXCollections.observableArrayList(userModel.findAll());
         filterUsers(searchField.getText());
     }
 

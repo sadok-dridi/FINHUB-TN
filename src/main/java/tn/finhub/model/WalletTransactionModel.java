@@ -1,12 +1,10 @@
-package tn.finhub.dao;
-
-import tn.finhub.util.DBConnection;
+package tn.finhub.model;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Timestamp;
 
-public class WalletTransactionDAO {
+public class WalletTransactionModel {
 
     public void insert(int walletId, String type,
             BigDecimal amount, String reference, String prevHash, String txHash, java.time.LocalDateTime createdAt) {
@@ -24,7 +22,7 @@ public class WalletTransactionDAO {
             ps.setString(4, reference);
             ps.setString(5, prevHash);
             ps.setString(6, txHash);
-            ps.setTimestamp(7, java.sql.Timestamp.valueOf(createdAt));
+            ps.setTimestamp(7, Timestamp.valueOf(createdAt));
             ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException("Transaction insert failed", e);

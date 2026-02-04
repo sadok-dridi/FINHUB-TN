@@ -8,7 +8,7 @@ import javafx.scene.layout.*;
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.WalletModel;
 import tn.finhub.util.DialogUtil;
 
 import java.time.format.DateTimeFormatter;
@@ -32,7 +32,7 @@ public class AdminUserTransactionsController {
 
     private User user;
     private Wallet wallet;
-    private WalletService walletService = new WalletService();
+    private WalletModel walletModel = new WalletModel();
     private ObservableList<WalletTransaction> transactions;
 
     public void setUser(User user) {
@@ -40,8 +40,8 @@ public class AdminUserTransactionsController {
         nameLabel.setText(user.getFullName());
         emailLabel.setText(user.getEmail());
 
-        if (walletService.hasWallet(user.getId())) {
-            this.wallet = walletService.getWallet(user.getId());
+        if (walletModel.findByUserId(user.getId()) != null) {
+            this.wallet = walletModel.findByUserId(user.getId());
             updateWalletInfo();
             loadTransactions();
         } else {
@@ -52,7 +52,7 @@ public class AdminUserTransactionsController {
     }
 
     private void updateWalletInfo() {
-        wallet = walletService.getWallet(user.getId());
+        wallet = walletModel.findById(wallet.getId());
         balanceLabel.setText(String.format("%.3f TND", wallet.getBalance()));
 
         String status = wallet.getStatus();
@@ -63,7 +63,7 @@ public class AdminUserTransactionsController {
             ledgerAlertBox.setManaged(true);
 
             // Check flags
-            var flag = walletService.getLatestFlag(wallet.getId());
+            var flag = walletModel.getLatestFlag(wallet.getId());
             if (flag != null) {
                 ledgerAlertMessage.setText(flag.getReason() + " (at "
                         + flag.getFlaggedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")");
@@ -78,10 +78,10 @@ public class AdminUserTransactionsController {
     }
 
     private void loadTransactions() {
-        transactions = FXCollections.observableArrayList(walletService.getTransactionHistory(wallet.getId()));
+        transactions = FXCollections.observableArrayList(walletModel.getTransactionHistory(wallet.getId()));
 
         // Identify tampered transaction ID
-        int tamperedId = walletService.getTamperedTransactionId(wallet.getId());
+        int tamperedId = walletModel.getTamperedTransactionId(wallet.getId());
 
         transactionsListView.setItems(transactions);
         transactionsListView.setCellFactory(param -> new ListCell<WalletTransaction>() {

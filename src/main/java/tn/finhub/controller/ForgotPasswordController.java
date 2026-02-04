@@ -7,7 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import tn.finhub.util.ApiClient;
-import tn.finhub.service.MailService;
+import tn.finhub.util.MailClient;
 import java.io.IOException;
 
 public class ForgotPasswordController {
@@ -38,7 +38,7 @@ public class ForgotPasswordController {
                 String resetLink = ApiClient.sendForgotPasswordRequest(email);
 
                 // 2. Send Email
-                MailService.sendResetPasswordEmail(email, resetLink);
+                MailClient.sendResetPasswordEmail(email, resetLink);
 
                 Platform.runLater(() -> {
                     messageLabel.setStyle("-fx-text-fill: -color-success;");

@@ -1,18 +1,20 @@
-package tn.finhub.dao;
+package tn.finhub.model;
 
-import tn.finhub.model.SavedContact;
 import tn.finhub.util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SavedContactDAO {
+public class SavedContactModel {
+
+    private Connection getConnection() {
+        return DBConnection.getInstance();
+    }
 
     public void addContact(SavedContact contact) {
         String sql = "INSERT INTO saved_contacts (user_id, contact_email, contact_name) VALUES (?, ?, ?)";
-        try (Connection conn = DBConnection.getInstance();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, contact.getUserId());
             pstmt.setString(2, contact.getContactEmail());
@@ -29,8 +31,7 @@ public class SavedContactDAO {
         List<SavedContact> contacts = new ArrayList<>();
         String sql = "SELECT * FROM saved_contacts WHERE user_id = ? ORDER BY contact_name ASC";
 
-        try (Connection conn = DBConnection.getInstance();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, userId);
             try (ResultSet rs = pstmt.executeQuery()) {
@@ -52,8 +53,7 @@ public class SavedContactDAO {
 
     public void deleteContact(int contactId) {
         String sql = "DELETE FROM saved_contacts WHERE id = ?";
-        try (Connection conn = DBConnection.getInstance();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, contactId);
             pstmt.executeUpdate();
@@ -65,8 +65,7 @@ public class SavedContactDAO {
 
     public boolean exists(int userId, String email) {
         String sql = "SELECT COUNT(*) FROM saved_contacts WHERE user_id = ? AND contact_email = ?";
-        try (Connection conn = DBConnection.getInstance();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, userId);
             pstmt.setString(2, email);

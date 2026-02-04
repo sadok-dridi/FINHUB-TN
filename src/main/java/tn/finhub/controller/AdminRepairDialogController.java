@@ -5,7 +5,7 @@ import javafx.stage.Stage;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import tn.finhub.model.WalletTransaction;
-import tn.finhub.service.WalletService;
+import tn.finhub.model.WalletModel;
 import tn.finhub.util.DialogUtil;
 import java.math.BigDecimal;
 
@@ -35,8 +35,8 @@ public class AdminRepairDialogController {
         hashLabel.setText("Hash: " + transaction.getTxHash());
 
         // Suggest Correct Value
-        WalletService ws = new WalletService();
-        BigDecimal suggested = ws.calculateDiscrepancy(transaction.getWalletId(), transaction.getId(),
+        WalletModel wm = new WalletModel();
+        BigDecimal suggested = wm.calculateDiscrepancy(transaction.getWalletId(), transaction.getId(),
                 transaction.getAmount(), transaction.getType());
 
         correctionHintLabel.setText("Approximate Value form Ledger: " + suggested.toPlainString());
@@ -59,8 +59,8 @@ public class AdminRepairDialogController {
                 String newRef = refField.getText();
 
                 // Perform Repair
-                WalletService walletService = new WalletService();
-                walletService.repairTransaction(transaction.getWalletId(), transaction.getId(), newAmount, newRef);
+                WalletModel walletModel = new WalletModel();
+                walletModel.repairTransaction(transaction.getWalletId(), transaction.getId(), newAmount, newRef);
 
                 saved = true;
                 DialogUtil.showInfo("Success", "Transaction restored and ledger verified.");

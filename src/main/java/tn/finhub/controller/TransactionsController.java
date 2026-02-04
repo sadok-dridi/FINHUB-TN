@@ -6,7 +6,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
-import tn.finhub.service.WalletService;
+
+import tn.finhub.model.WalletModel;
+import tn.finhub.model.SavedContactModel;
 import tn.finhub.util.UserSession;
 
 import java.time.format.DateTimeFormatter;
@@ -19,8 +21,8 @@ public class TransactionsController {
     @FXML
     private javafx.scene.layout.HBox contactsContainer;
 
-    private final WalletService walletService = new WalletService();
-    private final tn.finhub.dao.SavedContactDAO contactDAO = new tn.finhub.dao.SavedContactDAO();
+    private final WalletModel walletModel = new WalletModel();
+    private final SavedContactModel contactModel = new SavedContactModel();
 
     @FXML
     public void initialize() {
@@ -33,7 +35,7 @@ public class TransactionsController {
         if (user == null)
             return;
 
-        List<tn.finhub.model.SavedContact> contacts = contactDAO.getContactsByUserId(user.getId());
+        List<tn.finhub.model.SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
         contactsContainer.getChildren().clear();
 
         for (tn.finhub.model.SavedContact contact : contacts) {
@@ -114,16 +116,16 @@ public class TransactionsController {
         if (user == null)
             return;
 
-        Wallet wallet = walletService.getWallet(user.getId());
+        Wallet wallet = walletModel.findByUserId(user.getId());
         if (wallet == null)
             return;
 
-        List<WalletTransaction> transactions = walletService.getTransactionHistory(wallet.getId());
+        List<WalletTransaction> transactions = walletModel.getTransactionHistory(wallet.getId());
 
         // Check for tampering
         int badTxId = -1;
         if ("FROZEN".equals(wallet.getStatus())) {
-            badTxId = walletService.getTamperedTransactionId(wallet.getId());
+            badTxId = walletModel.getTamperedTransactionId(wallet.getId());
         }
 
         transactionContainer.getChildren().clear();
