@@ -63,6 +63,35 @@ public class SupportModel {
         return tickets;
     }
 
+    // ADMIN: Get ALL tickets
+    public List<SupportTicket> getAllTickets() {
+        List<SupportTicket> tickets = new ArrayList<>();
+        String sql = "SELECT * FROM support_tickets ORDER BY created_at DESC";
+        try (Statement stmt = getConnection().createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                tickets.add(mapResultSetToTicket(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return tickets;
+    }
+
+    // ADMIN: Count open tickets
+    public int getOpenTicketCount() {
+        String sql = "SELECT COUNT(*) FROM support_tickets WHERE status != 'CLOSED' AND status != 'RESOLVED'";
+        try (Statement stmt = getConnection().createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public SupportTicket getTicketById(int ticketId) {
         String sql = "SELECT * FROM support_tickets WHERE id = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {

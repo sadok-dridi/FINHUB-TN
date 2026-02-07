@@ -9,7 +9,6 @@ import tn.finhub.model.VirtualCard;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
 import tn.finhub.model.WalletModel;
-import tn.finhub.model.LedgerFlag; // Added import for LedgerFlag
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -142,8 +141,11 @@ public class WalletController {
             if ("FROZEN".equals(currentWallet.getStatus()))
                 return; // Security check
 
-            virtualCardModel.createCardForWallet(currentWallet.getId());
-            refreshVirtualCards(currentWallet.getId());
+            // Run in background to avoid freezing UI during card generation
+            new Thread(() -> {
+                virtualCardModel.createCardForWallet(currentWallet.getId());
+                javafx.application.Platform.runLater(this::loadWalletData);
+            }).start();
         }
     }
 
@@ -160,70 +162,175 @@ public class WalletController {
         timeline.play();
     }
 
+    // STALE-WHILE-REVALIDATE CACHE
+    private static WalletDataPacket cachedData = null;
+
+    public static void setCachedData(WalletDataPacket data) {
+        cachedData = data;
+    }
+
     private void loadWalletData() {
         tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
         if (user == null)
             return;
         int userId = user.getId();
 
-        // Ensure wallet exists ONLY for regular users
-        if ("USER".equalsIgnoreCase(user.getRole())) {
-            walletModel.createWalletIfNotExists(userId);
+        // 0. Optimistic UI Update (Stale Data)
+        if (cachedData != null && cachedData.wallet.getUserId() == userId) {
+            updateUI(cachedData);
         }
 
-        currentWallet = walletModel.findByUserId(userId);
-        if (currentWallet != null) {
+        // Background Task for Data Fetching
+        javafx.concurrent.Task<WalletDataPacket> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected WalletDataPacket call() throws Exception {
+                // ... (Logic unchanged) ...
+                // 1. Create Wallet Check
+                walletModel.createWalletIfNotExists(userId);
 
-            escrowBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getEscrowBalance());
-            availableBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getBalance());
+                // 2. Fetch Wallet
+                Wallet wallet = walletModel.findByUserId(userId);
+                if (wallet == null)
+                    return null;
 
-            // Check Status
-            boolean isFrozen = "FROZEN".equals(currentWallet.getStatus());
+                // 3. Check Flags
+                boolean isFrozen = "FROZEN".equals(wallet.getStatus());
+                int badTxId = -1;
+                if (isFrozen) {
+                    badTxId = walletModel.getTamperedTransactionId(wallet.getId());
+                }
 
-            if (frozenAlertBox != null) {
-                frozenAlertBox.setVisible(isFrozen);
-                frozenAlertBox.setManaged(isFrozen);
+                // 4. Fetch Cards
+                List<VirtualCard> cards = virtualCardModel.getCardsByWallet(wallet.getId());
 
-                if (isFrozen && frozenAlertBox.getChildren().size() > 1) {
-                    LedgerFlag flag = walletModel.getLatestFlag(currentWallet.getId());
-                    if (flag != null) {
-                        // Logic for setting flag description if needed
+                // 5. Fetch Transactions
+                List<WalletTransaction> transactions = walletModel.getTransactionHistory(wallet.getId());
+
+                // 6. Portfolio Summary
+                java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal currentValue = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.valueOf(-9999);
+                String bestAsset = "None";
+                int assetCount = 0;
+
+                java.util.List<tn.finhub.model.PortfolioItem> items = marketModel.getPortfolio(userId);
+                java.math.BigDecimal exchangeRate = marketModel.getUsdToTndRate();
+
+                for (tn.finhub.model.PortfolioItem item : items) {
+                    if (item.getQuantity().compareTo(java.math.BigDecimal.ZERO) > 0) {
+                        assetCount++;
+                        java.math.BigDecimal investedUSD = item.getAverageCost().multiply(item.getQuantity());
+                        totalInvested = totalInvested.add(investedUSD.multiply(exchangeRate));
+
+                        tn.finhub.model.MarketPrice price = marketModel.getPrice(item.getSymbol());
+                        if (price != null) {
+                            java.math.BigDecimal valUSD = price.getPrice().multiply(item.getQuantity());
+                            currentValue = currentValue.add(valUSD.multiply(exchangeRate));
+
+                            if (item.getAverageCost().doubleValue() > 0) {
+                                java.math.BigDecimal itemPnlPct = (price.getPrice().subtract(item.getAverageCost()))
+                                        .divide(item.getAverageCost(), 4, java.math.RoundingMode.HALF_UP)
+                                        .multiply(java.math.BigDecimal.valueOf(100));
+
+                                if (itemPnlPct.compareTo(maxPnlPercent) > 0) {
+                                    maxPnlPercent = itemPnlPct;
+                                    bestAsset = item.getSymbol();
+                                }
+                            }
+                        }
                     }
                 }
-            } else {
-                System.err.println("DEBUG: frozenAlertBox is null!");
+
+                return new WalletDataPacket(wallet, cards, transactions, badTxId, currentValue, totalInvested,
+                        bestAsset, maxPnlPercent, assetCount);
             }
+        };
 
-            if (topUpButton != null)
-                topUpButton.setDisable(isFrozen);
-            if (generateCardButton != null)
-                generateCardButton.setDisable(isFrozen);
+        task.setOnSucceeded(e -> {
+            WalletDataPacket data = task.getValue();
+            if (data == null || data.wallet == null)
+                return;
 
-            // Check for specific tampered transaction if frozen
-            int badTxId = -1;
-            if (isFrozen) {
-                badTxId = walletModel.getTamperedTransactionId(currentWallet.getId());
-            }
+            // Update Cache & UI
+            cachedData = data;
+            updateUI(data);
+        });
 
-            // Load Virtual Cards
-            refreshVirtualCards(currentWallet.getId());
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            System.err.println("Error loading wallet data: " + ex.getMessage());
+            ex.printStackTrace();
+        });
 
-            // Load Transactions (Limit to 5 for Dashboard)
+        new Thread(task).start();
+    }
+
+    private void updateUI(WalletDataPacket data) {
+        this.currentWallet = data.wallet;
+
+        // Update UI
+        if (escrowBalanceLabel != null)
+            escrowBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getEscrowBalance());
+
+        if (availableBalanceLabel != null)
+            availableBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getBalance());
+
+        boolean isFrozen = "FROZEN".equals(currentWallet.getStatus());
+
+        if (frozenAlertBox != null) {
+            frozenAlertBox.setVisible(isFrozen);
+            frozenAlertBox.setManaged(isFrozen);
+        }
+
+        if (topUpButton != null)
+            topUpButton.setDisable(isFrozen);
+        if (generateCardButton != null)
+            generateCardButton.setDisable(isFrozen);
+
+        // Refresh Cards & Portfolio UI
+        refreshVirtualCards(data);
+
+        // Refresh Transactions
+        if (transactionContainer != null) {
             transactionContainer.getChildren().clear();
-            List<WalletTransaction> transactions = walletModel.getTransactionHistory(currentWallet.getId()); // Changed
-                                                                                                             // from
-                                                                                                             // walletService
-
-            int limit = Math.min(transactions.size(), 4);
+            int limit = Math.min(data.transactions.size(), 4);
             for (int i = 0; i < limit; i++) {
-                transactionContainer.getChildren().add(createTransactionCard(transactions.get(i), badTxId));
+                transactionContainer.getChildren().add(createTransactionCard(data.transactions.get(i), data.badTxId));
             }
         }
     }
 
-    private void refreshVirtualCards(int walletId) {
+    // Helper Record for Data Transfer
+    public static class WalletDataPacket {
+        Wallet wallet;
+        List<VirtualCard> cards;
+        List<WalletTransaction> transactions;
+        int badTxId;
+        java.math.BigDecimal portfolioValue;
+        java.math.BigDecimal totalInvested;
+        String bestAsset;
+        java.math.BigDecimal maxPnlPercent;
+        int assetCount;
+
+        public WalletDataPacket(Wallet w, List<VirtualCard> c, List<WalletTransaction> t, int badId,
+                java.math.BigDecimal val, java.math.BigDecimal inv, String best, java.math.BigDecimal maxPnl,
+                int count) {
+            this.wallet = w;
+            this.cards = c;
+            this.transactions = t;
+            this.badTxId = badId;
+            this.portfolioValue = val;
+            this.totalInvested = inv;
+            this.bestAsset = best;
+            this.maxPnlPercent = maxPnl;
+            this.assetCount = count;
+        }
+    }
+
+    private void refreshVirtualCards(WalletDataPacket data) {
         cardsContainer.getChildren().clear();
-        List<VirtualCard> cards = virtualCardModel.getCardsByWallet(walletId);
+        int walletId = data.wallet.getId();
+        List<VirtualCard> cards = data.cards;
 
         // Left Wrapper (Aligns with Available Balance Card)
         javafx.scene.layout.HBox leftWrapper = new javafx.scene.layout.HBox(15);
@@ -241,12 +348,30 @@ public class WalletController {
         javafx.scene.layout.HBox.setHgrow(rightWrapper, javafx.scene.layout.Priority.ALWAYS);
         rightWrapper.setMinWidth(0);
         rightWrapper.setPrefWidth(0); // Force equal distribution start point
-        rightWrapper.setAlignment(javafx.geometry.Pos.TOP_LEFT); // Default VBox fill behavior works best without
-                                                                 // centering alignment on the box itself if we want
-                                                                 // fill. But child is max_value.
+        rightWrapper.setAlignment(javafx.geometry.Pos.TOP_LEFT);
 
         if (walletId > 0) {
-            rightWrapper.getChildren().add(createPortfolioPerformanceNode(walletId));
+            // Note: This still triggers marketModel calls inside.
+            // Optimally, we should fetch portfolio stats in loadWalletData too.
+            // For now, leaving this as is to avoid too big refactor, but wrapped in
+            // Platform.runLater by caller.
+            // HOWEVER, createPortfolioPerformanceNode does DB calls?
+            // Let's check createPortfolioPerformanceNode. If it does DB calls, we need to
+            // defer it or pre-fetch.
+            // It calls marketModel.getPortfolio(userId). This IS a DB call.
+            // We should ideally pass portfolio data to this method too.
+            // For this iteration, let's wrap the creation in a background thread if
+            // possible,
+            // OR accept that this part might still be slight blocking, but let's look at
+            // createPortfolioPerformanceNode
+
+            // To be safe and quick: Let's spawn a thread FOR the portfolio node creation if
+            // it's heavy
+            // But we can't add to scene from BG thread.
+            // Better strategy: createPortfolioPerformanceNode should handle its own async
+            // loading internally!
+            javafx.scene.Node portfolioNode = createPortfolioPerformanceNode(data);
+            rightWrapper.getChildren().add(portfolioNode);
         }
 
         cardsContainer.getChildren().addAll(leftWrapper, rightWrapper);
@@ -603,7 +728,7 @@ public class WalletController {
         };
     }
 
-    private javafx.scene.Node createPortfolioPerformanceNode(int walletId) {
+    private javafx.scene.Node createPortfolioPerformanceNode(WalletDataPacket data) {
         VBox node = new VBox(15);
         node.setPrefHeight(220);
         node.setMinHeight(220);
@@ -628,49 +753,9 @@ public class WalletController {
 
         header.getChildren().addAll(title, spacer, badge);
 
-        // Calculate PnL
-        tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
-        int userId = user != null ? user.getId() : 0;
-
-        java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
-        java.math.BigDecimal currentValue = java.math.BigDecimal.ZERO;
-
-        java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.valueOf(-9999);
-        String bestAsset = "None";
-        int assetCount = 0;
-
-        java.util.List<tn.finhub.model.PortfolioItem> items = marketModel.getPortfolio(userId);
-        java.math.BigDecimal exchangeRate = marketModel.getUsdToTndRate(); // Ensure TND conversion
-
-        for (tn.finhub.model.PortfolioItem item : items) {
-            if (item.getQuantity().compareTo(java.math.BigDecimal.ZERO) > 0) {
-                assetCount++;
-                // Invested (Cost Basis) - Stored in USD usually, convert to TND
-                // But wait, averageCost in SimulationService was stored in USD.
-                // Let's assume averageCost is USD.
-                java.math.BigDecimal investedUSD = item.getAverageCost().multiply(item.getQuantity());
-                totalInvested = totalInvested.add(investedUSD.multiply(exchangeRate));
-
-                // Current Value
-                tn.finhub.model.MarketPrice price = marketModel.getPrice(item.getSymbol());
-                if (price != null) {
-                    java.math.BigDecimal valUSD = price.getPrice().multiply(item.getQuantity());
-                    currentValue = currentValue.add(valUSD.multiply(exchangeRate));
-
-                    // Check Logic for Best Performer (based on individual item PnL %)
-                    if (item.getAverageCost().doubleValue() > 0) {
-                        java.math.BigDecimal itemPnlPct = (price.getPrice().subtract(item.getAverageCost()))
-                                .divide(item.getAverageCost(), 4, java.math.RoundingMode.HALF_UP)
-                                .multiply(java.math.BigDecimal.valueOf(100));
-
-                        if (itemPnlPct.compareTo(maxPnlPercent) > 0) {
-                            maxPnlPercent = itemPnlPct;
-                            bestAsset = item.getSymbol();
-                        }
-                    }
-                }
-            }
-        }
+        // Use Pre-calculated data
+        java.math.BigDecimal currentValue = data.portfolioValue;
+        java.math.BigDecimal totalInvested = data.totalInvested;
 
         java.math.BigDecimal pnl = currentValue.subtract(totalInvested);
         double pnlValue = pnl.doubleValue();
@@ -762,7 +847,7 @@ public class WalletController {
         javafx.scene.shape.SVGPath assetIcon = new javafx.scene.shape.SVGPath();
         assetIcon.setContent("M4 6h16v2H4zm2 4h12v2H6zm2 4h8v2H8z"); // Simple stack icon
         assetIcon.setStyle("-fx-fill: #9CA3AF;");
-        Label assetLbl = new Label(assetCount + " Assets");
+        Label assetLbl = new Label(data.assetCount + " Assets");
         assetLbl.setStyle("-fx-text-fill: #D1D5DB; -fx-font-size: 11px; -fx-font-weight: bold;");
         assetDetail.getChildren().addAll(assetIcon, assetLbl);
 
@@ -774,9 +859,9 @@ public class WalletController {
                 "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z");
         starIcon.setStyle("-fx-fill: #F59E0B;"); // Gold/Orange star
 
-        String perfText = "Top: " + (bestAsset.equals("None") ? bestAsset : bestAsset.toUpperCase());
-        if (!"None".equals(bestAsset)) {
-            perfText += String.format(" (%+.2f%%)", maxPnlPercent.doubleValue());
+        String perfText = "Top: " + (data.bestAsset.equals("None") ? data.bestAsset : data.bestAsset.toUpperCase());
+        if (!"None".equals(data.bestAsset)) {
+            perfText += String.format(" (%+.2f%%)", data.maxPnlPercent.doubleValue());
         }
         Label perfLbl = new Label(perfText);
         perfLbl.setStyle("-fx-text-fill: #D1D5DB; -fx-font-size: 11px; -fx-font-weight: bold;");

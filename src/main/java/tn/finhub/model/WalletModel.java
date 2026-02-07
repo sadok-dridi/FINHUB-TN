@@ -436,6 +436,20 @@ public class WalletModel {
         return txDAO.findByWalletId(walletId);
     }
 
+    public BigDecimal getTotalVolume() {
+        String sql = "SELECT SUM(amount) FROM wallet_transactions";
+        try (Statement st = getConnection().createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                BigDecimal val = rs.getBigDecimal(1);
+                return val == null ? BigDecimal.ZERO : val;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting total volume", e);
+        }
+        return BigDecimal.ZERO;
+    }
+
     private void recordTransaction(int walletId, String type, BigDecimal amount, String ref) {
         LocalDateTime now = LocalDateTime.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
         String prevHash = getLastHash(walletId);

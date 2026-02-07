@@ -8,6 +8,7 @@ import tn.finhub.model.User;
 import tn.finhub.model.UserModel;
 import tn.finhub.model.WalletModel;
 import tn.finhub.util.SessionManager;
+import tn.finhub.util.ViewUtils;
 
 public class AdminTransactionsController {
 
@@ -149,33 +150,35 @@ public class AdminTransactionsController {
         }
     }
 
+    // Navigation Handlers
     @FXML
-    public void handleLogout() {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/view/login.fxml"));
-            javafx.scene.Parent view = loader.load();
-            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
-                    .lookup("#contentArea");
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void handleGoToDashboard() {
+        ViewUtils.setView(usersContainer, "/view/admin_dashboard.fxml");
     }
 
-    // Navigation Handlers for Sidebar
     @FXML
-    public void handleGoToUsers() {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/view/admin_users.fxml"));
-            javafx.scene.Parent view = loader.load();
-            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
-                    .lookup("#contentArea");
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(view);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void handleGoToUsers() {
+        ViewUtils.setView(usersContainer, "/view/admin_users.fxml");
+    }
+
+    @FXML
+    private void handleGoToTransactions() {
+        ViewUtils.setView(usersContainer, "/view/admin_transactions.fxml");
+    }
+
+    @FXML
+    private void handleGoToSupport() {
+        ViewUtils.setView(usersContainer, "/view/admin_support.fxml");
+    }
+
+    @FXML
+    private void handleGoToAlerts() {
+        ViewUtils.setView(usersContainer, "/view/admin_alerts.fxml");
+    }
+
+    @FXML
+    public void handleLogout() {
+        SessionManager.logout();
+        ViewUtils.setView(usersContainer, "/view/login.fxml");
     }
 }

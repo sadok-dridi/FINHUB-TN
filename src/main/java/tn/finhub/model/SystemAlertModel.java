@@ -51,4 +51,25 @@ public class SystemAlertModel {
         }
         return alerts;
     }
+
+    public void broadcastAlert(String severity, String message, String source) {
+        UserModel userModel = new UserModel();
+        List<tn.finhub.model.User> allUsers = userModel.findAll();
+
+        String sql = "INSERT INTO system_alerts (user_id, severity, message, source) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
+            for (tn.finhub.model.User user : allUsers) {
+                stmt.setInt(1, user.getId());
+                stmt.setString(2, severity);
+                stmt.setString(3, message);
+                stmt.setString(4, source);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error broadcasting alert: " + e.getMessage());
+        }
+    }
 }

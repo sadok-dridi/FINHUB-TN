@@ -46,6 +46,19 @@ public class UserModel {
         return users;
     }
 
+    public int countUsers() {
+        String sql = "SELECT COUNT(*) FROM users_local";
+        try (Statement st = getConnection().createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            logger.error("Error counting users", e);
+        }
+        return 0;
+    }
+
     public User findByEmail(String email) {
         String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE LOWER(email) = LOWER(?)";
 

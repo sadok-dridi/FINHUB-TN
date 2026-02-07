@@ -80,18 +80,61 @@ public class ProfileController {
         apiKeyField.setText(currentKey);
     }
 
+    // STALE-WHILE-REVALIDATE CACHE
+    private static FinancialProfile cachedProfile = null;
+
+    public static void setCachedProfile(FinancialProfile profile) {
+        cachedProfile = profile;
+    }
+
     private void loadFinancialData() {
         int userId = SessionManager.getUserId();
-        profileModel.ensureProfile(userId); // Safety check
-        FinancialProfile profile = profileModel.findByUserId(userId);
 
-        if (profile != null) {
-            incomeField.setText(String.valueOf(profile.getMonthlyIncome()));
-            expensesField.setText(String.valueOf(profile.getMonthlyExpenses()));
-            savingsField.setText(String.valueOf(profile.getSavingsGoal()));
-            riskBox.setValue(profile.getRiskTolerance());
-            currencyBox.setValue(profile.getCurrency());
+        // 0. Optimistic UI Update
+        if (cachedProfile != null && cachedProfile.getUserId() == userId) {
+            updateUI(cachedProfile);
         }
+
+        // Background Task
+        javafx.concurrent.Task<FinancialProfile> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected FinancialProfile call() throws Exception {
+                profileModel.ensureProfile(userId); // DB Write/Check
+                return profileModel.findByUserId(userId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            FinancialProfile profile = task.getValue();
+            if (profile != null) {
+                cachedProfile = profile;
+                updateUI(profile);
+            }
+        });
+
+        task.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateUI(FinancialProfile profile) {
+        incomeField.setText(String.valueOf(profile.getMonthlyIncome()));
+        expensesField.setText(String.valueOf(profile.getMonthlyExpenses()));
+        savingsField.setText(String.valueOf(profile.getSavingsGoal()));
+
+        // Ensure items exist before setting value (though setupFinancialFields runs
+        // first)
+        if (!riskBox.getItems().contains(profile.getRiskTolerance())) {
+            riskBox.getItems().add(profile.getRiskTolerance());
+        }
+        riskBox.setValue(profile.getRiskTolerance());
+
+        if (!currencyBox.getItems().contains(profile.getCurrency())) {
+            currencyBox.getItems().add(profile.getCurrency());
+        }
+        currencyBox.setValue(profile.getCurrency());
     }
 
     @FXML

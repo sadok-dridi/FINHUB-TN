@@ -11,26 +11,21 @@
     <!-- Sidebar -->
     <left>
         <VBox spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0); -fx-border-color: transparent -color-card-border transparent transparent; -fx-border-width: 0 1 0 0;" prefWidth="250">
-            
             <HBox alignment="CENTER_LEFT" spacing="10">
                 <Circle radius="20" fill="#2D2A40"/>
                 <VBox>
-                    <Label text="Admin User" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                    <Label text="Administrator" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                    <Label text="FinHub Admin" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                    <Label text="Users" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
                 </VBox>
             </HBox>
-            
             <Region prefHeight="30"/>
-            
-            <Label text="ADMINISTRATION" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-            
+            <Label text="MAIN" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+            <Button text="Dashboard" onAction="#handleGoToDashboard" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Users" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 8px; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Transactions" onAction="#handleGoToTransactions" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Analytics" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Settings" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            
+            <Button text="Support" onAction="#handleGoToSupport" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
+            <Button text="Alerts" onAction="#handleGoToAlerts" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Region VBox.vgrow="ALWAYS"/>
-            
             <Button text="Log Out" onAction="#handleLogout" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-error; -fx-padding: 10; -fx-cursor: hand;"/>
         </VBox>
     </left>

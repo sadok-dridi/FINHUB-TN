@@ -36,15 +36,14 @@
             <javafx.scene.control.Separator style="-fx-opacity: 0.1; -fx-background-color: white;"/>
 
             <!-- History Section -->
-            <VBox spacing="15">
+            <VBox spacing="15" VBox.vgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT">
                     <Label text="Transaction History" 
                        style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 1);"/>
                 </HBox>
                 
-                <VBox fx:id="transactionContainer" spacing="12" style="-fx-background-color: transparent;">
-                    <!-- Transactions populated here -->
-                </VBox>
+                <javafx.scene.control.ListView fx:id="transactionListView" VBox.vgrow="ALWAYS" 
+                       style="-fx-background-color: transparent; -fx-control-inner-background: transparent; -fx-padding: 0;"/>
             </VBox>
 
         </VBox>

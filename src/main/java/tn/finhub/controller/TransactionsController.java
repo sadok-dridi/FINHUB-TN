@@ -17,30 +17,114 @@ import java.util.List;
 public class TransactionsController {
 
     @FXML
-    private VBox transactionContainer;
+    private javafx.scene.control.ListView<WalletTransaction> transactionListView;
     @FXML
     private javafx.scene.layout.HBox contactsContainer;
 
     private final WalletModel walletModel = new WalletModel();
     private final SavedContactModel contactModel = new SavedContactModel();
 
+    // STALE-WHILE-REVALIDATE CACHE
+    private static TransactionData cachedData = null;
+
     @FXML
     public void initialize() {
-        loadTransactions();
-        loadContacts();
+        setupTransactionList();
+        loadData();
     }
 
-    private void loadContacts() {
+    private void setupTransactionList() {
+        transactionListView.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
+            @Override
+            protected void updateItem(WalletTransaction tx, boolean empty) {
+                super.updateItem(tx, empty);
+                if (empty || tx == null) {
+                    setGraphic(null);
+                    setStyle("-fx-background-color: transparent;");
+                } else {
+                    int badTxId = (cachedData != null) ? cachedData.badTxId : -1;
+                    setGraphic(createTransactionCard(tx, badTxId));
+                    setStyle("-fx-background-color: transparent; -fx-padding: 0 0 10 0;");
+                }
+            }
+        });
+    }
+
+    private void loadData() {
         tn.finhub.model.User user = UserSession.getInstance().getUser();
         if (user == null)
             return;
 
-        List<tn.finhub.model.SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
-        contactsContainer.getChildren().clear();
-
-        for (tn.finhub.model.SavedContact contact : contacts) {
-            contactsContainer.getChildren().add(createContactCard(contact));
+        // 0. Optimistic UI Update
+        if (cachedData != null && cachedData.userId == user.getId()) {
+            updateUI(cachedData);
         }
+
+        // Background Task
+        javafx.concurrent.Task<TransactionData> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected TransactionData call() throws Exception {
+                // 1. Fetch Wallet & Transactions
+                Wallet wallet = walletModel.findByUserId(user.getId());
+                List<WalletTransaction> transactions = java.util.Collections.emptyList();
+                int badTxId = -1;
+
+                if (wallet != null) {
+                    transactions = walletModel.getTransactionHistory(wallet.getId());
+                    if ("FROZEN".equals(wallet.getStatus())) {
+                        badTxId = walletModel.getTamperedTransactionId(wallet.getId());
+                    }
+                }
+
+                // 2. Fetch Contacts
+                List<tn.finhub.model.SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
+
+                return new TransactionData(user.getId(), transactions, contacts, badTxId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            TransactionData data = task.getValue();
+            cachedData = data;
+            updateUI(data);
+        });
+
+        task.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateUI(TransactionData data) {
+        // Update Contacts
+        if (contactsContainer != null) {
+            contactsContainer.getChildren().clear();
+            for (tn.finhub.model.SavedContact contact : data.contacts) {
+                contactsContainer.getChildren().add(createContactCard(contact));
+            }
+        }
+
+        // Update Transactions
+        if (transactionListView != null) {
+            if (data.transactions.isEmpty()) {
+                // Ideally show a placeholder on the listview, but for now specific empty data
+                transactionListView.setItems(javafx.collections.FXCollections.observableArrayList());
+                transactionListView.setPlaceholder(new Label("No transactions found."));
+            } else {
+                transactionListView.setItems(javafx.collections.FXCollections.observableArrayList(data.transactions));
+            }
+        }
+    }
+
+    private void loadContacts() {
+        // Delegated to loadData()
+        loadData();
+    }
+
+    private void loadTransactions() {
+        // Delegated to loadData() but kept for compatibility with callbacks
+        loadData();
     }
 
     private javafx.scene.Node createContactCard(tn.finhub.model.SavedContact contact) {
@@ -111,34 +195,24 @@ public class TransactionsController {
         }
     }
 
-    private void loadTransactions() {
-        tn.finhub.model.User user = UserSession.getInstance().getUser();
-        if (user == null)
-            return;
+    // Data Transfer Object
+    public static class TransactionData {
+        int userId;
+        List<WalletTransaction> transactions;
+        List<tn.finhub.model.SavedContact> contacts;
+        int badTxId;
 
-        Wallet wallet = walletModel.findByUserId(user.getId());
-        if (wallet == null)
-            return;
-
-        List<WalletTransaction> transactions = walletModel.getTransactionHistory(wallet.getId());
-
-        // Check for tampering
-        int badTxId = -1;
-        if ("FROZEN".equals(wallet.getStatus())) {
-            badTxId = walletModel.getTamperedTransactionId(wallet.getId());
+        public TransactionData(int uid, List<WalletTransaction> txs, List<tn.finhub.model.SavedContact> contacts,
+                int badTxId) {
+            this.userId = uid;
+            this.transactions = txs;
+            this.contacts = contacts;
+            this.badTxId = badTxId;
         }
+    }
 
-        transactionContainer.getChildren().clear();
-
-        if (transactions.isEmpty()) {
-            Label placeholder = new Label("No transactions found.");
-            placeholder.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px; -fx-padding: 20;");
-            transactionContainer.getChildren().add(placeholder);
-        } else {
-            for (WalletTransaction tx : transactions) {
-                transactionContainer.getChildren().add(createTransactionCard(tx, badTxId));
-            }
-        }
+    public static void setCachedData(TransactionData data) {
+        cachedData = data;
     }
 
     // --- SHARED LOGIC FROM WalletController (Should be refactored eventually) ---
@@ -146,6 +220,10 @@ public class TransactionsController {
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // Ensure the card takes full width of list cell
+        card.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(card, javafx.scene.layout.Priority.ALWAYS);
 
         // Highlight if tampering detected
         if (tx.getId() == badTxId) {
@@ -217,20 +295,17 @@ public class TransactionsController {
 
         Label amountLabel = new Label();
         String prefix = "";
-        String styleClass = "";
 
         if (isPositive) {
             prefix = "+";
-            styleClass = "amount-positive";
         } else if (isNegative) {
             prefix = "-";
-            styleClass = "amount-negative";
-        } else {
-            styleClass = "amount-hold";
         }
 
         amountLabel.setText(prefix + " TND " + tx.getAmount());
-        amountLabel.getStyleClass().add(styleClass);
+        amountLabel.setStyle(isPositive ? "-fx-text-fill: #10B981; -fx-font-weight: bold;"
+                : (isNegative ? "-fx-text-fill: white; -fx-font-weight: bold;"
+                        : "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"));
 
         Label dateLabel = new Label(
                 tx.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")));

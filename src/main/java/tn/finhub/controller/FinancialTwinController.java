@@ -256,6 +256,14 @@ public class FinancialTwinController {
 
     private String selectedAsset = null;
 
+    // --- Market Memory Cache ---
+    private static final java.util.Map<String, tn.finhub.model.PortfolioItem> portfolioCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static void setCachedPortfolio(java.util.Map<String, tn.finhub.model.PortfolioItem> cache) {
+        portfolioCache.clear();
+        portfolioCache.putAll(cache);
+    }
+
     private void setupMarket() {
         // Initialize Chart
         CategoryAxis xAxis = new CategoryAxis();
@@ -282,30 +290,26 @@ public class FinancialTwinController {
             private final Label symbolLabel = new Label();
             private final Label ownedLabel = new Label("OWNED");
 
-            private final javafx.scene.layout.VBox infoBox = new javafx.scene.layout.VBox();
-            private final Label priceLabel = new Label();
-            private final Label changeLabel = new Label();
-
             private final javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
 
             {
                 // Root Layout
                 root.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                root.setSpacing(10); // Reduced spacing
-                root.setPadding(new javafx.geometry.Insets(6, 10, 6, 10)); // Compact padding
+                root.setSpacing(10);
+                root.setPadding(new javafx.geometry.Insets(6, 10, 6, 10));
                 HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
 
                 // Icon Config
-                iconView.setFitWidth(24); // Smaller Icon
-                iconView.setFitHeight(24); // Smaller Icon
+                iconView.setFitWidth(24);
+                iconView.setFitHeight(24);
                 iconView.setClip(clip);
-                clip.setRadius(12); // Adjust clip radius (1/2 of 24)
+                clip.setRadius(12);
                 clip.setCenterX(12);
                 clip.setCenterY(12);
 
                 // Name Box
                 nameBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-                nameBox.setSpacing(0); // Tighter name box
+                nameBox.setSpacing(0);
                 nameBox.getChildren().addAll(symbolLabel, ownedLabel);
 
                 // Owned Badge Config
@@ -314,19 +318,10 @@ public class FinancialTwinController {
                 ownedLabel.setStyle(
                         "-fx-text-fill: #10b981; -fx-font-size: 8px; -fx-font-weight: bold; -fx-border-color: #10b981; -fx-border-radius: 3px; -fx-padding: 0 3; -fx-border-width: 0.5px;");
 
-                // Info Box (Right Side) - REMOVED per user request
-                // infoBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-                // infoBox.getChildren().addAll(priceLabel, changeLabel);
-
-                // Add only icon, namebox (includes symbol + owned badge) and spacer
-                // Spacer pushes content to left if we had right-side content, but now it just
-                // fills space
                 root.getChildren().addAll(iconView, nameBox, spacer);
 
                 // Styles
                 symbolLabel.getStyleClass().add("asset-symbol");
-                // priceLabel.getStyleClass().add("asset-price");
-                // changeLabel.getStyleClass().add("asset-change");
             }
 
             @Override
@@ -337,40 +332,17 @@ public class FinancialTwinController {
                     setGraphic(null);
                     setText(null);
                 } else {
-                    // 1. Icon (Fetch from CDN)
+                    // 1. Icon (Fetch from CDN) - Background loading by JavaFX Image
                     String ticker = getTicker(symbol);
                     String iconUrl = "https://assets.coincap.io/assets/icons/" + ticker + "@2x.png";
-                    // Using background loading
                     javafx.scene.image.Image image = new javafx.scene.image.Image(iconUrl, true);
                     iconView.setImage(image);
 
                     // 2. Name
                     symbolLabel.setText(symbol.substring(0, 1).toUpperCase() + symbol.substring(1));
 
-                    // 3. Price & Change - REMOVED
-                    // tn.finhub.model.MarketPrice price = marketDataService.getPrice(symbol);
-                    // if (price != null) {
-                    // priceLabel.setText(String.format("$%.2f", price.getPrice()));
-                    // double change = price.getChangePercent().doubleValue();
-                    // changeLabel.setText(String.format("%+.2f%%", change));
-
-                    // changeLabel.getStyleClass().removeAll("asset-change-pos",
-                    // "asset-change-neg");
-                    // if (change >= 0) {
-                    // changeLabel.getStyleClass().add("asset-change-pos");
-                    // } else {
-                    // changeLabel.getStyleClass().add("asset-change-neg");
-                    // }
-                    // } else {
-                    // priceLabel.setText("---");
-                    // changeLabel.setText("");
-                    // }
-
-                    // 4. Check Ownership
-                    int userId = UserSession.getInstance().getUser() != null
-                            ? UserSession.getInstance().getUser().getId()
-                            : 0;
-                    tn.finhub.model.PortfolioItem item = marketModel.getPortfolioItem(userId, symbol);
+                    // 3. Check Ownership (FROM CACHE - NON-BLOCKING)
+                    tn.finhub.model.PortfolioItem item = portfolioCache.get(symbol);
                     boolean isOwned = item != null && item.getQuantity().doubleValue() > 0;
 
                     ownedLabel.setVisible(isOwned);
@@ -413,15 +385,33 @@ public class FinancialTwinController {
     }
 
     private void handleRefreshMarket() {
-        new Thread(() -> {
-            // FORCE refresh in background to bypass the 60s read cache
-            marketModel.getPrices(TRACKED_ASSETS, true);
-            javafx.application.Platform.runLater(() -> {
-                if (selectedAsset != null)
-                    selectAsset(selectedAsset); // Will read from fresh cache
-                assetListView.refresh();
-            });
-        }).start();
+        int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
+
+        javafx.concurrent.Task<Void> refreshTask = new javafx.concurrent.Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                // 1. Refresh Portfolio Cache (Batch Fetch)
+                List<tn.finhub.model.PortfolioItem> items = marketModel.getPortfolio(userId);
+                portfolioCache.clear();
+                for (tn.finhub.model.PortfolioItem item : items) {
+                    portfolioCache.put(item.getSymbol(), item);
+                }
+
+                // 2. Refresh Market Prices (Bypass Cache for Fresh Data)
+                marketModel.getPrices(TRACKED_ASSETS, true);
+                return null;
+            }
+        };
+
+        refreshTask.setOnSucceeded(e -> {
+            // Updated UI on FX Thread
+            if (selectedAsset != null)
+                selectAsset(selectedAsset); // Will use cached data now
+
+            assetListView.refresh(); // Triggers updateItem which now uses cache
+        });
+
+        new Thread(refreshTask).start();
     }
 
     @FXML
@@ -438,7 +428,7 @@ public class FinancialTwinController {
             @Override
             protected Void call() throws Exception {
                 tn.finhub.model.MarketPrice price = marketModel.getPrice(symbol);
-                java.math.BigDecimal rate = marketModel.getUsdToTndRate(); // May block if cache expired
+                java.math.BigDecimal rate = marketModel.getUsdToTndRate();
 
                 javafx.application.Platform.runLater(() -> {
                     if (price != null) {
@@ -476,7 +466,7 @@ public class FinancialTwinController {
         }).start();
 
         updatePortfolioUIForAsset(symbol);
-        updateEstCost(); // This will spawn its own task now
+        updateEstCost();
     }
 
     private void renderChart() {
@@ -526,13 +516,28 @@ public class FinancialTwinController {
     }
 
     private void updatePortfolioUIForAsset(String symbol) {
+        // Optimistic UI update from Cache first
+        tn.finhub.model.PortfolioItem cachedItem = portfolioCache.get(symbol);
+        if (cachedItem != null) {
+            ownedQuantityLabel.setText(cachedItem.getQuantity().toString());
+            // For cost we need rate, might still need bg fetch or cache rate
+        } else {
+            ownedQuantityLabel.setText("0");
+        }
+
         int userId = UserSession.getInstance().getUser().getId();
 
-        // Use a background task to fetch portfolio data
+        // Use a background task to fetch portfolio data (Fresh)
         javafx.concurrent.Task<tn.finhub.model.PortfolioItem> task = new javafx.concurrent.Task<>() {
             @Override
             protected tn.finhub.model.PortfolioItem call() throws Exception {
-                return marketModel.getPortfolioItem(userId, symbol);
+                // Update Cache on specific fetch
+                tn.finhub.model.PortfolioItem item = marketModel.getPortfolioItem(userId, symbol);
+                if (item != null)
+                    portfolioCache.put(symbol, item);
+                else
+                    portfolioCache.remove(symbol);
+                return item;
             }
         };
 
@@ -540,10 +545,18 @@ public class FinancialTwinController {
             tn.finhub.model.PortfolioItem item = task.getValue();
             if (item != null) {
                 ownedQuantityLabel.setText(item.getQuantity().toString());
+
                 // Convert Avg Cost to TND for display
-                java.math.BigDecimal rate = marketModel.getUsdToTndRate();
-                java.math.BigDecimal avgCostTnd = item.getAverageCost().multiply(rate);
-                avgCostLabel.setText(String.format("%.2f TND", avgCostTnd));
+                // Need rate - fetch in BG or separate task?
+                // Let's do a quick nested task or just fetch rate in the main task
+                new Thread(() -> {
+                    java.math.BigDecimal rate = marketModel.getUsdToTndRate();
+                    javafx.application.Platform.runLater(() -> {
+                        java.math.BigDecimal avgCostTnd = item.getAverageCost().multiply(rate);
+                        avgCostLabel.setText(String.format("%.2f TND", avgCostTnd));
+                    });
+                }).start();
+
             } else {
                 ownedQuantityLabel.setText("0");
                 avgCostLabel.setText("0.00");

@@ -22,6 +22,13 @@ public class SupportTicketsController {
 
     private final tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
 
+    // STALE-WHILE-REVALIDATE CACHE
+    private static List<SupportTicket> cachedTickets = null;
+
+    public static void setCachedTickets(List<SupportTicket> tickets) {
+        cachedTickets = tickets;
+    }
+
     @FXML
     public void initialize() {
         refreshTickets();
@@ -29,9 +36,36 @@ public class SupportTicketsController {
 
     @FXML
     private void refreshTickets() {
-        ticketsContainer.getChildren().clear();
         int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
-        List<SupportTicket> tickets = supportModel.getTicketsByUserId(userId);
+
+        // 0. Optimistic UI Update
+        if (cachedTickets != null) {
+            updateUI(cachedTickets);
+        }
+
+        // Background Task
+        javafx.concurrent.Task<List<SupportTicket>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<SupportTicket> call() throws Exception {
+                return supportModel.getTicketsByUserId(userId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<SupportTicket> tickets = task.getValue();
+            cachedTickets = tickets;
+            updateUI(tickets);
+        });
+
+        task.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateUI(List<SupportTicket> tickets) {
+        ticketsContainer.getChildren().clear();
 
         if (tickets.isEmpty()) {
             Label emptyLabel = new Label("No tickets found. Need help? Create a new ticket.");

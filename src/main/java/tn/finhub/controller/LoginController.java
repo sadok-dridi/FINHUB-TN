@@ -175,8 +175,103 @@ public class LoginController {
                                 System.out.println("Redirecting to Complete Profile.");
                                 setView("/view/complete_profile.fxml");
                             } else {
-                                System.out.println("Redirecting to User Dashboard.");
-                                setView("/view/user_dashboard.fxml");
+                                Message("Fetching your financial data...");
+
+                                // Pre-fetch Wallet Data for Dashboard
+                                new Thread(() -> {
+                                    try {
+                                        tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+                                        tn.finhub.model.Wallet wallet = walletModel.findByUserId(userId);
+
+                                        if (wallet != null) {
+                                            // Ensure wallet exists before fetching dependent data
+                                            if ("FROZEN".equals(wallet.getStatus())) {
+                                                // Handle frozen logic if needed, but mainly just fetch
+                                            }
+
+                                            // Fetch dependency models
+                                            tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                                            tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
+
+                                            // 1. Fetch Wallet & Dependencies
+                                            // Method name corrected: findByWalletId
+                                            java.util.List<tn.finhub.model.VirtualCard> cards = cardModel
+                                                    .findByWalletId(wallet.getId());
+                                            java.util.List<tn.finhub.model.WalletTransaction> transactions = walletModel
+                                                    .getTransactionHistory(wallet.getId());
+                                            int badTxId = "FROZEN".equals(wallet.getStatus())
+                                                    ? walletModel.getTamperedTransactionId(wallet.getId())
+                                                    : -1;
+
+                                            // 2. Fetch Portfolio & Market Data
+                                            // Method name corrected: getPortfolio
+                                            java.util.List<tn.finhub.model.PortfolioItem> items = marketModel
+                                                    .getPortfolio(userId);
+                                            java.util.Map<String, tn.finhub.model.PortfolioItem> portfolioMap = new java.util.HashMap<>();
+
+                                            java.math.BigDecimal portValue = java.math.BigDecimal.ZERO;
+                                            java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
+
+                                            for (tn.finhub.model.PortfolioItem item : items) {
+                                                // Method name corrected: getAverageCost
+                                                totalInvested = totalInvested
+                                                        .add(item.getAverageCost().multiply(item.getQuantity()));
+                                                portfolioMap.put(item.getSymbol(), item);
+                                            }
+
+                                            // 3. Fetch Contacts (For Transactions Page)
+                                            tn.finhub.model.SavedContactModel contactModel = new tn.finhub.model.SavedContactModel();
+                                            java.util.List<tn.finhub.model.SavedContact> contacts = contactModel
+                                                    .getContactsByUserId(userId);
+
+                                            // 4. Fetch Profile
+                                            tn.finhub.model.FinancialProfileModel fpm = new tn.finhub.model.FinancialProfileModel();
+                                            tn.finhub.model.FinancialProfile profile = fpm.findByUserId(userId);
+
+                                            // 5. Fetch Support Tickets
+                                            tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
+                                            java.util.List<tn.finhub.model.SupportTicket> tickets = supportModel
+                                                    .getTicketsByUserId(userId);
+
+                                            // --- INJECT INTO CACHES ---
+
+                                            // Wallet Controller Cache
+                                            String bestAsset = "N/A"; // Simplified for pre-fetch
+                                            java.math.BigDecimal maxPnl = java.math.BigDecimal.ZERO;
+                                            int assetCount = items.size();
+
+                                            WalletController.WalletDataPacket packet = new WalletController.WalletDataPacket(
+                                                    wallet, cards, transactions, badTxId,
+                                                    portValue, totalInvested, bestAsset, maxPnl, assetCount);
+                                            WalletController.setCachedData(packet);
+
+                                            // Transactions Controller Cache
+                                            TransactionsController.TransactionData txData = new TransactionsController.TransactionData(
+                                                    userId, transactions, contacts, badTxId);
+                                            TransactionsController.setCachedData(txData);
+
+                                            // Financial Twin Cache
+                                            FinancialTwinController.setCachedPortfolio(portfolioMap);
+
+                                            // Profile Cache
+                                            if (profile != null) {
+                                                ProfileController.setCachedProfile(profile);
+                                            }
+
+                                            // Support Tickets Cache
+                                            SupportTicketsController.setCachedTickets(tickets);
+                                        }
+                                    } catch (Exception e) {
+                                        System.out.println("Pre-fetch failed: " + e.getMessage());
+                                        // Continue anyway, dashboard will load data itself
+                                    }
+
+                                    // Navigate after fetch (success or fail)
+                                    Platform.runLater(() -> {
+                                        System.out.println("Redirecting to User Dashboard.");
+                                        setView("/view/user_dashboard.fxml");
+                                    });
+                                }).start();
                             }
                         }
                     } catch (Exception e) {
@@ -190,5 +285,9 @@ public class LoginController {
                 Platform.runLater(() -> messageLabel.setText(" Server error"));
             }
         }).start();
+    }
+
+    private void Message(String msg) {
+        Platform.runLater(() -> messageLabel.setText(msg));
     }
 }
