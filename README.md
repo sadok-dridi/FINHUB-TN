@@ -1,7 +1,7 @@
 # FinHub – FinTech Escrow Platform
 
-FinHub is a collaborative university project developed as part of the PIDEV course.  
-The goal of this project is to design and implement a FinTech platform centered around a secure **escrow system**, ensuring safe transactions between multiple parties.
+FinHub is a collaborative university project developed.  
+The goal of this project is to design and implement a  platform centered around a secure **escrow system**, ensuring safe transactions between multiple parties.
 
 ##  Project Objectives
 - Implement a reliable escrow workflow
