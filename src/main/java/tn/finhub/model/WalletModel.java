@@ -460,23 +460,9 @@ public class WalletModel {
         String txHash = HashUtils.sha256(data);
 
         // 1. Insert into Relational DB (Wallet Transactions)
-        txDAO.insert(walletId, type, amount, ref, prevHash, txHash, now);
+        int txId = txDAO.insert(walletId, type, amount, ref, prevHash, txHash, now);
 
         // 2. Log to Blockchain Ledger
-        // We need the ID of the transaction we just inserted to link it.
-        // But txDAO.insert doesn't return ID currently.
-        // Let's modify txDAO or just fetch it? Fetching is safer for now to avoid
-        // changing DAO signature too much.
-        // actually, we can just log it. The link is nice but not strictly required if
-        // we have the hash match.
-        // But BlockchainManager.addBlock accepts walletTransactionId.
-        // Let's try to get the ID.
-        int txId = -1;
-        List<WalletTransaction> latest = txDAO.findByWalletId(walletId);
-        if (!latest.isEmpty()) {
-            txId = latest.get(0).getId(); // findByWalletId is DESC
-        }
-
         blockchainManager.addBlock("TRANSACTION",
                 "Wallet: " + walletId + ", Type: " + type + ", Amount: " + amount + ", Ref: " + ref,
                 txId != -1 ? txId : null,

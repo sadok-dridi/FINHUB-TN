@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 
 public class TransactionManager {
 
-    public void insert(int walletId, String type,
+    public int insert(int walletId, String type,
             BigDecimal amount, String reference, String prevHash, String txHash, java.time.LocalDateTime createdAt) {
 
         String sql = """
@@ -17,7 +17,8 @@ public class TransactionManager {
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql,
+                java.sql.Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, walletId);
             ps.setString(2, type);
             ps.setBigDecimal(3, amount);
@@ -26,9 +27,16 @@ public class TransactionManager {
             ps.setString(6, txHash);
             ps.setTimestamp(7, java.sql.Timestamp.valueOf(createdAt));
             ps.executeUpdate();
+
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
         } catch (Exception e) {
             throw new RuntimeException("Transaction insert failed", e);
         }
+        return -1;
     }
 
     public java.util.List<tn.finhub.model.WalletTransaction> findByWalletId(int walletId) {

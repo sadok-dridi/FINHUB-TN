@@ -2,6 +2,7 @@ package tn.finhub.model;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,7 +21,8 @@ public class ChatAssistantModel {
     // "Consumes OS usage" instead of "API Quota"
     private static final boolean USE_LOCAL_LLM = true;
 
-    private static final String GEMINI_API_KEY = "AIzaSyAKBNkr6eyRpt93Cglish-LG0WXJp1Gw8g";
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String GEMINI_API_KEY = dotenv.get("GEMINI_API_KEY");
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
             + GEMINI_API_KEY;
 
