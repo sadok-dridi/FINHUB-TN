@@ -1,6 +1,6 @@
 package tn.finhub.model;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class User {
 
@@ -10,9 +10,9 @@ public class User {
     @JsonProperty("full_name")
     private String fullName;
 
-
     public User() {
     }
+
     public User(int id, String email, String role, String fullName) {
         this.id = id;
         this.email = email;
@@ -44,5 +44,26 @@ public class User {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    // New Field for Module 6
+    private int trustScore = 100;
+
+    public int getTrustScore() {
+        return trustScore;
+    }
+
+    public void setTrustScore(int trustScore) {
+        this.trustScore = trustScore;
+    }
+
+    private boolean emailVerified;
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

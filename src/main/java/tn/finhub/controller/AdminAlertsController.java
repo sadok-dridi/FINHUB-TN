@@ -73,6 +73,11 @@ public class AdminAlertsController {
     }
 
     @FXML
+    private void handleGoToEscrows() {
+        ViewUtils.setView(severityBox, "/view/admin_escrow.fxml");
+    }
+
+    @FXML
     private void handleLogout() {
         SessionManager.logout();
         ViewUtils.setView(severityBox, "/view/login.fxml");

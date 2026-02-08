@@ -23,6 +23,7 @@
             <Button text="Dashboard" onAction="#handleGoToDashboard" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Users" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 8px; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Transactions" onAction="#handleGoToTransactions" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
+            <Button text="Escrows" onAction="#handleGoToEscrows" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Support" onAction="#handleGoToSupport" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Button text="Alerts" onAction="#handleGoToAlerts" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
             <Region VBox.vgrow="ALWAYS"/>

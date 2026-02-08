@@ -159,6 +159,11 @@ public class UserDashboardController {
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/financial_twin.fxml");
     }
 
+    @FXML
+    private void handleEscrow() {
+        tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/escrow_dashboard.fxml");
+    }
+
     private void setButtonStyle(javafx.scene.control.Button btn, javafx.scene.control.ContentDisplay display,
             javafx.geometry.Pos alignment) {
         btn.setContentDisplay(display);

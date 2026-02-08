@@ -159,6 +159,11 @@ public class AdminSupportController {
     }
 
     @FXML
+    private void handleGoToEscrows() {
+        ViewUtils.setView(ticketsTable, "/view/admin_escrow.fxml");
+    }
+
+    @FXML
     private void handleGoToAlerts() {
         ViewUtils.setView(ticketsTable, "/view/admin_alerts.fxml");
     }

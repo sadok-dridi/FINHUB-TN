@@ -1142,3 +1142,64 @@
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 }
+
+/* --- Escrow Dialog Fix --- */
+.escrow-dialog {
+    -fx-background-color: -color-bg;
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 20, 0, 0, 10);
+}
+
+.text-field-modern {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -color-text-muted;
+}
+
+.text-field-modern:focused {
+    -fx-border-color: -color-primary;
+    -fx-background-color: -input-bg;
+}
+
+.combo-box-modern {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.text-area-modern {
+    -fx-background-color: -input-bg;
+    -fx-text-fill: white;
+    -fx-control-inner-background: -input-bg;
+    -fx-background-radius: 8px;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+}
+
+.text-area-modern .content {
+    -fx-background-color: -input-bg;
+}
+
+.button-outlined {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-text-secondary;
+    -fx-border-radius: 8px;
+    -fx-text-fill: -color-text-secondary;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+}
+
+.button-outlined:hover {
+    -fx-border-color: -color-text-primary;
+    -fx-text-fill: -color-text-primary;
+    -fx-background-color: rgba(255,255,255,0.05);
+}

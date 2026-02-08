@@ -28,17 +28,20 @@ public class UserModel {
 
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT user_id, email, role, full_name FROM users_local";
+        String sql = "SELECT user_id, email, role, full_name, trust_score FROM users_local";
 
         try (Statement st = getConnection().createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                users.add(new User(
+                User u = new User(
                         rs.getInt("user_id"),
                         rs.getString("email"),
                         rs.getString("role"),
-                        rs.getString("full_name")));
+                        rs.getString("full_name"));
+                // u.setEmailVerified(rs.getBoolean("email_verified")); // Not in local DB
+                u.setTrustScore(rs.getInt("trust_score"));
+                users.add(u);
             }
         } catch (SQLException e) {
             logger.error("Error retrieving users", e);
@@ -60,18 +63,21 @@ public class UserModel {
     }
 
     public User findByEmail(String email) {
-        String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE LOWER(email) = LOWER(?)";
+        String sql = "SELECT user_id, email, role, full_name, trust_score FROM users_local WHERE LOWER(email) = LOWER(?)";
 
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                return new User(
+                User u = new User(
                         rs.getInt("user_id"),
                         rs.getString("email"),
                         rs.getString("role"),
                         rs.getString("full_name"));
+                // u.setEmailVerified(rs.getBoolean("email_verified")); // Not in local DB
+                u.setTrustScore(rs.getInt("trust_score"));
+                return u;
             }
         } catch (SQLException e) {
             logger.error("Error finding user", e);
@@ -80,13 +86,16 @@ public class UserModel {
     }
 
     public User findById(int id) {
-        String sql = "SELECT user_id, email, role, full_name FROM users_local WHERE user_id = ?";
+        String sql = "SELECT user_id, email, role, full_name, trust_score FROM users_local WHERE user_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return new User(rs.getInt("user_id"), rs.getString("email"), rs.getString("role"),
+                User u = new User(rs.getInt("user_id"), rs.getString("email"), rs.getString("role"),
                         rs.getString("full_name"));
+                // u.setEmailVerified(rs.getBoolean("email_verified")); // Not in local DB
+                u.setTrustScore(rs.getInt("trust_score"));
+                return u;
             }
         } catch (SQLException e) {
             logger.error("Error finding user by id", e);
@@ -190,6 +199,17 @@ public class UserModel {
         } catch (IOException | InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Server delete request failed", e);
+        }
+    }
+
+    public void updateTrustScore(int userId, int pointsDelta) {
+        String sql = "UPDATE users_local SET trust_score = trust_score + ? WHERE user_id = ?";
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, pointsDelta);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Error updating trust score for user {}", userId, e);
         }
     }
 }

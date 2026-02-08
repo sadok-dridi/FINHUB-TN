@@ -110,7 +110,10 @@ public class AdminUserController {
         javafx.scene.control.Label idLabel = new javafx.scene.control.Label("ID: " + user.getId());
         idLabel.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 10px;");
 
-        details.getChildren().addAll(emailLabel, idLabel);
+        javafx.scene.control.Label trustLabel = new javafx.scene.control.Label("Trust Score: " + user.getTrustScore());
+        trustLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 11px;");
+
+        details.getChildren().addAll(emailLabel, idLabel, trustLabel);
 
         // Actions
         javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(10);
@@ -267,6 +270,11 @@ public class AdminUserController {
     @FXML
     private void handleGoToTransactions() {
         ViewUtils.setView(usersContainer, "/view/admin_transactions.fxml");
+    }
+
+    @FXML
+    private void handleGoToEscrows() {
+        ViewUtils.setView(usersContainer, "/view/admin_escrow.fxml");
     }
 
     @FXML

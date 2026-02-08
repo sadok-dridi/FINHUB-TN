@@ -167,6 +167,11 @@ public class AdminTransactionsController {
     }
 
     @FXML
+    private void handleGoToEscrows() {
+        ViewUtils.setView(usersContainer, "/view/admin_escrow.fxml");
+    }
+
+    @FXML
     private void handleGoToSupport() {
         ViewUtils.setView(usersContainer, "/view/admin_support.fxml");
     }

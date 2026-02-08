@@ -73,7 +73,17 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void handleGoToEscrows() {
+        ViewUtils.setView(totalUsersLabel, "/view/admin_escrow.fxml");
+    }
+
+    @FXML
     private void handleGoToSupport() {
         ViewUtils.setView(totalUsersLabel, "/view/admin_support.fxml");
+    }
+
+    @FXML
+    private void handleGoToAlerts() {
+        ViewUtils.setView(totalUsersLabel, "/view/admin_alerts.fxml");
     }
 }
