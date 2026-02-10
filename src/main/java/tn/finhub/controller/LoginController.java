@@ -209,7 +209,7 @@ public class LoginController {
                                 setView("/view/migrate_wallet.fxml");
                             } else {
                                 System.out.println("User is Admin. Navigating to Admin Dashboard.");
-                                setView("/view/admin_users.fxml");
+                                setView("/view/admin_dashboard.fxml");
                             }
                         } catch (Exception e) {
                             e.printStackTrace();

@@ -26,7 +26,7 @@
                 </Button>
             </HBox>
             
-            <Region prefHeight="20"/>
+            <Region fx:id="menuSpacer" prefHeight="20"/>
             
             <Label fx:id="menuLabel" text="MENU" styleClass="menu-label"/>
             
