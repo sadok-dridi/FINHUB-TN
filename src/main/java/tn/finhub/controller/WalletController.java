@@ -769,75 +769,86 @@ public class WalletController {
         String sign = isProfit ? "+" : "";
 
         // --- Main Content Row (Horizontal Split) ---
-        HBox contentRow = new HBox(20);
-        contentRow.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT); // Align to bottom baseline
-        VBox.setVgrow(contentRow, javafx.scene.layout.Priority.ALWAYS); // Fill height
+        HBox contentRow = new HBox(10);
+        contentRow.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);
+        VBox.setVgrow(contentRow, javafx.scene.layout.Priority.ALWAYS);
 
         // 1. Left Side: Total Value
-        VBox leftSide = new VBox(5);
-        leftSide.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT); // Bottom aligned
+        VBox leftSide = new VBox(2);
+        leftSide.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);
+        HBox.setHgrow(leftSide, javafx.scene.layout.Priority.ALWAYS); // Left side takes all extra space
 
         String valText = "TND " + String.format("%.2f", currentValue.doubleValue());
         Label valLabel = new Label(valText);
-
-        // Auto-Resize Logic (Simple Length Heuristic)
-        int len = valText.length();
-        int fontSize = 32;
-        if (len > 18)
-            fontSize = 18;
-        else if (len > 14)
-            fontSize = 22;
-        else if (len > 10)
-            fontSize = 26;
-
-        valLabel.setStyle("-fx-text-fill: white; -fx-font-size: " + fontSize + "px; -fx-font-weight: bold;");
+        valLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        valLabel.setWrapText(false);
+        valLabel.setMinWidth(0); // Allow shrinking
 
         Label subLabel = new Label("Total Asset Value");
         subLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 12px;");
+        subLabel.setMinWidth(0);
 
         leftSide.getChildren().addAll(valLabel, subLabel);
 
-        // Spacer between left and right
-        javafx.scene.layout.Region midSpacer = new javafx.scene.layout.Region();
-        HBox.setHgrow(midSpacer, javafx.scene.layout.Priority.ALWAYS);
-
         // 2. Right Side: PnL & Invested
-        VBox rightSide = new VBox(8);
-        rightSide.setAlignment(javafx.geometry.Pos.BOTTOM_RIGHT); // Bottom aligned (Baseline match)
+        VBox rightSide = new VBox(5);
+        rightSide.setAlignment(javafx.geometry.Pos.BOTTOM_RIGHT);
+        rightSide.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
-        // PnL Badge (Row)
-        HBox pnlBadge = new HBox(10);
+        // PnL Badge
+        HBox pnlBadge = new HBox(8);
         pnlBadge.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
         String pnlText = sign + "TND " + pnlStr;
         Label pnlAmtLabel = new Label(pnlText);
-
-        // PnL Resize Logic
-        int pnlSize = 14;
-        if (pnlText.length() > 12)
-            pnlSize = 11;
-
-        pnlAmtLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: " + pnlSize + "px; -fx-font-weight: bold;");
+        pnlAmtLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold; -fx-font-size: 13px;");
+        pnlAmtLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         Label pnlPctLabel = new Label(sign + pctStr);
         pnlPctLabel.setStyle("-fx-text-fill: " + color + "; -fx-background-color: "
                 + (isProfit ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)")
-                + "; -fx-padding: 3 8; -fx-background-radius: 6; -fx-font-size: 12px; -fx-font-weight: bold;");
+                + "; -fx-padding: 2 6; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;");
+        pnlPctLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         pnlBadge.getChildren().addAll(pnlAmtLabel, pnlPctLabel);
 
         // Invested Label
-        Label investedLabel = new Label("Est. Cost: TND " + String.format("%.2f", totalInvested.doubleValue()));
-        investedLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
+        Label investedLabel = new Label("Est. Cost: TND " + String.format("%.0f", totalInvested.doubleValue()));
+        investedLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 10px;");
+        investedLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        investedLabel.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
         rightSide.getChildren().addAll(pnlBadge, investedLabel);
 
-        contentRow.getChildren().addAll(leftSide, midSpacer, rightSide);
+        contentRow.getChildren().addAll(leftSide, rightSide);
+
+        // Robust Font Scaling
+        contentRow.widthProperty().addListener((obs, oldW, newW) -> {
+            if (newW.doubleValue() > 0) {
+                double totalWidth = newW.doubleValue();
+                double rightWidth = rightSide.getWidth(); // Might be 0 initially
+                if (rightWidth <= 0)
+                    rightWidth = 100; // Estimate if not ready
+
+                double availableForText = totalWidth - rightWidth - 20; // Padding/Spacing
+                if (availableForText < 50)
+                    availableForText = 50;
+
+                // Font size calculation: fit text into available width
+                // Approx 0.6 * fontSize * chars = width
+                // fontSize = width / (0.6 * chars)
+                double estimatedFontSize = availableForText / (valText.length() * 0.65);
+
+                // Clamp constants
+                estimatedFontSize = Math.min(32, Math.max(12, estimatedFontSize));
+
+                valLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: "
+                        + String.format("%.1f", estimatedFontSize) + "px;");
+            }
+        });
 
         // --- Footer Row (New Details) ---
         javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
-        sep.setStyle("-fx-opacity: 0.1; -fx-background-color: white;");
-
         HBox footerRow = new HBox(20);
         footerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 

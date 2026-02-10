@@ -106,6 +106,10 @@
 }
 
 .button-icon .sidebar-icon {
+    -fx-fill: -color-text-secondary;
+}
+
+.button-icon:hover .sidebar-icon {
     -fx-fill: white;
 }
 
@@ -308,13 +312,21 @@
 
 /* --- Sidebar --- */
 /* --- Sidebar --- */
+/* --- Sidebar --- */
 .sidebar {
     /* Top color matches -color-card-bg (#1E1B2E) for seamless transition, fading to transparent bottom */
     -fx-background-color: linear-gradient(to bottom, #1E1B2E 0%, rgba(30, 27, 46, 0.95) 15%, rgba(30, 27, 46, 0.8) 100%);
-    -fx-padding: 25;
+    -fx-padding: 25 20 25 20;
+    /* Reduced horizontal padding to 20px */
+    -fx-alignment: TOP_LEFT;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
     -fx-border-color: transparent rgba(255, 255, 255, 0.05) transparent transparent;
     -fx-border-width: 0 1 0 0;
+}
+
+.sidebar.collapsed {
+    -fx-padding: 20 0 15 0;
+    -fx-alignment: TOP_CENTER;
 }
 
 .sidebar-button {
@@ -328,6 +340,17 @@
     -fx-font-size: 14px;
 }
 
+.sidebar.collapsed .sidebar-button {
+    -fx-alignment: CENTER;
+    -fx-padding: 10 0;
+    /* Remove side padding in collapsed mode to ensuring perfect centering */
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-background-radius: 10px;
+    /* More rounded for icon shape */
+}
+
 .sidebar-button:hover {
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-text-fill: -color-text-primary;
@@ -338,15 +361,60 @@
 }
 
 .sidebar-button-danger {
-    -fx-alignment: CENTER_LEFT;
-    -fx-background-color: transparent;
+    -fx-alignment: CENTER;
+    /* Center text and icon inside the button box */
+    -fx-background-color: rgba(239, 68, 68, 0.05);
     -fx-text-fill: -color-error;
     -fx-padding: 10;
     -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-border-color: rgba(239, 68, 68, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.sidebar.collapsed .sidebar-button-danger {
+    -fx-alignment: CENTER;
+    -fx-padding: 10 0;
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-background-radius: 10px;
+}
+
+#sidebarHeader {
+    -fx-padding: 0 0 20 0;
+}
+
+.user-info-box {
+    -fx-padding: 0 0 0 10;
+}
+
+.user-name-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 14px;
+}
+
+.user-role-label {
+    -fx-text-fill: -color-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.menu-label {
+    -fx-text-fill: -color-text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 10;
 }
 
 .sidebar-button-danger:hover {
-    -fx-background-color: rgba(239, 68, 68, 0.1);
+    -fx-background-color: rgba(239, 68, 68, 0.15);
+    -fx-border-color: -color-error;
 }
 
 .sidebar-icon {
@@ -1201,5 +1269,5 @@
 .button-outlined:hover {
     -fx-border-color: -color-text-primary;
     -fx-text-fill: -color-text-primary;
-    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-color: rgba(255, 255, 255, 0.05);
 }

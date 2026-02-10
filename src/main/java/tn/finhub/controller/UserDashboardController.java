@@ -38,7 +38,7 @@ public class UserDashboardController {
     private javafx.scene.control.Button btnLogout;
 
     private boolean isSidebarExpanded = false;
-    private final double EXPANDED_WIDTH = 200; // set to 220 as requested
+    private final double EXPANDED_WIDTH = 200; // Tighter width to fit content
     private final double COLLAPSED_WIDTH = 60; // 60px minimum for icons
 
     @FXML
@@ -101,12 +101,15 @@ public class UserDashboardController {
     }
 
     private void updateSidebarState() {
-        // Dynamic Padding Adjustment to prevent clipping in collapsed mode
+        // Dynamic Style Class Management
         if (isSidebarExpanded) {
-            sidebar.setStyle("-fx-padding: 25;");
+            sidebar.getStyleClass().remove("collapsed");
+            sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         } else {
-            // Top/Bottom 20, Left/Right 5 to center icons in 60px width
-            sidebar.setStyle("-fx-padding: 20 5 15 10;");
+            if (!sidebar.getStyleClass().contains("collapsed")) {
+                sidebar.getStyleClass().add("collapsed");
+            }
+            sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER);
         }
 
         // Toggle Visibility & Management of Header Elements
@@ -117,16 +120,11 @@ public class UserDashboardController {
         menuLabel.setVisible(isSidebarExpanded);
         menuLabel.setManaged(isSidebarExpanded);
 
-        // Header Alignment
-        if (isSidebarExpanded) {
-            sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        } else {
-            sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER);
-        }
-
-        // Toggle Button Text and Alignment
+        // Button Layout managed by CSS mostly, but alignment needs helper
         javafx.scene.control.ContentDisplay display = isSidebarExpanded ? javafx.scene.control.ContentDisplay.LEFT
                 : javafx.scene.control.ContentDisplay.GRAPHIC_ONLY;
+
+        // When collapsed, we want CENTER alignment. When expanded, CENTER_LEFT.
         javafx.geometry.Pos alignment = isSidebarExpanded ? javafx.geometry.Pos.CENTER_LEFT
                 : javafx.geometry.Pos.CENTER;
 
