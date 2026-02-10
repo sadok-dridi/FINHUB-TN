@@ -23,22 +23,18 @@ public class CompleteProfileController {
     private ComboBox<String> riskBox;
 
     @FXML
-    private ComboBox<String> currencyBox;
-
-    @FXML
     private Label errorLabel;
 
     @FXML
     public void initialize() {
         riskBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
-        currencyBox.getItems().addAll("TND", "EUR", "USD");
     }
 
     @FXML
     public void handleSaveProfile() {
         try {
             if (incomeField.getText().isEmpty() || expensesField.getText().isEmpty() ||
-                    savingsField.getText().isEmpty() || riskBox.getValue() == null || currencyBox.getValue() == null) {
+                    savingsField.getText().isEmpty() || riskBox.getValue() == null) {
                 errorLabel.setText("Please fill in all fields.");
                 return;
             }
@@ -53,7 +49,7 @@ public class CompleteProfileController {
                     expenses,
                     savings,
                     riskBox.getValue(),
-                    currencyBox.getValue(),
+                    "TND",
                     true);
 
             FinancialProfileModel model = new FinancialProfileModel();

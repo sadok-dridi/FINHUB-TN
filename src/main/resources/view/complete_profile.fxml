@@ -12,10 +12,14 @@
 <StackPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx"
            fx:controller="tn.finhub.controller.CompleteProfileController"
            style="-fx-background-color: transparent;">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
 
-    <VBox alignment="CENTER" spacing="20" maxWidth="450" maxHeight="650" styleClass="card">
+    <VBox alignment="CENTER" spacing="15" maxWidth="400" maxHeight="580" styleClass="card">
         <padding>
-            <Insets top="40" right="40" bottom="40" left="40"/>
+            <Insets top="30" right="30" bottom="30" left="30"/>
         </padding>
 
         <Label text="Complete Profile" styleClass="header-text"/>
@@ -43,10 +47,7 @@
             <ComboBox fx:id="riskBox" maxWidth="Infinity" promptText="Select Risk Level" styleClass="combo-box"/>
         </VBox>
 
-        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
-            <Label text="Currency" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
-            <ComboBox fx:id="currencyBox" maxWidth="Infinity" promptText="Select Currency" styleClass="combo-box"/>
-        </VBox>
+        <Region prefHeight="10"/>
 
         <Region prefHeight="10"/>
 
