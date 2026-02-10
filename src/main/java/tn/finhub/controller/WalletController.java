@@ -173,6 +173,13 @@ public class WalletController {
         tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
         if (user == null)
             return;
+
+        // FIX: Prevent Admin from creating a wallet automatically
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            System.out.println("Admin detected in WalletController. Aborting wallet logic.");
+            return;
+        }
+
         int userId = user.getId();
 
         // 0. Optimistic UI Update (Stale Data)
