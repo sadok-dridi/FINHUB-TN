@@ -241,46 +241,96 @@ public class TransactionsController {
     }
 
     private void handleEditContact(tn.finhub.model.SavedContact contact) {
-        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(
-                contact.getContactName());
-        dialog.setTitle("Edit Contact");
-        dialog.setHeaderText("Rename " + contact.getContactName());
-        dialog.setContentText("New Name:");
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
 
-        // Style the dialog roughly to match theme (basic)
-        javafx.scene.control.DialogPane pane = dialog.getDialogPane();
-        pane.setStyle("-fx-background-color: #1F2937; -fx-text-fill: white;");
-        pane.getStyleClass().add("custom-dialog"); // Assuming existing class or just inline
-        pane.lookup(".content.label").setStyle("-fx-text-fill: white;");
-        pane.lookup(".text-field").setStyle("-fx-background-color: #374151; -fx-text-fill: white;");
+        VBox root = new VBox(15);
+        root.setStyle(
+                "-fx-background-color: #1F2937; -fx-border-color: #374151; -fx-border-width: 1; -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);");
+        root.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        root.setMinWidth(300);
 
-        dialog.showAndWait().ifPresent(newName -> {
-            if (!newName.trim().isEmpty()) {
-                contactModel.updateContact(contact.getId(), newName.trim());
-                loadContacts(); // Refresh
+        Label title = new Label("Edit Contact");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label msg = new Label("Enter new name for " + contact.getContactName());
+        msg.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+
+        javafx.scene.control.TextField input = new javafx.scene.control.TextField(contact.getContactName());
+        input.setStyle(
+                "-fx-background-color: #374151; -fx-text-fill: white; -fx-background-radius: 5; -fx-padding: 10; -fx-border-color: #4B5563; -fx-border-radius: 5;");
+
+        HBox btns = new HBox(10);
+        btns.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        Button cancel = new Button("Cancel");
+        cancel.setStyle(
+                "-fx-background-color: transparent; -fx-text-fill: #9CA3AF; -fx-cursor: hand; -fx-font-weight: bold;");
+        cancel.setOnAction(e -> dialog.close());
+
+        Button save = new Button("Save");
+        save.setStyle(
+                "-fx-background-color: #10B981; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 16; -fx-font-weight: bold;");
+        save.setOnAction(e -> {
+            String newName = input.getText().trim();
+            if (!newName.isEmpty()) {
+                contactModel.updateContact(contact.getId(), newName);
+                loadContacts();
+                dialog.close();
             }
         });
+
+        btns.getChildren().addAll(cancel, save);
+        root.getChildren().addAll(title, msg, input, btns);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.show();
     }
 
     private void handleDeleteContact(tn.finhub.model.SavedContact contact) {
-        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                javafx.scene.control.Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Contact");
-        alert.setHeaderText("Remove " + contact.getContactName() + "?");
-        alert.setContentText("Are you sure you want to delete this contact?");
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
 
-        // Basic styling
-        alert.getDialogPane().setStyle("-fx-background-color: #1F2937; -fx-text-fill: white;");
-        alert.getDialogPane().lookup(".content.label").setStyle("-fx-text-fill: white;");
-        alert.getDialogPane().lookup(".header-panel").setStyle("-fx-background-color: #1F2937;");
-        alert.getDialogPane().lookup(".header-panel .label").setStyle("-fx-text-fill: white;");
+        VBox root = new VBox(15);
+        root.setStyle(
+                "-fx-background-color: #1F2937; -fx-border-color: #EF4444; -fx-border-width: 1; -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 10, 0, 0, 4);");
+        root.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        root.setMinWidth(300);
 
-        alert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
-                contactModel.deleteContact(contact.getId());
-                loadContacts(); // Refresh
-            }
+        Label title = new Label("Delete Contact");
+        title.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 18px; -fx-font-weight: bold;");
+
+        Label msg = new Label("Are you sure you want to remove " + contact.getContactName() + "?");
+        msg.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+
+        HBox btns = new HBox(10);
+        btns.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        Button cancel = new Button("Cancel");
+        cancel.setStyle(
+                "-fx-background-color: transparent; -fx-text-fill: #9CA3AF; -fx-cursor: hand; -fx-font-weight: bold;");
+        cancel.setOnAction(e -> dialog.close());
+
+        Button confirm = new Button("Delete");
+        confirm.setStyle(
+                "-fx-background-color: #EF4444; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 8 16; -fx-font-weight: bold;");
+        confirm.setOnAction(e -> {
+            contactModel.deleteContact(contact.getId());
+            loadContacts();
+            dialog.close();
         });
+
+        btns.getChildren().addAll(cancel, confirm);
+        root.getChildren().addAll(title, msg, btns);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.show();
     }
 
     private void handleQuickSend(tn.finhub.model.SavedContact contact) {
