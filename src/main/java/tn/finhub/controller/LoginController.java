@@ -303,8 +303,9 @@ public class LoginController {
                                     WalletController.setCachedData(packet);
 
                                     // Transactions Controller Cache
+                                    boolean isFrozen = "FROZEN".equals(wallet.getStatus());
                                     TransactionsController.TransactionData txData = new TransactionsController.TransactionData(
-                                            userId, transactions, contacts, badTxId);
+                                            userId, transactions, contacts, badTxId, isFrozen);
                                     TransactionsController.setCachedData(txData);
 
                                     // Financial Twin Cache

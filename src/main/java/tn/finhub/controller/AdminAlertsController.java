@@ -51,35 +51,5 @@ public class AdminAlertsController {
         }
     }
 
-    // Navigation Handlers
-    @FXML
-    private void handleGoToDashboard() {
-        ViewUtils.setView(severityBox, "/view/admin_dashboard.fxml");
-    }
-
-    @FXML
-    private void handleGoToUsers() {
-        ViewUtils.setView(severityBox, "/view/admin_users.fxml");
-    }
-
-    @FXML
-    private void handleGoToTransactions() {
-        ViewUtils.setView(severityBox, "/view/admin_transactions.fxml");
-    }
-
-    @FXML
-    private void handleGoToSupport() {
-        ViewUtils.setView(severityBox, "/view/admin_support.fxml");
-    }
-
-    @FXML
-    private void handleGoToEscrows() {
-        ViewUtils.setView(severityBox, "/view/admin_escrow.fxml");
-    }
-
-    @FXML
-    private void handleLogout() {
-        SessionManager.logout();
-        ViewUtils.setView(severityBox, "/view/login.fxml");
-    }
+    // Navigation Handlers removed - handled by Dashboard
 }

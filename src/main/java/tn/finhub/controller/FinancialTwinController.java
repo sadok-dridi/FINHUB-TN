@@ -229,6 +229,11 @@ public class FinancialTwinController {
     @FXML
     private javafx.scene.layout.VBox chartContainer;
 
+    @FXML
+    private Button btnBuy;
+    @FXML
+    private Button btnSell;
+
     // ... (keep fields same until marketChart) ...
     // Removed LineChart field
 
@@ -586,6 +591,12 @@ public class FinancialTwinController {
             tn.finhub.model.Wallet wallet = task.getValue();
             if (wallet != null) {
                 walletBalanceLabel.setText(wallet.getBalance() + " " + wallet.getCurrency());
+
+                boolean isFrozen = "FROZEN".equals(wallet.getStatus());
+                if (btnBuy != null)
+                    btnBuy.setDisable(isFrozen);
+                if (btnSell != null)
+                    btnSell.setDisable(isFrozen);
             }
         });
 

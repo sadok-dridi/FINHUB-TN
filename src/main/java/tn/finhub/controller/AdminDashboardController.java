@@ -17,7 +17,7 @@ import tn.finhub.util.ViewUtils;
 public class AdminDashboardController {
 
     @FXML
-    private StackPane contentArea;
+    private StackPane adminContentArea;
 
     @FXML
     private VBox sidebar;
@@ -76,7 +76,7 @@ public class AdminDashboardController {
         }
 
         // Load Default View (Admin Home Stats)
-        ViewUtils.loadContent(contentArea, "/view/admin_home.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_home.fxml");
         setActiveButton(btnDashboard);
     }
 
@@ -231,37 +231,37 @@ public class AdminDashboardController {
 
     @FXML
     private void handleGoToDashboard() {
-        ViewUtils.loadContent(contentArea, "/view/admin_home.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_home.fxml");
         setActiveButton(btnDashboard);
     }
 
     @FXML
     private void handleGoToUsers() {
-        ViewUtils.loadContent(contentArea, "/view/admin_users.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_users.fxml");
         setActiveButton(btnUsers);
     }
 
     @FXML
     private void handleGoToTransactions() {
-        ViewUtils.loadContent(contentArea, "/view/admin_transactions.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_transactions.fxml");
         setActiveButton(btnTransactions);
     }
 
     @FXML
     private void handleGoToEscrows() {
-        ViewUtils.loadContent(contentArea, "/view/admin_escrow.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_escrow.fxml");
         setActiveButton(btnEscrows);
     }
 
     @FXML
     private void handleGoToSupport() {
-        ViewUtils.loadContent(contentArea, "/view/admin_support.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_support.fxml");
         setActiveButton(btnSupport);
     }
 
     @FXML
     private void handleGoToAlerts() {
-        ViewUtils.loadContent(contentArea, "/view/admin_alerts.fxml");
+        ViewUtils.loadContent(adminContentArea, "/view/admin_alerts.fxml");
         setActiveButton(btnAlerts);
     }
 }

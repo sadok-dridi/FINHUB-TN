@@ -18,6 +18,8 @@ public class EscrowController {
     private VBox escrowCardContainer;
     @FXML
     private Label trustScoreLabel;
+    @FXML
+    private javafx.scene.control.Button createEscrowBtn;
 
     private final EscrowManager escrowManager = new EscrowManager();
     private final WalletModel walletModel = new WalletModel();
@@ -38,6 +40,12 @@ public class EscrowController {
         if (wallet != null) {
             // Load Trust Score
             trustScoreLabel.setText(String.valueOf(currentUser.getTrustScore()));
+
+            // Check Frozen Status
+            boolean isFrozen = "FROZEN".equals(wallet.getStatus());
+            if (createEscrowBtn != null) {
+                createEscrowBtn.setDisable(isFrozen);
+            }
 
             // Load Escrows
             List<Escrow> escrows = escrowManager.getEscrowsByWalletId(wallet.getId());

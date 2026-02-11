@@ -68,9 +68,9 @@ public class AdminUserController {
         // Card Container
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(10);
         card.getStyleClass().add("user-card");
-        card.setPrefWidth(280);
-        card.setMinWidth(280);
-        card.setMaxWidth(280);
+        card.setPrefWidth(240);
+        card.setMinWidth(240);
+        card.setMaxWidth(240);
 
         // Header: Initial + Name + Role
         javafx.scene.layout.HBox header = new javafx.scene.layout.HBox(10);
@@ -110,10 +110,15 @@ public class AdminUserController {
         javafx.scene.control.Label idLabel = new javafx.scene.control.Label("ID: " + user.getId());
         idLabel.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 10px;");
 
-        javafx.scene.control.Label trustLabel = new javafx.scene.control.Label("Trust Score: " + user.getTrustScore());
-        trustLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 11px;");
+        details.getChildren().addAll(emailLabel, idLabel);
 
-        details.getChildren().addAll(emailLabel, idLabel, trustLabel);
+        // Only show Trust Score for non-admins
+        if (!"ADMIN".equals(user.getRole())) {
+            javafx.scene.control.Label trustLabel = new javafx.scene.control.Label(
+                    "Trust Score: " + user.getTrustScore());
+            trustLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 11px;");
+            details.getChildren().add(trustLabel);
+        }
 
         // Actions
         javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(10);
@@ -129,31 +134,28 @@ public class AdminUserController {
             actions.getChildren().add(makeAdminBtn);
         }
 
-        if (!isSelf && !isAdmin) {
-            Button deleteBtn = new Button("Delete");
-            deleteBtn.getStyleClass().add("button-small-danger");
-            deleteBtn.setOnAction(e -> handleDelete(user));
-            actions.getChildren().add(deleteBtn);
-        }
+        // Delete button removed as per requirements
 
-        // Add Hover Effect & Click Action
-        card.setCursor(javafx.scene.Cursor.HAND);
-        card.setOnMouseClicked(e -> {
-            // Avoid triggering when clicking buttons inside the card
-            if (e.getTarget() instanceof javafx.scene.Node) {
-                javafx.scene.Node target = (javafx.scene.Node) e.getTarget();
-                // Traverse up to check if we clicked a button
-                while (target != null && target != card) {
-                    if (target instanceof Button)
-                        return;
-                    target = target.getParent();
+        // Add Hover Effect & Click Action ONLY for non-admins
+        if (!isAdmin) {
+            card.setCursor(javafx.scene.Cursor.HAND);
+            card.setOnMouseClicked(e -> {
+                // Avoid triggering when clicking buttons inside the card
+                if (e.getTarget() instanceof javafx.scene.Node) {
+                    javafx.scene.Node target = (javafx.scene.Node) e.getTarget();
+                    // Traverse up to check if we clicked a button
+                    while (target != null && target != card) {
+                        if (target instanceof Button)
+                            return;
+                        target = target.getParent();
+                    }
                 }
-            }
-            handleShowDetails(user);
-        });
+                handleShowDetails(user, card);
+            });
 
-        card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
-        card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+            card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
+            card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+        }
 
         card.getChildren().addAll(header, new Separator(), details, new javafx.scene.layout.Region(), actions);
         javafx.scene.layout.VBox.setVgrow(details, javafx.scene.layout.Priority.ALWAYS); // Push actions to bottom if
@@ -233,8 +235,34 @@ public class AdminUserController {
         filterUsers(searchField.getText());
     }
 
-    private void handleShowDetails(User user) {
+    private void handleShowDetails(User user, javafx.scene.Node sourceNode) {
         try {
+            System.out.println("DEBUG: handleShowDetails called for " + user.getEmail());
+
+            // CRITICAL: Get scene from the clicked card (which is definitely in the scene)
+            javafx.scene.Scene scene = sourceNode.getScene();
+            if (scene == null) {
+                System.err.println("ERROR: sourceNode has no scene!");
+                return;
+            }
+
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) scene
+                    .lookup("#adminContentArea");
+            if (contentArea == null) {
+                System.err.println("CRITICAL ERROR: #adminContentArea not found in scene. Navigation aborted.");
+                tn.finhub.util.DialogUtil.showError("System Error",
+                        "Navigation component missing. Please restart the application.");
+                return;
+            }
+
+            System.out.println("DEBUG: adminContentArea found. Loading view...");
+            System.out.println("DEBUG: Current adminContentArea children: " + contentArea.getChildren().size());
+            if (!contentArea.getChildren().isEmpty()) {
+                System.out
+                        .println("DEBUG: Current view type: " + contentArea.getChildren().get(0).getClass().getName());
+            }
+
+            // Now load the new view
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/admin_user_details.fxml"));
             javafx.scene.Parent view = loader.load();
@@ -242,54 +270,51 @@ public class AdminUserController {
             AdminUserDetailsController controller = loader.getController();
             controller.setUser(user);
 
-            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
-                    .lookup("#contentArea");
-            if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(view);
+            // Debug: Check sidebar state BEFORE replacing content
+            javafx.scene.Parent root = scene.getRoot();
+            javafx.scene.Node sidebar = root.lookup("#mainSidebar");
+
+            if (sidebar != null) {
+                System.out.println("DEBUG: Sidebar found before content swap.");
+                System.out.println("DEBUG: Sidebar visible=" + sidebar.isVisible());
+                System.out.println("DEBUG: Sidebar managed=" + sidebar.isManaged());
+
+                // Force it to be visible
+                sidebar.setVisible(true);
+                sidebar.setManaged(true);
             } else {
-                usersContainer.getScene().setRoot(view);
+                System.err.println("CRITICAL DEBUG: Sidebar #mainSidebar NOT found!");
+                System.err.println("DEBUG: Scene root type: " + root.getClass().getName());
+
+                // Debug: Check if root is BorderPane and what's in its left
+                if (root instanceof javafx.scene.layout.BorderPane) {
+                    javafx.scene.layout.BorderPane bp = (javafx.scene.layout.BorderPane) root;
+                    javafx.scene.Node left = bp.getLeft();
+                    System.err.println(
+                            "DEBUG: BorderPane left node: " + (left != null ? left.getClass().getName() : "NULL"));
+                    if (left != null) {
+                        System.err.println("DEBUG: Left node ID: " + left.getId());
+                    }
+                }
             }
+
+            // Replace content (this should NOT affect the sidebar since it's in the
+            // BorderPane's <left>)
+            contentArea.getChildren().setAll(view);
+
+            // Fade in animation
+            view.setOpacity(0);
+            javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(300), view);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+
         } catch (Exception e) {
             e.printStackTrace();
             tn.finhub.util.DialogUtil.showError("Navigation Error", "Could not load user details.");
         }
     }
 
-    // Navigation Handlers
-    @FXML
-    private void handleGoToDashboard() {
-        ViewUtils.setView(usersContainer, "/view/admin_dashboard.fxml");
-    }
-
-    @FXML
-    private void handleGoToUsers() {
-        ViewUtils.setView(usersContainer, "/view/admin_users.fxml");
-    }
-
-    @FXML
-    private void handleGoToTransactions() {
-        ViewUtils.setView(usersContainer, "/view/admin_transactions.fxml");
-    }
-
-    @FXML
-    private void handleGoToEscrows() {
-        ViewUtils.setView(usersContainer, "/view/admin_escrow.fxml");
-    }
-
-    @FXML
-    private void handleGoToSupport() {
-        ViewUtils.setView(usersContainer, "/view/admin_support.fxml");
-    }
-
-    @FXML
-    private void handleGoToAlerts() {
-        ViewUtils.setView(usersContainer, "/view/admin_alerts.fxml");
-    }
-
-    @FXML
-    public void handleLogout() {
-        SessionManager.logout();
-        ViewUtils.setView(usersContainer, "/view/login.fxml");
-    }
+    // Navigation Handlers removed - these belong in AdminDashboardController only
 }

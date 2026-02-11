@@ -4,15 +4,10 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.finhub.controller.AdminUserController"
-            style="-fx-background-color: transparent;">
-
-
-
-
-    <center>
-        <VBox style="-fx-padding: 30; -fx-background-color: transparent;" spacing="20">
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.AdminUserController"
+      style="-fx-padding: 15; -fx-background-color: transparent;" 
+      spacing="20">
             <VBox spacing="5">
                 <Label text="User Management" styleClass="header-text"/>
                 <Label text="Manage and view all registered users" styleClass="sub-header-text"/>
@@ -30,11 +25,8 @@
 
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
                 <content>
-                    <FlowPane fx:id="usersContainer" hgap="20" vgap="20" style="-fx-padding: 10;"/>
+                    <FlowPane fx:id="usersContainer" hgap="20" vgap="20" alignment="TOP_CENTER" style="-fx-padding: 10;"/>
                 </content>
             </ScrollPane>
 
         </VBox>
-    </center>
-
-</BorderPane>

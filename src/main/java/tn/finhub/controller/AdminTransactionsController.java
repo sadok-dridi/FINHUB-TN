@@ -137,12 +137,11 @@ public class AdminTransactionsController {
             controller.setUser(user);
 
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
-                    .lookup("#contentArea");
+                    .lookup("#adminContentArea");
             if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(view);
+                contentArea.getChildren().setAll(view);
             } else {
-                usersContainer.getScene().setRoot(view);
+                System.err.println("Critical Error: #adminContentArea not found");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,40 +149,5 @@ public class AdminTransactionsController {
         }
     }
 
-    // Navigation Handlers
-    @FXML
-    private void handleGoToDashboard() {
-        ViewUtils.setView(usersContainer, "/view/admin_dashboard.fxml");
-    }
-
-    @FXML
-    private void handleGoToUsers() {
-        ViewUtils.setView(usersContainer, "/view/admin_users.fxml");
-    }
-
-    @FXML
-    private void handleGoToTransactions() {
-        ViewUtils.setView(usersContainer, "/view/admin_transactions.fxml");
-    }
-
-    @FXML
-    private void handleGoToEscrows() {
-        ViewUtils.setView(usersContainer, "/view/admin_escrow.fxml");
-    }
-
-    @FXML
-    private void handleGoToSupport() {
-        ViewUtils.setView(usersContainer, "/view/admin_support.fxml");
-    }
-
-    @FXML
-    private void handleGoToAlerts() {
-        ViewUtils.setView(usersContainer, "/view/admin_alerts.fxml");
-    }
-
-    @FXML
-    public void handleLogout() {
-        SessionManager.logout();
-        ViewUtils.setView(usersContainer, "/view/login.fxml");
-    }
+    // Navigation Handlers removed - handled by Dashboard
 }

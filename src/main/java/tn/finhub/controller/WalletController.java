@@ -36,6 +36,9 @@ public class WalletController {
     @FXML
     private Button topUpButton;
 
+    @FXML
+    private Button transferButton;
+
     private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
     private final tn.finhub.model.VirtualCardModel virtualCardModel = new tn.finhub.model.VirtualCardModel();
     // private final tn.finhub.dao.MarketDAO marketDAO = new
@@ -291,6 +294,8 @@ public class WalletController {
 
         if (topUpButton != null)
             topUpButton.setDisable(isFrozen);
+        if (transferButton != null)
+            transferButton.setDisable(isFrozen);
         if (generateCardButton != null)
             generateCardButton.setDisable(isFrozen);
 

@@ -142,35 +142,5 @@ public class AdminSupportController {
         loadTickets();
     }
 
-    // Navigation Handlers
-    @FXML
-    private void handleGoToDashboard() {
-        ViewUtils.setView(ticketsTable, "/view/admin_dashboard.fxml");
-    }
-
-    @FXML
-    private void handleGoToUsers() {
-        ViewUtils.setView(ticketsTable, "/view/admin_users.fxml");
-    }
-
-    @FXML
-    private void handleGoToTransactions() {
-        ViewUtils.setView(ticketsTable, "/view/admin_transactions.fxml");
-    }
-
-    @FXML
-    private void handleGoToEscrows() {
-        ViewUtils.setView(ticketsTable, "/view/admin_escrow.fxml");
-    }
-
-    @FXML
-    private void handleGoToAlerts() {
-        ViewUtils.setView(ticketsTable, "/view/admin_alerts.fxml");
-    }
-
-    @FXML
-    private void handleLogout() {
-        SessionManager.logout();
-        ViewUtils.setView(ticketsTable, "/view/login.fxml");
-    }
+    // Navigation Handlers removed - handled by Dashboard
 }

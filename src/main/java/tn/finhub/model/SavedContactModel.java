@@ -12,6 +12,18 @@ public class SavedContactModel {
         return DBConnection.getInstance();
     }
 
+    public void updateContact(int id, String newName) {
+        String sql = "UPDATE saved_contacts SET contact_name = ? WHERE id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, newName);
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error updating contact: " + e.getMessage());
+        }
+    }
+
     public void addContact(SavedContact contact) {
         String sql = "INSERT INTO saved_contacts (user_id, contact_email, contact_name) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {

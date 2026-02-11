@@ -24,7 +24,7 @@
                             style="-fx-background-color: rgba(16, 185, 129, 0.1); -fx-text-fill: #10B981; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 13px; -fx-border-color: #10B981; -fx-border-radius: 8;"/>
                 </HBox>
                 
-                <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;" minHeight="130" prefHeight="130">
+                <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="NEVER" pannable="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;" minHeight="160" prefHeight="160">
                     <content>
                         <javafx.scene.layout.HBox fx:id="contactsContainer" spacing="20" style="-fx-background-color: transparent; -fx-padding: 5;">
                             <!-- Contacts populated here -->

@@ -2,6 +2,7 @@ package tn.finhub.controller;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.Wallet;
@@ -79,7 +80,9 @@ public class TransactionsController {
                 // 2. Fetch Contacts
                 List<tn.finhub.model.SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
 
-                return new TransactionData(user.getId(), transactions, contacts, badTxId);
+                boolean isFrozen = wallet != null && "FROZEN".equals(wallet.getStatus());
+
+                return new TransactionData(user.getId(), transactions, contacts, badTxId, isFrozen);
             }
         };
 
@@ -101,7 +104,7 @@ public class TransactionsController {
         if (contactsContainer != null) {
             contactsContainer.getChildren().clear();
             for (tn.finhub.model.SavedContact contact : data.contacts) {
-                contactsContainer.getChildren().add(createContactCard(contact));
+                contactsContainer.getChildren().add(createContactCard(contact, data.isFrozen));
             }
         }
 
@@ -127,28 +130,157 @@ public class TransactionsController {
         loadData();
     }
 
-    private javafx.scene.Node createContactCard(tn.finhub.model.SavedContact contact) {
-        VBox card = new VBox(5);
-        card.setStyle(
-                "-fx-background-color: rgba(31, 41, 55, 0.7); -fx-background-radius: 12; -fx-padding: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 1); -fx-cursor: hand; -fx-min-width: 100; -fx-alignment: center;");
+    private javafx.scene.Node createContactCard(tn.finhub.model.SavedContact contact, boolean isFrozen) {
+        javafx.scene.layout.StackPane card = new javafx.scene.layout.StackPane();
 
-        // Avatar
+        // Premium Dark Gradient Background & Border
+        // Increased height to accommodate actions under name
+        String baseStyle = "-fx-background-color: linear-gradient(to bottom right, #374151, #1F2937); -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 4); -fx-min-width: 110; -fx-pref-width: 110; -fx-min-height: 130; -fx-border-color: rgba(255,255,255,0.05); -fx-border-radius: 15;";
+        card.setStyle(baseStyle + (isFrozen ? " -fx-opacity: 0.5;" : " -fx-cursor: hand;"));
+
+        // Avatar with initials
         javafx.scene.layout.StackPane iconBg = new javafx.scene.layout.StackPane();
-        iconBg.setStyle("-fx-background-color: rgba(16, 185, 129, 0.2); -fx-background-radius: 20;");
-        iconBg.setPrefSize(40, 40);
+        iconBg.setStyle(
+                "-fx-background-color: rgba(16, 185, 129, 0.2); -fx-background-radius: 30; -fx-border-color: rgba(16, 185, 129, 0.3); -fx-border-radius: 30;");
+        iconBg.setPrefSize(48, 48);
+        iconBg.setMaxSize(48, 48);
 
         Label initial = new Label(contact.getContactName().substring(0, 1).toUpperCase());
-        initial.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 18px;");
+        initial.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 20px;");
         iconBg.getChildren().add(initial);
 
         Label nameLabel = new Label(contact.getContactName());
-        nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-font-weight: bold;");
+        nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;");
         nameLabel.setWrapText(false);
 
-        card.getChildren().addAll(iconBg, nameLabel);
+        VBox contentBox = new VBox(8, iconBg, nameLabel);
+        contentBox.setAlignment(javafx.geometry.Pos.CENTER);
+        contentBox.setPadding(new javafx.geometry.Insets(15)); // Add padding here for the content
 
-        card.setOnMouseClicked(e -> handleQuickSend(contact));
+        // Action Overlay (Hidden by default, appears under name)
+        HBox actions = new HBox(15); // Good spacing between buttons
+        actions.setAlignment(javafx.geometry.Pos.CENTER);
+        actions.setPadding(new javafx.geometry.Insets(5, 0, 0, 0));
+
+        // Key Fix: Use both Opacity AND Visibility to ensure it doesn't block clicks
+        // when hidden but animates well
+        actions.setOpacity(0);
+        actions.setVisible(false); // Start invisible
+        actions.setManaged(true); // Keep layout space reserved if desired, or false if overlay.
+        // User wants it "under the name". So it should likely take space.
+        // If we want it to "appear" without shifting layout, we keep it managed.
+        // If we want it to "slide in", we'd animate height.
+        // For now, let's keep it taking space but invisible.
+
+        // Style helper for action buttons
+        String actionBtnStyle = "-fx-background-color: rgba(255, 255, 255, 0.1); -fx-cursor: hand; -fx-background-radius: 50; -fx-min-width: 28; -fx-min-height: 28; -fx-max-width: 28; -fx-max-height: 28; -fx-alignment: center;";
+
+        // Edit Button
+        Button editBtn = new Button();
+        editBtn.setStyle(actionBtnStyle);
+        javafx.scene.shape.SVGPath editIcon = new javafx.scene.shape.SVGPath();
+        editIcon.setContent(
+                "M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z");
+        editIcon.setStyle("-fx-fill: white; -fx-scale-x: 0.7; -fx-scale-y: 0.7;");
+        editBtn.setGraphic(editIcon);
+        editBtn.setOnAction(e -> {
+            e.consume();
+            handleEditContact(contact);
+        });
+
+        editBtn.setOnMouseEntered(
+                e -> editBtn.setStyle(actionBtnStyle.replace("rgba(255, 255, 255, 0.1)", "rgba(59, 130, 246, 0.3)")));
+        editBtn.setOnMouseExited(e -> editBtn.setStyle(actionBtnStyle));
+
+        // Delete Button
+        Button deleteBtn = new Button();
+        deleteBtn.setStyle(actionBtnStyle);
+        javafx.scene.shape.SVGPath trashIcon = new javafx.scene.shape.SVGPath();
+        trashIcon.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
+        trashIcon.setStyle("-fx-fill: #EF4444; -fx-scale-x: 0.7; -fx-scale-y: 0.7;");
+        deleteBtn.setGraphic(trashIcon);
+        deleteBtn.setOnAction(e -> {
+            e.consume();
+            handleDeleteContact(contact);
+        });
+
+        deleteBtn.setOnMouseEntered(
+                e -> deleteBtn.setStyle(actionBtnStyle.replace("rgba(255, 255, 255, 0.1)", "rgba(239, 68, 68, 0.3)")));
+        deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(actionBtnStyle));
+
+        actions.getChildren().addAll(editBtn, deleteBtn);
+
+        // Add acts to contentBox
+        contentBox.getChildren().add(actions);
+
+        card.getChildren().add(contentBox);
+
+        if (!isFrozen) {
+            card.setOnMouseClicked(e -> handleQuickSend(contact));
+
+            // Hover logic for Card
+            card.setOnMouseEntered(e -> {
+                actions.setVisible(true); // Make visible
+                javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(200), actions);
+                ft.setFromValue(0);
+                ft.setToValue(1);
+                ft.play();
+
+                card.setStyle(baseStyle.replace("rgba(0,0,0,0.3)", "rgba(16, 185, 129, 0.4)")
+                        + " -fx-cursor: hand; -fx-border-color: rgba(16, 185, 129, 0.5);");
+            });
+            card.setOnMouseExited(e -> {
+                actions.setVisible(false); // Hide immediately or fade out
+                actions.setOpacity(0);
+                card.setStyle(baseStyle + " -fx-cursor: hand;");
+            });
+        }
+
         return card;
+    }
+
+    private void handleEditContact(tn.finhub.model.SavedContact contact) {
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(
+                contact.getContactName());
+        dialog.setTitle("Edit Contact");
+        dialog.setHeaderText("Rename " + contact.getContactName());
+        dialog.setContentText("New Name:");
+
+        // Style the dialog roughly to match theme (basic)
+        javafx.scene.control.DialogPane pane = dialog.getDialogPane();
+        pane.setStyle("-fx-background-color: #1F2937; -fx-text-fill: white;");
+        pane.getStyleClass().add("custom-dialog"); // Assuming existing class or just inline
+        pane.lookup(".content.label").setStyle("-fx-text-fill: white;");
+        pane.lookup(".text-field").setStyle("-fx-background-color: #374151; -fx-text-fill: white;");
+
+        dialog.showAndWait().ifPresent(newName -> {
+            if (!newName.trim().isEmpty()) {
+                contactModel.updateContact(contact.getId(), newName.trim());
+                loadContacts(); // Refresh
+            }
+        });
+    }
+
+    private void handleDeleteContact(tn.finhub.model.SavedContact contact) {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                javafx.scene.control.Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete Contact");
+        alert.setHeaderText("Remove " + contact.getContactName() + "?");
+        alert.setContentText("Are you sure you want to delete this contact?");
+
+        // Basic styling
+        alert.getDialogPane().setStyle("-fx-background-color: #1F2937; -fx-text-fill: white;");
+        alert.getDialogPane().lookup(".content.label").setStyle("-fx-text-fill: white;");
+        alert.getDialogPane().lookup(".header-panel").setStyle("-fx-background-color: #1F2937;");
+        alert.getDialogPane().lookup(".header-panel .label").setStyle("-fx-text-fill: white;");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                contactModel.deleteContact(contact.getId());
+                loadContacts(); // Refresh
+            }
+        });
     }
 
     private void handleQuickSend(tn.finhub.model.SavedContact contact) {
@@ -201,13 +333,15 @@ public class TransactionsController {
         List<WalletTransaction> transactions;
         List<tn.finhub.model.SavedContact> contacts;
         int badTxId;
+        boolean isFrozen;
 
         public TransactionData(int uid, List<WalletTransaction> txs, List<tn.finhub.model.SavedContact> contacts,
-                int badTxId) {
+                int badTxId, boolean isFrozen) {
             this.userId = uid;
             this.transactions = txs;
             this.contacts = contacts;
             this.badTxId = badTxId;
+            this.isFrozen = isFrozen;
         }
     }
 

@@ -157,46 +157,13 @@ public class AdminEscrowController {
         }
     }
 
-    // Navigation Handlers
-    @FXML
-    private void handleGoToDashboard() {
-        ViewUtils.setView(escrowTable, "/view/admin_dashboard.fxml");
-    }
-
-    @FXML
-    private void handleGoToUsers() {
-        ViewUtils.setView(escrowTable, "/view/admin_users.fxml");
-    }
-
-    @FXML
-    private void handleGoToTransactions() {
-        ViewUtils.setView(escrowTable, "/view/admin_transactions.fxml");
-    }
-
-    @FXML
-    private void handleGoToEscrows() {
-        // Already here
-    }
-
-    @FXML
-    private void handleGoToSupport() {
-        ViewUtils.setView(escrowTable, "/view/admin_support.fxml");
-    }
-
-    @FXML
-    private void handleGoToAlerts() {
-        ViewUtils.setView(escrowTable, "/view/admin_alerts.fxml");
-    }
-
-    @FXML
-    private void handleLogout() {
-        tn.finhub.util.SessionManager.logout();
-        ViewUtils.setView(escrowTable, "/view/login.fxml");
-    }
-
+    // Navigation Handlers removed - handled by Dashboard
     @FXML
     private void handleBack() {
-        handleGoToDashboard();
+        // handleGoToDashboard() was removed.
+        // If back button exists in FXML, it should probably be removed or redirected.
+        // Assuming it's for details view? But this is the main table view.
+        // So back might not be needed or should do nothing.
     }
 
     private void showInfo(String title, String content) {

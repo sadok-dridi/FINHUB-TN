@@ -5,44 +5,14 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.finhub.controller.AdminUserDetailsController"
-            style="-fx-background-color: transparent;">
-
-    <!-- Sidebar (Same as Admin Users) -->
-    <left>
-        <VBox spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0); -fx-border-color: transparent -color-card-border transparent transparent; -fx-border-width: 0 1 0 0;" prefWidth="250">
-            
-            <HBox alignment="CENTER_LEFT" spacing="10">
-                <Circle radius="20" fill="#2D2A40"/>
-                <VBox>
-                    <Label text="Admin User" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                    <Label text="Administrator" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
-                </VBox>
-            </HBox>
-            
-            <Region prefHeight="30"/>
-            
-            <Label text="ADMINISTRATION" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-            
-            <!-- Highlight Users button as active/related -->
-            <Button text="Users" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 8px; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Transactions" onAction="#handleGoToTransactions" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Analytics" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Settings" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            
-            <Region VBox.vgrow="ALWAYS"/>
-            <!-- Logout not wired for simplicity in this sub-view, user typically clicks Back -->
-        </VBox>
-    </left>
-
-
-    <center>
-        <VBox style="-fx-padding: 30; -fx-background-color: transparent;" spacing="20">
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.AdminUserDetailsController"
+      style="-fx-padding: 30; -fx-background-color: transparent;" 
+      spacing="20">
             
             <!-- Back Button & Header -->
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button text="← Back" onAction="#handleBack" styleClass="button-text" style="-fx-text-fill: -color-text-secondary;"/>
+                <Button text="← Back" onAction="#handleBack" styleClass="button-back"/>
                 <Label text="User Details" styleClass="header-text"/>
             </HBox>
 
@@ -112,7 +82,7 @@
                             <Label text="Danger Zone" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;"/>
                             <Label text="Once you delete a user, there is no going back. Please be certain." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
                             <HBox alignment="CENTER_RIGHT">
-                                <Button text="Delete User" style="-fx-background-color: #EF4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" onAction="#handleDeleteUser"/>
+                                <Button text="Delete User" styleClass="button-danger" onAction="#handleDeleteUser"/>
                             </HBox>
                         </VBox>
 
@@ -121,6 +91,3 @@
             </ScrollPane>
 
         </VBox>
-    </center>
-
-</BorderPane>

@@ -59,6 +59,14 @@ public class TransferController {
             }
 
             int currentUserId = UserSession.getInstance().getUser().getId();
+
+            // Check Frozen Status
+            tn.finhub.model.Wallet wallet = walletModel.findByUserId(currentUserId);
+            if (wallet != null && "FROZEN".equals(wallet.getStatus())) {
+                DialogUtil.showError("Security Alert", "Wallet is FROZEN. Transfers are disabled.");
+                return;
+            }
+
             if (email.equalsIgnoreCase(UserSession.getInstance().getUser().getEmail())) {
                 DialogUtil.showError("Error", "You cannot transfer money to yourself.");
                 return;

@@ -223,9 +223,13 @@ public class AdminUserTransactionsController {
                     getClass().getResource("/view/admin_transactions.fxml"));
             javafx.scene.Parent view = loader.load();
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) transactionsListView.getScene()
-                    .lookup("#contentArea");
-            contentArea.getChildren().clear();
-            contentArea.getChildren().add(view);
+                    .lookup("#adminContentArea");
+            if (contentArea != null) {
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(view);
+            } else {
+                System.err.println("Critical Error: #adminContentArea not found");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

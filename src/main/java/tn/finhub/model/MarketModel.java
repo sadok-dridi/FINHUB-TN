@@ -255,6 +255,10 @@ public class MarketModel {
             if (wallet == null)
                 return "No wallet found.";
 
+            if ("FROZEN".equals(wallet.getStatus())) {
+                return "Wallet is FROZEN. Trading disabled.";
+            }
+
             walletModel.debit(wallet.getId(), cost, "MARKET BUY " + symbol.toUpperCase());
 
             // Update Portfolio
@@ -299,6 +303,10 @@ public class MarketModel {
             Wallet wallet = walletModel.getWallet(userId);
             if (wallet == null)
                 return "No wallet found.";
+
+            if ("FROZEN".equals(wallet.getStatus())) {
+                return "Wallet is FROZEN. Trading disabled.";
+            }
 
             // Credit via WalletModel
             walletModel.credit(wallet.getId(), value, "MARKET SELL " + symbol.toUpperCase());
