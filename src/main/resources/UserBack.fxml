@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controller.UserBackController"
+            stylesheets="@styles.css"
+            style="-fx-background-color: #f5f5f5;">
+
+    <!-- Header -->
+    <top>
+        <VBox style="-fx-background-color: linear-gradient(to right, #667eea, #764ba2); -fx-padding: 20;">
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <VBox spacing="5">
+                    <Label fx:id="adminWelcomeLabel"
+                           style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+                    <Label text="Panneau d'administration"
+                           style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 14px;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Statistiques rapides -->
+                <HBox spacing="20" style="-fx-padding: 0 20;">
+                    <VBox alignment="CENTER">
+                        <Label fx:id="totalUsersLabel" text="Total: 0"
+                               style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label fx:id="activeUsersLabel" text="Actifs: 0"
+                               style="-fx-text-fill: #a0e7a0; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    </VBox>
+                    <VBox alignment="CENTER">
+                        <Label fx:id="adminUsersLabel" text="Admins: 0"
+                               style="-fx-text-fill: #ffe083; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+
+                <Button text="Déconnexion"
+                        style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 20; -fx-padding: 8 20; -fx-font-size: 13px; -fx-cursor: hand;"
+                        onAction="#handleLogout"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Center -->
+    <center>
+        <SplitPane dividerPositions="0.6" style="-fx-background-color: transparent;">
+
+            <!-- Left Panel - User Table -->
+            <VBox spacing="20" style="-fx-padding: 20; -fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+
+                <HBox alignment="CENTER_LEFT" spacing="15">
+                    <Text text="Gestion des utilisateurs"
+                          style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-fill: #333;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <!-- Search Bar -->
+                    <HBox spacing="10" style="-fx-background-color: #f5f5f5; -fx-background-radius: 25; -fx-padding: 5 15;">
+                        <TextField fx:id="searchField" promptText="Rechercher..."
+                                   style="-fx-background-color: transparent; -fx-pref-width: 200; -fx-padding: 8 0;"
+                                   onKeyReleased="#handleSearch"/>
+                        <Label text="🔍" style="-fx-font-size: 18px;"/>
+                    </HBox>
+                </HBox>
+
+                <TableView fx:id="userTable" style="-fx-background-radius: 10;">
+                    <columns>
+                        <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                        <TableColumn fx:id="nomColumn" text="Nom" prefWidth="100"/>
+                        <TableColumn fx:id="prenomColumn" text="Prénom" prefWidth="100"/>
+                        <TableColumn fx:id="mailColumn" text="Email" prefWidth="180"/>
+                        <TableColumn fx:id="numTelColumn" text="Téléphone" prefWidth="120"/>
+                        <TableColumn fx:id="roleColumn" text="Rôle" prefWidth="80"/>
+                        <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                    </columns>
+                </TableView>
+            </VBox>
+
+            <!-- Right Panel - User Form -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                <VBox spacing="25" style="-fx-padding: 20; -fx-background-color: white; -fx-background-radius: 10;">
+
+                    <Text text="Détails de l'utilisateur"
+                          style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-fill: #333;"/>
+
+                    <Separator style="-fx-background-color: #eee;"/>
+
+                    <!-- Profile Image -->
+                    <VBox spacing="10" alignment="CENTER">
+                        <ImageView fx:id="profileImageView"
+                                   fitWidth="120" fitHeight="120"
+                                   style="-fx-background-color: #f0f0f0; -fx-background-radius: 60; -fx-border-radius: 60; -fx-border-color: #667eea; -fx-border-width: 3;"
+                                   preserveRatio="true"/>
+
+                        <Button text="Upload Image"
+                                style="-fx-background-color: #667eea; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 8 25; -fx-font-size: 12px; -fx-cursor: hand;"
+                                onAction="#handleUploadImage"/>
+                    </VBox>
+
+                    <!-- Formulaire -->
+                    <GridPane hgap="15" vgap="12">
+                        <padding>
+                            <Insets top="10" bottom="10"/>
+                        </padding>
+
+                        <!-- Nom -->
+                        <Label text="Nom :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="nomField"
+                                   promptText="Nom"
+                                   style="-fx-pref-width: 200; -fx-padding: 8; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                   GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <!-- Prénom -->
+                        <Label text="Prénom :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="prenomField"
+                                   promptText="Prénom"
+                                   style="-fx-pref-width: 200; -fx-padding: 8; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <!-- Date naissance -->
+                        <Label text="Date naissance :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <DatePicker fx:id="dateNaissancePicker"
+                                    promptText="JJ/MM/AAAA"
+                                    style="-fx-pref-width: 200; -fx-padding: 5; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                    GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                        <!-- Email -->
+                        <Label text="Email :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="mailField"
+                                   promptText="Email"
+                                   style="-fx-pref-width: 200; -fx-padding: 8; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                   GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                        <!-- Téléphone -->
+                        <Label text="Téléphone :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <TextField fx:id="numTelField"
+                                   promptText="Numéro de téléphone"
+                                   style="-fx-pref-width: 200; -fx-padding: 8; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                   GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                        <!-- Mot de passe -->
+                        <Label text="Mot de passe :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                        <PasswordField fx:id="motDePasseField"
+                                       promptText="Laisser vide pour conserver"
+                                       style="-fx-pref-width: 200; -fx-padding: 8; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                       GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                        <!-- Rôle -->
+                        <Label text="Rôle :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="roleCombo"
+                                  style="-fx-pref-width: 200; -fx-padding: 5; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                  GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                        <!-- Status -->
+                        <Label text="Status :"
+                               style="-fx-font-weight: bold; -fx-text-fill: #555;"
+                               GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                        <ComboBox fx:id="statusCombo"
+                                  style="-fx-pref-width: 200; -fx-padding: 5; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #ddd;"
+                                  GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                    </GridPane>
+
+                    <Separator style="-fx-background-color: #eee;"/>
+
+                    <!-- Action Buttons -->
+                    <HBox spacing="15" alignment="CENTER">
+                        <Button text="Ajouter"
+                                style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-font-size: 14px; -fx-cursor: hand;"
+                                onAction="#handleAddUser"/>
+
+                        <Button text="Modifier"
+                                style="-fx-background-color: #ffc107; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-font-size: 14px; -fx-cursor: hand;"
+                                onAction="#handleUpdateUser"/>
+
+                        <Button text="Supprimer"
+                                style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-font-size: 14px; -fx-cursor: hand;"
+                                onAction="#handleDeleteUser"/>
+
+                        <Button text="Effacer"
+                                style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 25; -fx-font-size: 14px; -fx-cursor: hand;"
+                                onAction="#handleClearForm"/>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
+        </SplitPane>
+    </center>
+
+    <!-- Footer -->
+    <bottom>
+        <VBox style="-fx-background-color: #333; -fx-padding: 12; -fx-alignment: center;">
+            <HBox alignment="CENTER" spacing="20">
+                <Label text="© 2024 Gestion des Utilisateurs - Administration"
+                       style="-fx-text-fill: white; -fx-font-size: 12px;"/>
+                <Label text="•" style="-fx-text-fill: white;"/>
+                <Label text="Total utilisateurs: " style="-fx-text-fill: white; -fx-font-size: 12px;"/>
+                <Label fx:id="footerTotalLabel" text="0" style="-fx-text-fill: #a0e7a0; -fx-font-weight: bold; -fx-font-size: 12px;"/>
+            </HBox>
+        </VBox>
+    </bottom>
+</BorderPane>
