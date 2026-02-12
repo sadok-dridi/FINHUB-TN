@@ -79,33 +79,49 @@ public class AdminUserDetailsController {
         if (currentUser == null)
             return;
 
-        Wallet wallet = walletModel.findByUserId(currentUser.getId());
-        if (wallet != null) {
-            balanceLabel.setText(wallet.getBalance().toString());
-            currencyLabel.setText(wallet.getCurrency());
+        // Show loading state
+        balanceLabel.setText("Loading...");
+        walletStatusLabel.setText("...");
+        freezeBtn.setDisable(true);
 
-            String status = wallet.getStatus();
-            walletStatusLabel.setText(status);
+        // Run DB fetch in background
+        java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+            return walletModel.findByUserId(currentUser.getId());
+        }).thenAcceptAsync(wallet -> {
+            // Update UI on JavaFX thread
+            if (wallet != null) {
+                balanceLabel.setText(wallet.getBalance().toString());
+                currencyLabel.setText(wallet.getCurrency());
 
-            if ("FROZEN".equals(status)) {
-                walletStatusLabel.setStyle("-fx-text-fill: -color-error; -fx-font-weight: bold;");
-                freezeBtn.setText("Unfreeze Wallet");
-                freezeBtn.getStyleClass().removeAll("button-warning");
-                freezeBtn.getStyleClass().add("button-success");
+                String status = wallet.getStatus();
+                walletStatusLabel.setText(status);
+
+                if ("FROZEN".equals(status)) {
+                    walletStatusLabel.setStyle("-fx-text-fill: -color-error; -fx-font-weight: bold;");
+                    freezeBtn.setText("Unfreeze Wallet");
+                    freezeBtn.getStyleClass().removeAll("button-warning");
+                    freezeBtn.getStyleClass().add("button-success");
+                } else {
+                    walletStatusLabel.setStyle("-fx-text-fill: -color-success; -fx-font-weight: bold;");
+                    freezeBtn.setText("Freeze Wallet");
+                    freezeBtn.getStyleClass().removeAll("button-success");
+                    freezeBtn.getStyleClass().add("button-warning");
+                }
+                freezeBtn.setDisable(false);
             } else {
-                walletStatusLabel.setStyle("-fx-text-fill: -color-success; -fx-font-weight: bold;");
-                freezeBtn.setText("Freeze Wallet");
-                freezeBtn.getStyleClass().removeAll("button-success");
-                freezeBtn.getStyleClass().add("button-warning");
+                balanceLabel.setText("N/A");
+                currencyLabel.setText("TND");
+                walletStatusLabel.setText("No Wallet");
+                walletStatusLabel.setStyle("-fx-text-fill: -color-text-muted;");
+                freezeBtn.setDisable(true);
             }
-            freezeBtn.setDisable(false);
-        } else {
-            balanceLabel.setText("N/A");
-            currencyLabel.setText("TND");
-            walletStatusLabel.setText("No Wallet");
-            walletStatusLabel.setStyle("-fx-text-fill: -color-text-muted;");
-            freezeBtn.setDisable(true);
-        }
+        }, javafx.application.Platform::runLater).exceptionally(ex -> {
+            javafx.application.Platform.runLater(() -> {
+                tn.finhub.util.DialogUtil.showError("Error", "Failed to load wallet info.");
+                ex.printStackTrace();
+            });
+            return null;
+        });
     }
 
     @FXML
@@ -162,19 +178,78 @@ public class AdminUserDetailsController {
             return;
         }
 
+        // 1. Password Confirmation
+        javafx.scene.control.TextInputDialog passwordDialog = new javafx.scene.control.TextInputDialog();
+        passwordDialog.setTitle("Admin Authentication");
+        passwordDialog.setHeaderText("Security Verification Required");
+        passwordDialog.setContentText("Please enter your Admin Password to confirm deletion:");
+
+        java.util.Optional<String> result = passwordDialog.showAndWait();
+        if (result.isEmpty())
+            return; // Cancelled
+
+        String inputPassword = result.get();
+        if (inputPassword.isEmpty()) {
+            DialogUtil.showError("Error", "Password cannot be empty.");
+            return;
+        }
+
+        // 2. Verify Password (Re-Auth)
+        if (!verifyAdminPassword(inputPassword)) {
+            DialogUtil.showError("Authentication Failed", "Incorrect Admin Password.");
+            return;
+        }
+
+        // 3. Final Warning
         boolean confirmed = DialogUtil.showConfirmation(
                 "Delete User",
-                "Are you sure you want to delete " + currentUser.getFullName() + "?\n\nThis action cannot be undone.");
+                "Are you sure you want to delete " + currentUser.getFullName() + "?\n\n" +
+                        "This will:\n" +
+                        "- LIQUIDATE all portfolio assets.\n" +
+                        "- TRANSFER total balance to Central Bank.\n" +
+                        "- PERMANENTLY DELETE all user data.\n" +
+                        "- THIS CANNOT BE UNDONE.");
 
         if (confirmed) {
             try {
-                // TODO: Implement user deletion logic
-                DialogUtil.showInfo("Success", "User deleted successfully.");
+                tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+                userModel.deleteUser(currentUser.getId());
+
+                DialogUtil.showInfo("Success", "User deleted successfully. Assets liquidated and transferred.");
                 handleBack(); // Navigate back to users list
             } catch (Exception e) {
                 e.printStackTrace();
-                DialogUtil.showError("Deletion Failed", "Could not delete user. Please try again.");
+                DialogUtil.showError("Deletion Failed", e.getMessage());
             }
+        }
+    }
+
+    private boolean verifyAdminPassword(String password) {
+        String email = tn.finhub.util.SessionManager.getEmail();
+        if (email == null)
+            return false;
+
+        try {
+            String json = """
+                    {
+                      "email": "%s",
+                      "password": "%s"
+                    }
+                    """.formatted(email, password);
+
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create(tn.finhub.util.ApiClient.BASE_URL + "/login"))
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            java.net.http.HttpResponse<String> response = tn.finhub.util.ApiClient.getClient().send(request,
+                    java.net.http.HttpResponse.BodyHandlers.ofString());
+
+            return response.statusCode() == 200;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

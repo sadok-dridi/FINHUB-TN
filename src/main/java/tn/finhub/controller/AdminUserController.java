@@ -237,82 +237,67 @@ public class AdminUserController {
 
     private void handleShowDetails(User user, javafx.scene.Node sourceNode) {
         try {
-            System.out.println("DEBUG: handleShowDetails called for " + user.getEmail());
-
-            // CRITICAL: Get scene from the clicked card (which is definitely in the scene)
             javafx.scene.Scene scene = sourceNode.getScene();
-            if (scene == null) {
-                System.err.println("ERROR: sourceNode has no scene!");
+            if (scene == null)
                 return;
-            }
 
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) scene
                     .lookup("#adminContentArea");
             if (contentArea == null) {
-                System.err.println("CRITICAL ERROR: #adminContentArea not found in scene. Navigation aborted.");
-                tn.finhub.util.DialogUtil.showError("System Error",
-                        "Navigation component missing. Please restart the application.");
+                tn.finhub.util.DialogUtil.showError("System Error", "Navigation component missing.");
                 return;
             }
 
-            System.out.println("DEBUG: adminContentArea found. Loading view...");
-            System.out.println("DEBUG: Current adminContentArea children: " + contentArea.getChildren().size());
-            if (!contentArea.getChildren().isEmpty()) {
-                System.out
-                        .println("DEBUG: Current view type: " + contentArea.getChildren().get(0).getClass().getName());
-            }
+            // Define the loading logic as a Runnable to reuse it
+            Runnable loadView = () -> {
+                try {
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                            getClass().getResource("/view/admin_user_details.fxml"));
+                    javafx.scene.Parent view = loader.load();
 
-            // Now load the new view
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/view/admin_user_details.fxml"));
-            javafx.scene.Parent view = loader.load();
+                    AdminUserDetailsController controller = loader.getController();
+                    controller.setUser(user);
 
-            AdminUserDetailsController controller = loader.getController();
-            controller.setUser(user);
-
-            // Debug: Check sidebar state BEFORE replacing content
-            javafx.scene.Parent root = scene.getRoot();
-            javafx.scene.Node sidebar = root.lookup("#mainSidebar");
-
-            if (sidebar != null) {
-                System.out.println("DEBUG: Sidebar found before content swap.");
-                System.out.println("DEBUG: Sidebar visible=" + sidebar.isVisible());
-                System.out.println("DEBUG: Sidebar managed=" + sidebar.isManaged());
-
-                // Force it to be visible
-                sidebar.setVisible(true);
-                sidebar.setManaged(true);
-            } else {
-                System.err.println("CRITICAL DEBUG: Sidebar #mainSidebar NOT found!");
-                System.err.println("DEBUG: Scene root type: " + root.getClass().getName());
-
-                // Debug: Check if root is BorderPane and what's in its left
-                if (root instanceof javafx.scene.layout.BorderPane) {
-                    javafx.scene.layout.BorderPane bp = (javafx.scene.layout.BorderPane) root;
-                    javafx.scene.Node left = bp.getLeft();
-                    System.err.println(
-                            "DEBUG: BorderPane left node: " + (left != null ? left.getClass().getName() : "NULL"));
-                    if (left != null) {
-                        System.err.println("DEBUG: Left node ID: " + left.getId());
+                    // Ensure sidebar remains visible (defensive coding based on previous issues)
+                    javafx.scene.Node sidebar = scene.lookup("#mainSidebar");
+                    if (sidebar != null) {
+                        sidebar.setVisible(true);
+                        sidebar.setManaged(true);
                     }
+
+                    // Prepare new view for fade-in
+                    view.setOpacity(0);
+                    contentArea.getChildren().setAll(view);
+
+                    // Fade In
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(300), view);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    tn.finhub.util.DialogUtil.showError("Navigation Error", "Could not load user details.");
                 }
+            };
+
+            // Calculate Fade Out for current content if any
+            if (!contentArea.getChildren().isEmpty()) {
+                javafx.scene.Node currentView = contentArea.getChildren().get(0);
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(300), currentView);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> loadView.run());
+                fadeOut.play();
+            } else {
+                // No current content, just load immediately
+                loadView.run();
             }
-
-            // Replace content (this should NOT affect the sidebar since it's in the
-            // BorderPane's <left>)
-            contentArea.getChildren().setAll(view);
-
-            // Fade in animation
-            view.setOpacity(0);
-            javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
-                    javafx.util.Duration.millis(300), view);
-            fadeIn.setFromValue(0.0);
-            fadeIn.setToValue(1.0);
-            fadeIn.play();
 
         } catch (Exception e) {
             e.printStackTrace();
-            tn.finhub.util.DialogUtil.showError("Navigation Error", "Could not load user details.");
         }
     }
 

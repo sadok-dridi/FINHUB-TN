@@ -30,8 +30,7 @@ public class VirtualCardModel {
                         FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
                     )
                 """;
-        try (Connection connection = DBConnection.getInstance();
-                Statement stmt = connection.createStatement()) {
+        try (Statement stmt = DBConnection.getInstance().createStatement()) {
             stmt.execute(sql);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create virtual_cards table", e);
@@ -44,8 +43,7 @@ public class VirtualCardModel {
 
     public void save(VirtualCard card) {
         String sql = "INSERT INTO virtual_cards (wallet_id, card_number, cvv, expiry_date, status) VALUES (?, ?, ?, ?, ?)";
-        try (Connection connection = DBConnection.getInstance();
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, card.getWalletId());
             ps.setString(2, card.getCardNumber());
             ps.setString(3, card.getCvv());
@@ -65,8 +63,7 @@ public class VirtualCardModel {
     public List<VirtualCard> findByWalletId(int walletId) {
         List<VirtualCard> cards = new ArrayList<>();
         String sql = "SELECT * FROM virtual_cards WHERE wallet_id = ?";
-        try (Connection connection = DBConnection.getInstance();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -87,8 +84,7 @@ public class VirtualCardModel {
 
     public VirtualCard findByCardNumber(String cardNumber) {
         String sql = "SELECT * FROM virtual_cards WHERE card_number = ?";
-        try (Connection connection = DBConnection.getInstance();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setString(1, cardNumber);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -174,6 +170,16 @@ public class VirtualCardModel {
 
     public VirtualCard findCard(String cardNumber) {
         return findByCardNumber(cardNumber);
+    }
+
+    public void deleteByWalletId(int walletId) {
+        String sql = "DELETE FROM virtual_cards WHERE wallet_id = ?";
+        try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
+            ps.setInt(1, walletId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete virtual cards by wallet id", e);
+        }
     }
 
     private String generateLuhnCardNumber() {

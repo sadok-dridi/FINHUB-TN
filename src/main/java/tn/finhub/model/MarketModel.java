@@ -166,6 +166,84 @@ public class MarketModel {
         }
     }
 
+    public void deletePortfolioByUserId(int userId) {
+        String sql = "DELETE FROM portfolio_items WHERE user_id = ?";
+        try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting portfolio for user " + userId, e);
+        }
+    }
+
+    public void liquidatePortfolioToWallet(int userId) {
+        // 1. Fetch Portfolio
+        List<PortfolioItem> items = getPortfolio(userId);
+        if (items.isEmpty())
+            return;
+
+        WalletModel walletModel = new WalletModel();
+        Wallet wallet = walletModel.findByUserId(userId);
+        if (wallet == null)
+            throw new RuntimeException("User has no wallet to liquidate assets into.");
+
+        BigDecimal totalLiquidationValue = BigDecimal.ZERO;
+        StringBuilder liquidationLog = new StringBuilder("Liquidated: ");
+
+        // 2. Sell Each Item
+        for (PortfolioItem item : items) {
+            String symbol = item.getSymbol();
+            BigDecimal quantity = item.getQuantity();
+
+            // Get Current Price (Force Refresh to be fair)
+            MarketPrice price = getPrice(symbol);
+            BigDecimal currentPriceUsd = (price != null) ? price.getPrice() : BigDecimal.ZERO;
+
+            // If price is 0 (API error), we might need to fallback or skip.
+            // For now, if 0, we assume asset is worthless or data missing.
+            // Better to try fetching fresh.
+            if (currentPriceUsd.compareTo(BigDecimal.ZERO) == 0) {
+                // Try one last fetch
+                Map<String, MarketPrice> fresh = fetchFromApi(new String[] { symbol });
+                if (fresh.containsKey(symbol)) {
+                    currentPriceUsd = fresh.get(symbol).getPrice();
+                }
+            }
+
+            BigDecimal exchangeRate = getUsdToTndRate();
+            BigDecimal priceInTnd = currentPriceUsd.multiply(exchangeRate);
+            BigDecimal value = priceInTnd.multiply(quantity).setScale(2, RoundingMode.HALF_UP);
+
+            totalLiquidationValue = totalLiquidationValue.add(value);
+            liquidationLog.append(symbol).append("(").append(quantity).append(") @ ").append(priceInTnd)
+                    .append(" TND; ");
+
+            // Record Trade
+            SimulatedTrade trade = new SimulatedTrade(0, userId, symbol, "SELL", quantity, currentPriceUsd,
+                    value, null);
+            recordTrade(trade);
+        }
+
+        // 3. Credit Wallet
+        if (totalLiquidationValue.compareTo(BigDecimal.ZERO) > 0) {
+            walletModel.credit(wallet.getId(), totalLiquidationValue, "Asset Liquidation before Deletion");
+            System.out.println("Liquidated Portfolio for User " + userId + ": " + totalLiquidationValue + " TND");
+        }
+
+        // 4. Clear Portfolio (Delete items)
+        deletePortfolioByUserId(userId);
+    }
+
+    public void deleteTradesByUserId(int userId) {
+        String sql = "DELETE FROM simulated_trades WHERE user_id = ?";
+        try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting trades for user " + userId, e);
+        }
+    }
+
     // --- Trades (HOSTED DB) ---
 
     public void recordTrade(SimulatedTrade trade) {

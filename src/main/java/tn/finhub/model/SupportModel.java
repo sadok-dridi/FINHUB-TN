@@ -142,6 +142,26 @@ public class SupportModel {
         return ticket;
     }
 
+    public void deleteTicketsByUserId(int userId) {
+        // 1. Delete Messages for these tickets
+        String sqlMessages = "DELETE FROM support_messages WHERE ticket_id IN (SELECT id FROM support_tickets WHERE user_id = ?)";
+        try (PreparedStatement stmt = getConnection().prepareStatement(sqlMessages)) {
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting support messages for user " + userId, e);
+        }
+
+        // 2. Delete Tickets
+        String sqlTickets = "DELETE FROM support_tickets WHERE user_id = ?";
+        try (PreparedStatement stmt = getConnection().prepareStatement(sqlTickets)) {
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting support tickets for user " + userId, e);
+        }
+    }
+
     // ==========================================
     // MESSAGE MANAGEMENT
     // ==========================================

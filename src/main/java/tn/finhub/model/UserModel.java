@@ -159,18 +159,86 @@ public class UserModel {
     }
 
     public void deleteUser(int id) {
-        // 1. Server Delete
-        deleteUserOnServer(id);
+        // 0. Fetch User Details for Email-based deletion (Contacts)
+        User user = findById(id);
+        if (user == null) {
+            logger.warn("User {} not found for deletion", id);
+            return;
+        }
 
-        // 2. Local Cascade Delete
+        // 1. Safety Check: Active Escrows
         WalletModel walletModel = new WalletModel();
         Wallet wallet = walletModel.findByUserId(id);
 
         if (wallet != null) {
-            walletModel.deleteWalletRecursive(wallet.getId());
+            EscrowManager escrowManager = new EscrowManager();
+            if (escrowManager.hasActiveEscrows(wallet.getId())) {
+                throw new RuntimeException("Cannot delete user: Active Escrow transactions pending.");
+            }
+
+            // 2. Asset Reclaiming (Transfer to Bank)
+            try {
+                // Portfolio
+                MarketModel marketModel = new MarketModel();
+                marketModel.liquidatePortfolioToWallet(id);
+
+                // Wallet Balance
+                walletModel.transferEntireBalanceToBank(id);
+
+            } catch (Exception e) {
+                logger.error("Failed to reclaim assets for user {}", id, e);
+                // Proceed? Or abort?
+                // User wants "if account deleted... it goes to bank".
+                // If transfer fails, we probably shouldn't just burn the money.
+                // But typically we log and proceed or throw.
+                // Throwing stops delete, which is safe.
+                throw new RuntimeException("Asset reclamation failed. Deletion aborted.", e);
+            }
         }
 
-        // 3. Delete User Local
+        // 3. Server Delete
+        try {
+            deleteUserOnServer(id);
+        } catch (Exception e) {
+            logger.error("Server delete failed for user {}, proceeding with local cleanup", id, e);
+        }
+
+        // 4. Local Cascade Delete
+        try {
+            // A. Wallet-based Cleanup
+            if (wallet != null) {
+                // Virtual Cards
+                VirtualCardModel virtualCardModel = new VirtualCardModel();
+                virtualCardModel.deleteByWalletId(wallet.getId());
+
+                // Escrow (History/Inactive only due to check above)
+                EscrowManager escrowManager = new EscrowManager();
+                escrowManager.deleteByWalletId(wallet.getId());
+
+                // Wallet Transactions & Ledger (handled by deleteWalletRecursive)
+                walletModel.deleteWalletRecursive(wallet.getId());
+            }
+
+            // B. User-based Cleanup
+            SavedContactModel savedContactModel = new SavedContactModel();
+            savedContactModel.deleteByUserId(id); // Contacts saved BY this user
+            if (user.getEmail() != null) {
+                savedContactModel.deleteByContactEmail(user.getEmail()); // This user saved IN others' lists
+            }
+
+            MarketModel marketModel = new MarketModel();
+            marketModel.deletePortfolioByUserId(id);
+            marketModel.deleteTradesByUserId(id);
+
+            SupportModel supportModel = new SupportModel();
+            supportModel.deleteTicketsByUserId(id);
+
+        } catch (Exception e) {
+            logger.error("Error during local cascade delete for user {}", id, e);
+            throw new RuntimeException("Partially failed to delete local user data", e);
+        }
+
+        // 5. Delete User Local
         delete(id);
     }
 

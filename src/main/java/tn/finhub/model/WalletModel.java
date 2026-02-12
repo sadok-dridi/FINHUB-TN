@@ -660,6 +660,26 @@ public class WalletModel {
         updateUserId(w.getId(), newUserId);
     }
 
+    public void transferEntireBalanceToBank(int userId) {
+        Wallet userWallet = findByUserId(userId);
+        if (userWallet == null)
+            return;
+
+        int bankWalletId = getBankWalletId();
+        if (userWallet.getId() == bankWalletId) {
+            throw new RuntimeException("Cannot delete Central Bank User");
+        }
+
+        BigDecimal totalWealth = userWallet.getBalance().add(userWallet.getEscrowBalance());
+        if (totalWealth.compareTo(BigDecimal.ZERO) > 0) {
+            // Credit Bank
+            credit(bankWalletId, totalWealth, "Reclaimed Assets from User " + userId);
+
+            // Log for debugging
+            System.out.println("Transferred " + totalWealth + " TND from User " + userId + " to Bank.");
+        }
+    }
+
     // ========================
     // ESCROW SPECIFIC LOGIC
     // ========================

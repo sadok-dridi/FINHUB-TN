@@ -91,4 +91,24 @@ public class SavedContactModel {
         }
         return false;
     }
+
+    public void deleteByUserId(int userId) {
+        String sql = "DELETE FROM saved_contacts WHERE user_id = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting contacts for user " + userId, e);
+        }
+    }
+
+    public void deleteByContactEmail(String email) {
+        String sql = "DELETE FROM saved_contacts WHERE contact_email = ?";
+        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+            pstmt.setString(1, email);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting contacts with email " + email, e);
+        }
+    }
 }

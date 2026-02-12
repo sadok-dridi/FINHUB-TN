@@ -248,7 +248,32 @@ public class EscrowManager {
         }
     }
 
-    // Getters for UI
+    public boolean hasActiveEscrows(int walletId) {
+        String sql = "SELECT COUNT(*) FROM escrow WHERE (sender_wallet_id = ? OR receiver_wallet_id = ?) AND status IN ('LOCKED', 'DISPUTED')";
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, walletId);
+            ps.setInt(2, walletId);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void deleteByWalletId(int walletId) {
+        String sql = "DELETE FROM escrow WHERE sender_wallet_id = ? OR receiver_wallet_id = ?";
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, walletId);
+            ps.setInt(2, walletId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to delete escrows for wallet " + walletId, e);
+        }
+    }
+
     public List<Escrow> getEscrowsByWalletId(int walletId) {
         List<Escrow> list = new ArrayList<>();
         String sql = "SELECT * FROM escrow WHERE sender_wallet_id = ? OR receiver_wallet_id = ? ORDER BY created_at DESC";
