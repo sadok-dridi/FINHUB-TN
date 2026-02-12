@@ -28,6 +28,20 @@ public class CompleteProfileController {
     @FXML
     public void initialize() {
         riskBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
+        setupDecimalValidation(incomeField, expensesField, savingsField);
+    }
+
+    private void setupDecimalValidation(TextField... fields) {
+        for (TextField field : fields) {
+            java.util.function.UnaryOperator<javafx.scene.control.TextFormatter.Change> filter = change -> {
+                String text = change.getControlNewText();
+                if (text.matches("[0-9]*\\.?[0-9]*")) {
+                    return change;
+                }
+                return null;
+            };
+            field.setTextFormatter(new javafx.scene.control.TextFormatter<>(filter));
+        }
     }
 
     @FXML

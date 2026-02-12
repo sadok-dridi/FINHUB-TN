@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import tn.finhub.model.LedgerFlag;
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
@@ -31,42 +32,87 @@ public class AdminUserTransactionsController {
     private Label ledgerAlertMessage;
 
     private User user;
-    private Wallet wallet;
+
     private WalletModel walletModel = new WalletModel();
-    private ObservableList<WalletTransaction> transactions;
 
     public void setUser(User user) {
         this.user = user;
         nameLabel.setText(user.getFullName());
         emailLabel.setText(user.getEmail());
 
-        if (walletModel.findByUserId(user.getId()) != null) {
-            this.wallet = walletModel.findByUserId(user.getId());
-            updateWalletInfo();
-            loadTransactions();
-        } else {
-            balanceLabel.setText("No Wallet");
-            walletStatusLabel.setText("N/A");
-            transactionsListView.setItems(FXCollections.emptyObservableList());
-        }
+        // Set Loading State
+        balanceLabel.setText("Loading...");
+        walletStatusLabel.setText("...");
+        ledgerAlertBox.setVisible(false);
+        ledgerAlertBox.setManaged(false);
+
+        Label loadingLabel = new Label("Loading transactions...");
+        loadingLabel.setStyle("-fx-text-fill: white;");
+        transactionsListView.setPlaceholder(loadingLabel);
+        transactionsListView.setItems(FXCollections.observableArrayList()); // Clear old data
+
+        // Background Task
+        javafx.concurrent.Task<WalletFetchResult> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected WalletFetchResult call() throws Exception {
+                Wallet w = walletModel.findByUserId(user.getId());
+                if (w == null)
+                    return null;
+
+                // Re-fetch to ensure fresh data (as per original logic)
+                w = walletModel.findById(w.getId());
+
+                // Fetch transactions
+                java.util.List<WalletTransaction> txHistory = walletModel.getTransactionHistory(w.getId());
+
+                // Fetch tampered ID
+                int tamperedId = walletModel.getTamperedTransactionId(w.getId());
+
+                // Fetch latest flag if frozen
+                LedgerFlag flag = null;
+                if ("FROZEN".equals(w.getStatus())) {
+                    flag = walletModel.getLatestFlag(w.getId());
+                }
+
+                return new WalletFetchResult(w, txHistory, tamperedId, flag);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            WalletFetchResult result = task.getValue();
+            if (result == null) {
+                balanceLabel.setText("No Wallet");
+                walletStatusLabel.setText("N/A");
+                transactionsListView.setPlaceholder(new Label("No wallet found for this user."));
+            } else {
+                updateUIWithData(result);
+            }
+        });
+
+        task.setOnFailed(e -> {
+            balanceLabel.setText("Error");
+            walletStatusLabel.setText("Error");
+            transactionsListView.setPlaceholder(new Label("Failed to load data."));
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
     }
 
-    private void updateWalletInfo() {
-        wallet = walletModel.findById(wallet.getId());
-        balanceLabel.setText(String.format("%.3f TND", wallet.getBalance()));
-
-        String status = wallet.getStatus();
+    private void updateUIWithData(WalletFetchResult result) {
+        // Update Wallet Info
+        balanceLabel.setText(String.format("%.3f TND", result.wallet.getBalance()));
+        String status = result.wallet.getStatus();
         walletStatusLabel.setText(status);
+
         if ("FROZEN".equals(status)) {
             walletStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
             ledgerAlertBox.setVisible(true);
             ledgerAlertBox.setManaged(true);
 
-            // Check flags
-            var flag = walletModel.getLatestFlag(wallet.getId());
-            if (flag != null) {
-                ledgerAlertMessage.setText(flag.getReason() + " (at "
-                        + flag.getFlaggedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")");
+            if (result.flag != null) {
+                ledgerAlertMessage.setText(result.flag.getReason() + " (at "
+                        + result.flag.getFlaggedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")");
             } else {
                 ledgerAlertMessage.setText("Wallet is frozen.");
             }
@@ -75,15 +121,10 @@ public class AdminUserTransactionsController {
             ledgerAlertBox.setVisible(false);
             ledgerAlertBox.setManaged(false);
         }
-    }
 
-    private void loadTransactions() {
-        transactions = FXCollections.observableArrayList(walletModel.getTransactionHistory(wallet.getId()));
-
-        // Identify tampered transaction ID
-        int tamperedId = walletModel.getTamperedTransactionId(wallet.getId());
-
-        transactionsListView.setItems(transactions);
+        // Update Transactions
+        ObservableList<WalletTransaction> items = FXCollections.observableArrayList(result.transactions);
+        transactionsListView.setItems(items);
         transactionsListView.setCellFactory(param -> new ListCell<WalletTransaction>() {
             @Override
             protected void updateItem(WalletTransaction tx, boolean empty) {
@@ -93,12 +134,32 @@ public class AdminUserTransactionsController {
                     setText(null);
                     setStyle("-fx-background-color: transparent;");
                 } else {
-                    HBox card = createTransactionCard(tx, tx.getId() == tamperedId);
+                    HBox card = createTransactionCard(tx, tx.getId() == result.tamperedId);
                     setGraphic(card);
                     setStyle("-fx-background-color: transparent; -fx-padding: 5;");
                 }
             }
         });
+
+        if (items.isEmpty()) {
+            transactionsListView.setPlaceholder(new Label("No transactions found."));
+        }
+    }
+
+    // DTO for result
+    private static class WalletFetchResult {
+        Wallet wallet;
+        java.util.List<WalletTransaction> transactions;
+        int tamperedId;
+        LedgerFlag flag;
+
+        public WalletFetchResult(Wallet wallet, java.util.List<WalletTransaction> transactions, int tamperedId,
+                LedgerFlag flag) {
+            this.wallet = wallet;
+            this.transactions = transactions;
+            this.tamperedId = tamperedId;
+            this.flag = flag;
+        }
     }
 
     private HBox createTransactionCard(WalletTransaction tx, boolean isTampered) {
@@ -206,8 +267,7 @@ public class AdminUserTransactionsController {
             dialogStage.showAndWait();
 
             if (controller.isSaved()) {
-                updateWalletInfo();
-                loadTransactions();
+                setUser(this.user); // Refresh
             }
 
         } catch (java.io.IOException e) {
@@ -224,9 +284,26 @@ public class AdminUserTransactionsController {
             javafx.scene.Parent view = loader.load();
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) transactionsListView.getScene()
                     .lookup("#adminContentArea");
+
             if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(view);
+                // Fade Out Current
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(200), contentArea);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    // Switch View
+                    contentArea.getChildren().clear();
+                    contentArea.getChildren().add(view);
+
+                    // Fade In New
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(200), contentArea);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                });
+                fadeOut.play();
             } else {
                 System.err.println("Critical Error: #adminContentArea not found");
             }

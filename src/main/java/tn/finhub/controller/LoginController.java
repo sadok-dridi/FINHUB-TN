@@ -200,22 +200,44 @@ public class LoginController {
                 // Navigate based on role and profile status
                 // Navigate based on role and profile status
                 if (SessionManager.isAdmin()) {
-                    Platform.runLater(() -> {
-                        try {
-                            // CHECK MIGRATION REQUIREMENT
-                            tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
-                            if (walletModel.hasWallet(user.getInt("id"))) {
+                    try {
+                        // CHECK MIGRATION REQUIREMENT (Background Thread)
+                        tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+                        if (walletModel.hasWallet(user.getInt("id"))) {
+                            Platform.runLater(() -> {
                                 System.out.println("Admin has a personal wallet. Redirecting to Migration Wizard.");
                                 setView("/view/migrate_wallet.fxml");
-                            } else {
+                            });
+                        } else {
+                            // PRE-FETCH ADMIN DATA
+                            Platform.runLater(() -> Message("Fetching admin data..."));
+
+                            try {
+                                tn.finhub.model.UserModel uModel = new tn.finhub.model.UserModel();
+                                java.util.List<tn.finhub.model.User> allUsersList = uModel.findAll();
+                                java.util.List<tn.finhub.controller.AdminTransactionsController.UserWalletData> cacheList = new java.util.ArrayList<>();
+
+                                for (tn.finhub.model.User u : allUsersList) {
+                                    tn.finhub.model.Wallet w = walletModel.findByUserId(u.getId());
+                                    String status = (w != null) ? w.getStatus() : "NO_WALLET";
+                                    cacheList.add(new tn.finhub.controller.AdminTransactionsController.UserWalletData(
+                                            u, status));
+                                }
+                                tn.finhub.controller.AdminTransactionsController.setCachedData(cacheList);
+                            } catch (Exception e) {
+                                System.err.println("Admin pre-fetch failed: " + e.getMessage());
+                                // Proceed anyway
+                            }
+
+                            Platform.runLater(() -> {
                                 System.out.println("User is Admin. Navigating to Admin Dashboard.");
                                 setView("/view/admin_dashboard.fxml");
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            messageLabel.setText("Error loading view");
+                            });
                         }
-                    });
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Platform.runLater(() -> messageLabel.setText("Error loading view"));
+                    }
                 } else {
                     System.out.println("[DEBUG] Checking profile completion...");
                     try {

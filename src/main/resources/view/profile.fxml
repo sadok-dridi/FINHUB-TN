@@ -57,8 +57,7 @@
                     <Label text="Risk Tolerance" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
                     <ComboBox fx:id="riskBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-                    <Label text="Currency" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                    <ComboBox fx:id="currencyBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
                 </GridPane>
 
                 <HBox alignment="CENTER_RIGHT" spacing="10">

@@ -488,7 +488,7 @@ public class TransactionsController {
 
         amountLabel.setText(prefix + " TND " + tx.getAmount());
         amountLabel.setStyle(isPositive ? "-fx-text-fill: #10B981; -fx-font-weight: bold;"
-                : (isNegative ? "-fx-text-fill: white; -fx-font-weight: bold;"
+                : (isNegative ? "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"
                         : "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"));
 
         Label dateLabel = new Label(

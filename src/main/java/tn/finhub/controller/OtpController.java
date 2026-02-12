@@ -1,9 +1,13 @@
 package tn.finhub.controller;
 
 import javafx.fxml.FXML;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class OtpController {
 
@@ -12,6 +16,17 @@ public class OtpController {
 
     @FXML
     private Label errorLabel;
+
+    @FXML
+    private Button verifyButton;
+
+    @FXML
+    private Label timerLabel;
+
+    private Timeline timeline;
+    private int timeSeconds = 60;
+    private int attempts = 0;
+    private static final int MAX_ATTEMPTS = 3;
 
     private String expectedOtp;
     private Runnable onSuccessCallback;
@@ -49,6 +64,37 @@ public class OtpController {
                 errorLabel.setManaged(false);
             }
         });
+        startTimer();
+    }
+
+    private void startTimer() {
+        if (timeline != null) {
+            timeline.stop();
+        }
+        timeSeconds = 60;
+        timerLabel.setText("01:00");
+        timeline = new Timeline();
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.getKeyFrames().add(
+                new KeyFrame(Duration.seconds(1), event -> {
+                    timeSeconds--;
+                    // Update label
+                    int minutes = timeSeconds / 60;
+                    int seconds = timeSeconds % 60;
+                    timerLabel.setText(String.format("%02d:%02d", minutes, seconds));
+
+                    if (timeSeconds <= 0) {
+                        timeline.stop();
+                        timerLabel.setText("00:00");
+                        otpField.setDisable(true);
+                        verifyButton.setDisable(true);
+                        showError("Time Expired. Transaction Cancelled.");
+                        if (onCancelCallback != null) {
+                            onCancelCallback.run();
+                        }
+                    }
+                }));
+        timeline.playFromStart();
     }
 
     @FXML
@@ -66,7 +112,19 @@ public class OtpController {
                 onSuccessCallback.run();
             }
         } else {
-            showError("Incorrect code. Please try again.");
+            attempts++;
+            if (attempts >= MAX_ATTEMPTS) {
+                if (timeline != null)
+                    timeline.stop();
+                otpField.setDisable(true);
+                verifyButton.setDisable(true);
+                showError("Max attempts reached. Transaction Cancelled.");
+                if (onCancelCallback != null) {
+                    onCancelCallback.run();
+                }
+            } else {
+                showError("Incorrect code. " + (MAX_ATTEMPTS - attempts) + " attempts remaining.");
+            }
         }
     }
 
@@ -86,7 +144,8 @@ public class OtpController {
     }
 
     private void close() {
-        Stage stage = (Stage) otpField.getScene().getWindow();
-        stage.close();
+        Stage stage = (otpField.getScene() != null) ? (Stage) otpField.getScene().getWindow() : null;
+        if (stage != null)
+            stage.close();
     }
 }

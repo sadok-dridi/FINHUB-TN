@@ -4,7 +4,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletModel;
@@ -30,16 +30,6 @@ public class AdminUserDetailsController {
     private Label currencyLabel;
     @FXML
     private Label walletStatusLabel;
-
-    // Ledger Alert fields
-    @FXML
-    private VBox ledgerAlertBox;
-    @FXML
-    private Label ledgerAlertMessage;
-
-    // Audit Logs
-    @FXML
-    private VBox auditLogsContainer;
 
     // Buttons
     @FXML
@@ -67,11 +57,23 @@ public class AdminUserDetailsController {
 
         // Refresh wallet info
         refreshWalletInfo();
+    }
 
-        // Hide ledger alert by default (placeholder for now)
-        if (ledgerAlertBox != null) {
-            ledgerAlertBox.setVisible(false);
-            ledgerAlertBox.setManaged(false);
+    @FXML
+    private void handleViewPortfolio() {
+        if (currentUser == null)
+            return;
+
+        javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameLabel.getScene()
+                .lookup("#adminContentArea");
+        if (contentArea != null) {
+            javafx.fxml.FXMLLoader loader = ViewUtils.loadContent(contentArea, "/view/admin_user_portfolio.fxml");
+            if (loader != null) {
+                Object controller = loader.getController();
+                if (controller instanceof AdminUserPortfolioController portfolioController) {
+                    portfolioController.setUser(currentUser);
+                }
+            }
         }
     }
 

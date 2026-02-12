@@ -56,26 +56,13 @@
                             </VBox>
                         </HBox>
 
-                        <!-- Ledger Alert Box (Conditional) -->
-                        <VBox fx:id="ledgerAlertBox" managed="false" visible="false" style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-border-color: #EF4444; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-padding: 15;">
-                            <Label text="⚠ LEDGER ALERT" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;"/>
-                            <Label fx:id="ledgerAlertMessage" text="Details here..." wrapText="true" style="-fx-text-fill: #EF4444;"/>
-                        </VBox>
-
-                        <!-- Audit Logs Section -->
-                        <VBox styleClass="card" spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
-                            <Label text="Recent Ledger Activity" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                            <Separator />
-                            <VBox fx:id="auditLogsContainer" spacing="5">
-                                <!-- Logs will be populated here -->
-                                <Label text="No recent activity." style="-fx-text-fill: -color-text-muted;"/>
-                            </VBox>
-                        </VBox>
-
                         <!-- Actions Section -->
                         <HBox spacing="15" alignment="CENTER_LEFT">
+                             <Button text="View Portfolio" styleClass="button-primary" onAction="#handleViewPortfolio" style="-fx-background-color: -color-primary; -fx-text-fill: white;"/>
                              <Button fx:id="freezeBtn" text="Freeze Wallet" styleClass="button-warning" onAction="#handleFreezeWallet"/>
                         </HBox>
+
+
 
                         <!-- Danger Zone -->
                         <VBox style="-fx-border-color: #EF4444; -fx-border-width: 1; -fx-border-radius: 8px; -fx-padding: 20; -fx-background-color: rgba(239, 68, 68, 0.05);" spacing="10">

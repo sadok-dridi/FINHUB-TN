@@ -596,9 +596,6 @@
     -fx-border-radius: 16px;
     -fx-padding: 20;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 2);
-    -fx-min-width: 280px;
-    -fx-pref-width: 280px;
-    -fx-max-width: 280px;
 }
 
 .user-card-hover {
@@ -698,7 +695,7 @@
 .transaction-item {
     -fx-background-color: -color-card-bg;
     -fx-background-radius: 12px;
-    -fx-padding: 20;
+    -fx-padding: 12;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
     -fx-border-color: -color-card-border;
     -fx-border-width: 1px;

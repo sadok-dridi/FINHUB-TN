@@ -30,8 +30,8 @@ public class ProfileController {
     private TextField savingsField;
     @FXML
     private ComboBox<String> riskBox;
-    @FXML
-    private ComboBox<String> currencyBox;
+    // @FXML private ComboBox<String> currencyBox; // Removed
+
     @FXML
     private ComboBox<String> dbModeBox;
     @FXML
@@ -64,7 +64,20 @@ public class ProfileController {
 
     private void setupFinancialFields() {
         riskBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
-        currencyBox.getItems().addAll("TND", "EUR", "USD");
+        setupDecimalValidation(incomeField, expensesField, savingsField);
+    }
+
+    private void setupDecimalValidation(TextField... fields) {
+        for (TextField field : fields) {
+            java.util.function.UnaryOperator<javafx.scene.control.TextFormatter.Change> filter = change -> {
+                String text = change.getControlNewText();
+                if (text.matches("[0-9]*\\.?[0-9]*")) {
+                    return change;
+                }
+                return null;
+            };
+            field.setTextFormatter(new javafx.scene.control.TextFormatter<>(filter));
+        }
     }
 
     private void setupSettings() {
@@ -130,11 +143,6 @@ public class ProfileController {
             riskBox.getItems().add(profile.getRiskTolerance());
         }
         riskBox.setValue(profile.getRiskTolerance());
-
-        if (!currencyBox.getItems().contains(profile.getCurrency())) {
-            currencyBox.getItems().add(profile.getCurrency());
-        }
-        currencyBox.setValue(profile.getCurrency());
     }
 
     @FXML
@@ -145,7 +153,7 @@ public class ProfileController {
             double expenses = Double.parseDouble(expensesField.getText());
             double savings = Double.parseDouble(savingsField.getText());
             String risk = riskBox.getValue();
-            String currency = currencyBox.getValue();
+            String currency = "TND"; // Hardcoded default
 
             FinancialProfile profile = new FinancialProfile(
                     userId,

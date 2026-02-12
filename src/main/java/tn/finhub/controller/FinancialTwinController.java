@@ -69,7 +69,22 @@ public class FinancialTwinController {
         }
     }
 
+    private void setupDecimalValidation(TextField... fields) {
+        for (TextField field : fields) {
+            java.util.function.UnaryOperator<TextFormatter.Change> filter = change -> {
+                String text = change.getControlNewText();
+                if (text.matches("[0-9]*\\.?[0-9]*")) {
+                    return change;
+                }
+                return null;
+            };
+            field.setTextFormatter(new TextFormatter<>(filter));
+        }
+    }
+
     private void setupListeners() {
+        setupDecimalValidation(incomeField, expenseField, goalField);
+
         // Bi-directional binding logic for sliders and text fields using listeners
         incomeSlider.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (!incomeField.isFocused()) {
@@ -263,6 +278,8 @@ public class FinancialTwinController {
 
     // --- Market Memory Cache ---
     private static final java.util.Map<String, tn.finhub.model.PortfolioItem> portfolioCache = new java.util.concurrent.ConcurrentHashMap<>();
+    // Image Cache to prevent flickering
+    private static final java.util.Map<String, javafx.scene.image.Image> imageCache = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static void setCachedPortfolio(java.util.Map<String, tn.finhub.model.PortfolioItem> cache) {
         portfolioCache.clear();
@@ -340,7 +357,12 @@ public class FinancialTwinController {
                     // 1. Icon (Fetch from CDN) - Background loading by JavaFX Image
                     String ticker = getTicker(symbol);
                     String iconUrl = "https://assets.coincap.io/assets/icons/" + ticker + "@2x.png";
-                    javafx.scene.image.Image image = new javafx.scene.image.Image(iconUrl, true);
+
+                    javafx.scene.image.Image image = imageCache.get(symbol);
+                    if (image == null) {
+                        image = new javafx.scene.image.Image(iconUrl, true);
+                        imageCache.put(symbol, image);
+                    }
                     iconView.setImage(image);
 
                     // 2. Name

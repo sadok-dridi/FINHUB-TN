@@ -8,38 +8,18 @@
             fx:controller="tn.finhub.controller.AdminUserTransactionsController"
             style="-fx-background-color: transparent;">
 
-    <!-- Sidebar -->
-    <left>
-        <VBox spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0); -fx-border-color: transparent -color-card-border transparent transparent; -fx-border-width: 0 1 0 0;" prefWidth="250">
-            
-            <HBox alignment="CENTER_LEFT" spacing="10">
-                <Circle radius="20" fill="#2D2A40"/>
-                <VBox>
-                    <Label text="Admin Dashboard" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                    <Label text="Administrator" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
-                </VBox>
-            </HBox>
-            
-            <Region prefHeight="30"/>
-            
-            <Label text="ADMINISTRATION" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px; -fx-font-weight: bold;"/>
-            
-            <Button text="Users" onAction="#handleGoToUsers" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Transactions" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 8px; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Analytics" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            <Button text="Settings" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
-            
-            <Region VBox.vgrow="ALWAYS"/>
-            <!-- Logout omitted for brevity in child view -->
-        </VBox>
-    </left>
+
 
     <center>
         <VBox style="-fx-padding: 30 30 0 30; -fx-background-color: transparent;" spacing="20">
             
             <!-- Back & Header -->
             <HBox spacing="10" alignment="CENTER_LEFT">
-                 <Button text="← Back" onAction="#handleBack" styleClass="button-text" style="-fx-text-fill: -color-text-secondary;"/>
+                 <Button text="Back" onAction="#handleBack" styleClass="button-back">
+                    <graphic>
+                        <javafx.scene.shape.SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="-fx-fill: -color-text-secondary;"/>
+                    </graphic>
+                 </Button>
                  <Label text="Transaction Ledger" styleClass="header-text"/>
             </HBox>
 

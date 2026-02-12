@@ -17,7 +17,7 @@
       fx:controller="tn.finhub.controller.OtpController">
 
    <!-- Icon -->
-   <StackPane style="-fx-background-color: rgba(139, 92, 246, 0.1); -fx-background-radius: 50%; -fx-min-width: 60; -fx-min-height: 60;">
+   <StackPane style="-fx-background-color: rgba(139, 92, 246, 0.1); -fx-background-radius: 50%; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;">
       <SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" 
                style="-fx-fill: -color-primary;" scaleX="1.2" scaleY="1.2"/>
    </StackPane>
@@ -25,6 +25,7 @@
    <VBox alignment="CENTER" spacing="5.0">
       <Label text="Verification Required" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
       <Label text="Please enter the 6-digit code sent to your email." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 13px;" wrapText="true" textAlignment="CENTER"/>
+      <Label fx:id="timerLabel" text="01:00" style="-fx-text-fill: -color-primary; -fx-font-weight: bold; -fx-font-size: 14px;"/>
    </VBox>
 
    <TextField fx:id="otpField" promptText="000000" alignment="CENTER" 
@@ -36,7 +37,7 @@
    <HBox alignment="CENTER" spacing="15.0">
       <Button text="Cancel" onAction="#handleCancel" 
               style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-cursor: hand; -fx-font-size: 14px;"/>
-      <Button text="Verify Transaction" onAction="#handleVerify" 
+      <Button fx:id="verifyButton" text="Verify Transaction" onAction="#handleVerify" 
               styleClass="button-primary"/>
    </HBox>
 

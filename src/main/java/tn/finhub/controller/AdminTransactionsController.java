@@ -7,8 +7,6 @@ import javafx.scene.control.*;
 import tn.finhub.model.User;
 import tn.finhub.model.UserModel;
 import tn.finhub.model.WalletModel;
-import tn.finhub.util.SessionManager;
-import tn.finhub.util.ViewUtils;
 
 public class AdminTransactionsController {
 
@@ -20,31 +18,95 @@ public class AdminTransactionsController {
 
     private UserModel userModel = new UserModel();
     private WalletModel walletModel = new WalletModel();
-    private ObservableList<User> allUsers;
+
+    // Master list of all loaded data
+    private ObservableList<UserWalletData> allUsersData = FXCollections.observableArrayList();
+
+    // Cache for pre-fetching
+    private static ObservableList<UserWalletData> cachedData = null;
+
+    public static void setCachedData(java.util.List<UserWalletData> data) {
+        cachedData = FXCollections.observableArrayList(data);
+    }
 
     @FXML
     public void initialize() {
-        allUsers = FXCollections.observableArrayList(userModel.findAll());
-        refreshUserCards(allUsers);
+        if (cachedData != null && !cachedData.isEmpty()) {
+            allUsersData.setAll(cachedData);
+            refreshUserCards(allUsersData);
+        } else {
+            loadData();
+        }
 
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filterUsers(newValue);
         });
+
+        // Add listener for responsive layout
+        usersContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() > 0) {
+                adjustCardLayout();
+            }
+        });
+    }
+
+    private void loadData() {
+        // Show Loading State
+        usersContainer.getChildren().clear();
+        javafx.scene.control.Label loadingLabel = new javafx.scene.control.Label("Loading users...");
+        loadingLabel.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
+        usersContainer.getChildren().add(loadingLabel);
+
+        // Background Task
+        javafx.concurrent.Task<java.util.List<UserWalletData>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected java.util.List<UserWalletData> call() throws Exception {
+                java.util.List<User> users = userModel.findAll();
+                java.util.List<UserWalletData> dataList = new java.util.ArrayList<>();
+
+                for (User user : users) {
+                    // Fetch wallet info for each user (THIS IS THE SLOW PART - N+1)
+                    // But now it happens in background
+                    tn.finhub.model.Wallet wallet = walletModel.findByUserId(user.getId());
+                    String status = (wallet != null) ? wallet.getStatus() : "NO_WALLET";
+                    dataList.add(new UserWalletData(user, status));
+                }
+                return dataList;
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            java.util.List<UserWalletData> result = task.getValue();
+            allUsersData.setAll(result);
+            cachedData = FXCollections.observableArrayList(result); // Update cache
+            refreshUserCards(allUsersData);
+        });
+
+        task.setOnFailed(e -> {
+            usersContainer.getChildren().clear();
+            javafx.scene.control.Label errorLabel = new javafx.scene.control.Label("Failed to load users.");
+            errorLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 14px;");
+            usersContainer.getChildren().add(errorLabel);
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
     }
 
     private void filterUsers(String query) {
         if (query == null || query.isEmpty()) {
-            refreshUserCards(allUsers);
+            refreshUserCards(allUsersData);
             return;
         }
 
         String lowerCaseQuery = query.toLowerCase();
-        ObservableList<User> filteredList = FXCollections.observableArrayList();
+        ObservableList<UserWalletData> filteredList = FXCollections.observableArrayList();
 
-        for (User user : allUsers) {
+        for (UserWalletData data : allUsersData) {
+            User user = data.user;
             if (user.getFullName().toLowerCase().contains(lowerCaseQuery) ||
                     user.getEmail().toLowerCase().contains(lowerCaseQuery)) {
-                filteredList.add(user);
+                filteredList.add(data);
             }
         }
         refreshUserCards(filteredList);
@@ -52,18 +114,58 @@ public class AdminTransactionsController {
 
     @FXML
     public void handleRefresh() {
-        allUsers = FXCollections.observableArrayList(userModel.findAll());
-        refreshUserCards(allUsers);
+        loadData();
     }
 
-    private void refreshUserCards(ObservableList<User> users) {
+    private void refreshUserCards(ObservableList<UserWalletData> dataList) {
         usersContainer.getChildren().clear();
-        for (User user : users) {
-            usersContainer.getChildren().add(createUserCard(user));
+        if (dataList.isEmpty()) {
+            javafx.scene.control.Label emptyLabel = new javafx.scene.control.Label("No users found.");
+            emptyLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+            usersContainer.getChildren().add(emptyLabel);
+            return;
+        }
+
+        for (UserWalletData data : dataList) {
+            usersContainer.getChildren().add(createUserCard(data));
+        }
+
+        // Adjust layout initially
+        javafx.application.Platform.runLater(this::adjustCardLayout);
+    }
+
+    private void adjustCardLayout() {
+        double containerWidth = usersContainer.getWidth();
+        if (containerWidth <= 0)
+            return;
+
+        double hGap = usersContainer.getHgap();
+        double hPadding = usersContainer.getPadding().getLeft() + usersContainer.getPadding().getRight();
+
+        // Calculate available width for content
+        double availableWidth = containerWidth - hPadding;
+
+        // Determine columns: if sidebar is expanded (width < threshold), use 2, else 3
+        int columns = (availableWidth < 1100) ? 2 : 3;
+
+        // Calculate card width: (availableWidth - (columns - 1) * gap) / columns
+        // Subtract a tiny bit (2px) to prevent wrapping due to floating point precision
+        double cardWidth = (availableWidth - (columns - 1) * hGap) / columns - 2;
+
+        for (javafx.scene.Node node : usersContainer.getChildren()) {
+            if (node instanceof javafx.scene.layout.VBox) {
+                javafx.scene.layout.VBox card = (javafx.scene.layout.VBox) node;
+                card.setPrefWidth(cardWidth);
+                card.setMinWidth(cardWidth);
+                card.setMaxWidth(cardWidth);
+            }
         }
     }
 
-    private javafx.scene.Node createUserCard(User user) {
+    private javafx.scene.Node createUserCard(UserWalletData data) {
+        User user = data.user;
+        String walletStatus = data.walletStatus;
+
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(10);
         card.getStyleClass().add("user-card");
         card.setPrefWidth(280);
@@ -96,21 +198,13 @@ public class AdminTransactionsController {
         javafx.scene.layout.HBox footer = new javafx.scene.layout.HBox();
         footer.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
-        // Check for flags
-        boolean hasIssues = false;
-        if (walletModel.findByUserId(user.getId()) != null) {
-            int walletId = walletModel.findByUserId(user.getId()).getId();
-            String status = walletModel.findByUserId(user.getId()).getStatus();
-            if ("FROZEN".equals(status)) {
-                javafx.scene.control.Label alertLabel = new javafx.scene.control.Label("⚠ FROZEN");
-                alertLabel.setStyle(
-                        "-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 6; -fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 4px;");
-                footer.getChildren().add(alertLabel);
-                hasIssues = true;
-            }
-        }
-
-        if (!hasIssues) {
+        // Check for flags based on pre-fetched status
+        if ("FROZEN".equals(walletStatus)) {
+            javafx.scene.control.Label alertLabel = new javafx.scene.control.Label("⚠ FROZEN");
+            alertLabel.setStyle(
+                    "-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 10px; -fx-padding: 2 6; -fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 4px;");
+            footer.getChildren().add(alertLabel);
+        } else {
             javafx.scene.control.Label okLabel = new javafx.scene.control.Label("Active");
             okLabel.setStyle("-fx-text-fill: #34D399; -fx-font-size: 10px;");
             footer.getChildren().add(okLabel);
@@ -119,10 +213,16 @@ public class AdminTransactionsController {
         card.getChildren().addAll(header, new Separator(), footer);
 
         // Interaction
-        card.setCursor(javafx.scene.Cursor.HAND);
-        card.setOnMouseClicked(e -> handleShowUserTransactions(user));
-        card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
-        card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            card.setCursor(javafx.scene.Cursor.DEFAULT);
+            // Optional: Visual cue for non-clickable
+            card.setStyle(card.getStyle() + "-fx-opacity: 0.7;");
+        } else {
+            card.setCursor(javafx.scene.Cursor.HAND);
+            card.setOnMouseClicked(e -> handleShowUserTransactions(user));
+            card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
+            card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+        }
 
         return card;
     }
@@ -134,18 +234,48 @@ public class AdminTransactionsController {
             javafx.scene.Parent view = loader.load();
 
             AdminUserTransactionsController controller = loader.getController();
-            controller.setUser(user);
 
+            // Get content area
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
                     .lookup("#adminContentArea");
+
             if (contentArea != null) {
-                contentArea.getChildren().setAll(view);
+                // Fade Out Current
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(200), contentArea);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    // Switch View
+                    contentArea.getChildren().setAll(view);
+                    // Initialize controller AFTER view is attached so it can set up UI state
+                    controller.setUser(user);
+
+                    // Fade In New
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(200), contentArea);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                });
+                fadeOut.play();
             } else {
                 System.err.println("Critical Error: #adminContentArea not found");
             }
         } catch (Exception e) {
             e.printStackTrace();
             tn.finhub.util.DialogUtil.showError("Navigation Error", "Could not load user transactions.");
+        }
+    }
+
+    // DTO for Background Loading
+    public static class UserWalletData {
+        public User user;
+        public String walletStatus;
+
+        public UserWalletData(User user, String walletStatus) {
+            this.user = user;
+            this.walletStatus = walletStatus;
         }
     }
 

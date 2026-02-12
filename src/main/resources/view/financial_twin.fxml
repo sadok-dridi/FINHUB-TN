@@ -21,7 +21,8 @@
                 
                 <!-- TAB 1: Financial Health (Existing) -->
                 <Tab text="Financial Health">
-                    <VBox spacing="20" style="-fx-padding: 20 0 0 0;">
+                    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER">
+                        <VBox spacing="20" style="-fx-padding: 20 5 20 0;">
                         <HBox spacing="20" VBox.vgrow="ALWAYS">
                             <!-- LEFT COL: Inputs & Score (Fixed Width) -->
                             <VBox spacing="20" HBox.hgrow="NEVER" minWidth="360" maxWidth="360">
@@ -91,6 +92,7 @@
                             </VBox>
                         </HBox>
                     </VBox>
+                    </ScrollPane>
                 </Tab>
 
                 <!-- TAB 2: Market Simulator (Pro Design - Short & Compact) -->

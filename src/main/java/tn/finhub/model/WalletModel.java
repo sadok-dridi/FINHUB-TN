@@ -156,7 +156,7 @@ public class WalletModel {
         // findByWalletId returns DESC. We need ASC for chain verification.
         java.util.Collections.reverse(transactions);
 
-        String prevHash = "0";
+        String prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
         for (WalletTransaction tx : transactions) {
             // Verify Link
             if (!tx.getPrevHash().equals(prevHash)) {
@@ -175,64 +175,92 @@ public class WalletModel {
     }
 
     public BigDecimal calculateDiscrepancy(int walletId, int txId, BigDecimal reportedAmount, String type) {
-        // Simple implementation: return the amount as we don't have the original
-        // complex logic.
-        // In a real scenario, this might look up audit logs or backup ledgers.
-        return reportedAmount;
+        Wallet wallet = findById(walletId);
+        if (wallet == null)
+            return BigDecimal.ZERO;
+
+        BigDecimal actualWalletBalance = wallet.getBalance();
+        List<WalletTransaction> transactions = txDAO.findByWalletId(walletId);
+        BigDecimal sumOthers = BigDecimal.ZERO;
+
+        for (WalletTransaction tx : transactions) {
+            if (tx.getId() == txId)
+                continue; // Skip the target transaction being repaired
+
+            BigDecimal amt = tx.getAmount();
+            switch (tx.getType()) {
+                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                        "ESCROW_REFUND" ->
+                    sumOthers = sumOthers.add(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT" -> sumOthers = sumOthers.subtract(amt);
+            }
+        }
+
+        // Equation: Balance = Sum_Others + Target_Impact
+        // Therefore: Target_Impact = Balance - Sum_Others
+        BigDecimal targetImpact = actualWalletBalance.subtract(sumOthers);
+
+        // Convert Impact to Absolute Amount based on Type
+        // If Type is DEBIT (adds negative impact), then Amount = -Target_Impact
+        // If Type is CREDIT (adds positive impact), then Amount = Target_Impact
+        switch (type) {
+            case "DEBIT", "HOLD", "TRANSFER_SENT" -> {
+                return targetImpact.negate();
+            }
+            default -> {
+                return targetImpact;
+            }
+        }
     }
 
     public void repairTransaction(int walletId, int txId, BigDecimal newAmount, String newRef) {
         List<WalletTransaction> transactions = txDAO.findByWalletId(walletId);
         java.util.Collections.reverse(transactions); // ASC order
 
-        String prevHash = "0";
-        boolean foundTarget = false;
-        BigDecimal runningBalance = BigDecimal.ZERO; // We would need to recalculate balance too if we were tracking it
-                                                     // in txs (we aren't, balance is in Wallet)
+        // Use the standard Genesis hash
+        String prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
 
         for (WalletTransaction tx : transactions) {
             if (tx.getId() == txId) {
-                foundTarget = true;
-                // Update this transaction
-                String newHash = HashUtils.generateTransactionHash(
+                // Calculate what the hash WOULD be with the new values
+                String calculatedHash = HashUtils.generateTransactionHash(
                         tx.getId(), tx.getWalletId(), tx.getType(), newAmount,
                         newRef, tx.getCreatedAt(), prevHash);
-                txDAO.update(tx.getId(), newAmount, tx.getType(), newRef, newHash, prevHash);
-                prevHash = newHash;
-            } else if (foundTarget) {
-                // Update subsequent transaction
-                String newHash = HashUtils.generateTransactionHash(
-                        tx.getId(), tx.getWalletId(), tx.getType(), tx.getAmount(),
-                        tx.getReference(), tx.getCreatedAt(), prevHash);
-                txDAO.update(tx.getId(), tx.getAmount(), tx.getType(), tx.getReference(), newHash, prevHash);
-                prevHash = newHash;
-            } else {
-                // Before target, just update prevHash
-                prevHash = tx.getTxHash();
-            }
-        }
 
-        // Recalculate Wallet Balance
-        recalculateWalletBalance(walletId);
+                // Compare with the IMMUTABLE stored hash
+                if (!calculatedHash.equals(tx.getTxHash())) {
+                    throw new RuntimeException(
+                            "Invalid repair data: Hash mismatch. You must restore the exact original values.");
+                }
+
+                // If valid, update the record
+                // We only update Amount and Ref. The Hash remains the same (because it
+                // matches!).
+                txDAO.update(tx.getId(), newAmount, tx.getType(), newRef, tx.getTxHash(), prevHash);
+
+                // Recalculate Wallet Balance
+                recalculateWalletBalance(walletId);
+
+                // Automatically unfreeze and restore status
+                unfreezeWallet(walletId);
+                return;
+            }
+            prevHash = tx.getTxHash();
+        }
+        throw new RuntimeException("Transaction not found.");
     }
 
     public void recalculateWalletBalance(int walletId) {
         List<WalletTransaction> transactions = txDAO.findByWalletId(walletId);
         BigDecimal newBalance = BigDecimal.ZERO;
         for (WalletTransaction tx : transactions) {
-            BigDecimal amt = tx.getAmount(); // Amount is signed? No, type determines sign.
-            // Wait, TransactionManager inserts amount as positive usually?
-            // Let's check getSign logic in Controller: DEBIT/WITHDRAWAL are negative.
-            // But usually stored absolute?
-            // In `credit`: executeAtomic(..., amount, "CREDIT"...) where amount is +ve.
-            // In `debit`: executeAtomic(..., amount.negate(), "DEBIT"...) where amount is
-            // passed as -ve?
-            // `executeAtomic(int walletId, BigDecimal amount, ...)`
-            // DB stores signed amount?
-            // public void insert(..., BigDecimal amount, ...)
-            // Yes, executeAtomic passes `amount` (which is signed for debit).
-            // So we just sum them up.
-            newBalance = newBalance.add(tx.getAmount());
+            BigDecimal amt = tx.getAmount();
+            switch (tx.getType()) {
+                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                        "ESCROW_REFUND" ->
+                    newBalance = newBalance.add(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT" -> newBalance = newBalance.subtract(amt);
+            }
         }
 
         String sql = "UPDATE wallets SET balance = ? WHERE id = ?";
@@ -594,6 +622,21 @@ public class WalletModel {
                     tx.getCreatedAt());
             String expectedHash = HashUtils.sha256(data);
             if (!expectedHash.equals(tx.getTxHash())) {
+                System.out.println("[DEBUG] TAMPERED TX DETECTED: ID=" + tx.getId() + " Expected=" + expectedHash
+                        + " Actual=" + tx.getTxHash());
+
+                BigDecimal debugCalcBalance = BigDecimal.ZERO;
+                for (WalletTransaction t : txs) {
+                    BigDecimal amt = t.getAmount();
+                    switch (t.getType()) {
+                        case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                                "ESCROW_REFUND" ->
+                            debugCalcBalance = debugCalcBalance.add(amt);
+                        case "DEBIT", "HOLD", "TRANSFER_SENT" -> debugCalcBalance = debugCalcBalance.subtract(amt);
+                    }
+                }
+                System.out.println("[DEBUG] Total Calculated Balance from Transactions: " + debugCalcBalance);
+
                 ledgerDAO.insertAuditLog(new LedgerAuditLog(walletId, false, "Hash mismatch tx " + tx.getId()));
                 return false;
             }
@@ -624,6 +667,8 @@ public class WalletModel {
         }
 
         Wallet w = findById(walletId);
+        System.out.println("[DEBUG] Wallet " + walletId + " - Calculated Balance: " + calcBalance
+                + " | Actual Balance: " + w.getBalance());
         return w.getBalance().compareTo(calcBalance) == 0 && w.getEscrowBalance().compareTo(calcEscrow) == 0;
     }
 

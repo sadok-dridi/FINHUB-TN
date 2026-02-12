@@ -28,7 +28,7 @@ public class ViewUtils {
      * Navigates to a new view with a fade-out/fade-in transition.
      * Uses the provided container.
      */
-    public static void loadContent(Pane targetContainer, String fxmlPath) {
+    public static FXMLLoader loadContent(Pane targetContainer, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource(fxmlPath));
             Parent newView = loader.load();
@@ -36,7 +36,7 @@ public class ViewUtils {
             if (!targetContainer.getChildren().isEmpty()) {
                 Node currentView = targetContainer.getChildren().get(0);
 
-                FadeTransition fadeOut = new FadeTransition(Duration.millis(300), currentView);
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentView);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> {
@@ -49,15 +49,18 @@ public class ViewUtils {
                 fadeIn(newView);
             }
 
+            return loader;
+
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error loading FXML: " + fxmlPath);
+            return null;
         }
     }
 
     private static void fadeIn(Node node) {
         node.setOpacity(0);
-        FadeTransition fadeIn = new FadeTransition(Duration.millis(300), node);
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), node);
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
         fadeIn.play();
