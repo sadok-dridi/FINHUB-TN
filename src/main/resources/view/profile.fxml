@@ -8,11 +8,11 @@
     <content>
         <VBox spacing="20" style="-fx-padding: 30; -fx-background-color: transparent;">
             
-            <Label text="My Profile" styleClass="header-text"/>
+            <Label text="%profile.title" styleClass="header-text"/>
             
             <!-- Personal Info Section -->
             <VBox styleClass="card" spacing="15">
-                <Label text="Personal Information" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                <Label text="%profile.personal.info" styleClass="header-text" style="-fx-font-size: 18px;"/>
                 
                 <GridPane hgap="20" vgap="15">
                     <columnConstraints>
@@ -20,24 +20,24 @@
                         <ColumnConstraints hgrow="ALWAYS"/>
                     </columnConstraints>
                     
-                    <Label text="Full Name" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                    <Label fx:id="nameLabel" text="Loading..." style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="%profile.full.name" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <Label fx:id="nameLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
                     
-                    <Label text="Email Address" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                    <Label fx:id="emailLabel" text="Loading..." style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label text="%profile.email" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <Label fx:id="emailLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
                     
-                    <Label text="Role" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                    <Label fx:id="roleLabel" text="Loading..." style="-fx-text-fill: -color-primary; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    <Label text="%profile.role" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <Label fx:id="roleLabel" text="%common.loading" style="-fx-text-fill: -color-primary; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                 </GridPane>
             </VBox>
 
             <!-- Financial Profile Section -->
             <VBox styleClass="card" spacing="15">
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="Financial Profile" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                    <Label text="%profile.financial.profile" styleClass="header-text" style="-fx-font-size: 18px;"/>
                     <Region HBox.hgrow="ALWAYS"/>
                 </HBox>
-                <Label text="Update your financial details to get better recommendations." styleClass="sub-header-text"/>
+                <Label text="%profile.financial.subtitle" styleClass="sub-header-text"/>
                 
                 <GridPane hgap="20" vgap="15">
                      <columnConstraints>
@@ -45,16 +45,16 @@
                         <ColumnConstraints hgrow="ALWAYS"/>
                     </columnConstraints>
 
-                    <Label text="Monthly Income" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <Label text="%profile.monthly.income" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                     <TextField fx:id="incomeField" styleClass="text-field" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                    <Label text="Monthly Expenses" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <Label text="%profile.monthly.expenses" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                     <TextField fx:id="expensesField" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                    <Label text="Savings Goal" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <Label text="%profile.savings.goal" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                     <TextField fx:id="savingsField" styleClass="text-field" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-                    <Label text="Risk Tolerance" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <Label text="%profile.risk.tolerance" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
                     <ComboBox fx:id="riskBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
 
@@ -62,17 +62,17 @@
 
                 <HBox alignment="CENTER_RIGHT" spacing="10">
                     <Label fx:id="statusLabel" textFill="#10B981" visible="false"/>
-                    <Button text="Update Financial Profile" onAction="#handleUpdateProfile" styleClass="button-primary"/>
+                    <Button text="%profile.update.button" onAction="#handleUpdateProfile" styleClass="button-primary"/>
                 </HBox>
             </VBox>
 
             <!-- Application Settings Section -->
             <VBox styleClass="card" spacing="15">
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="Application Settings" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                    <Label text="%profile.settings" styleClass="header-text" style="-fx-font-size: 18px;"/>
                     <Region HBox.hgrow="ALWAYS"/>
                 </HBox>
-                <Label text="Configure application behavior and connections." styleClass="sub-header-text"/>
+                <Label text="%profile.settings.subtitle" styleClass="sub-header-text"/>
 
                 <GridPane hgap="20" vgap="15">
                     <columnConstraints>
@@ -80,15 +80,18 @@
                         <ColumnConstraints hgrow="ALWAYS"/>
                     </columnConstraints>
 
-                    <Label text="Database Connection" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                    <ComboBox fx:id="dbModeBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    <Label text="%profile.language" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="languageBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                    <Label text="Market Data API Key" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                    <TextField fx:id="apiKeyField" promptText="Leave empty to use .env default" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                    <Label text="%profile.db.connection" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="dbModeBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                    <Label text="%profile.api.key" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <TextField fx:id="apiKeyField" promptText="%profile.api.key.prompt" styleClass="text-field" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
                 </GridPane>
                 
                 <HBox alignment="CENTER_RIGHT" spacing="10">
-                   <Button text="Save Settings" onAction="#handleSaveSettings" styleClass="button-primary"/>
+                   <Button text="%profile.save.settings" onAction="#handleSaveSettings" styleClass="button-primary"/>
                 </HBox>
             </VBox>
             

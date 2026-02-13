@@ -11,14 +11,14 @@
       <children>
          <HBox alignment="CENTER_LEFT" spacing="10.0">
              <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                 <Label text="Top Up Wallet" styleClass="header-text"/>
-                 <Label text="Secure Payment Gateway" styleClass="sub-header-text"/>
+                 <Label text="%deposit.title" styleClass="header-text"/>
+                 <Label text="%deposit.subtitle" styleClass="sub-header-text"/>
              </VBox>
              <javafx.scene.shape.SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" styleClass="window-close-icon" onMouseClicked="#handleCancel"/>
          </HBox>
          
          <VBox spacing="10.0">
-            <Label text="Amount to Deposit" styleClass="section-label"/>
+            <Label text="%deposit.amount" styleClass="section-label"/>
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="amount-input-container">
                 <Label text="TND" styleClass="currency-label"/>
                 <TextField fx:id="amountField" promptText="0.00" styleClass="amount-field-large" HBox.hgrow="ALWAYS"/>
@@ -26,7 +26,7 @@
          </VBox>
    
          <VBox spacing="10.0">
-            <Label text="Card Details" styleClass="section-label"/>
+            <Label text="%deposit.card.details" styleClass="section-label"/>
             <VBox spacing="15" styleClass="card-form-container">
                 <TextField fx:id="cardNumberField" promptText="Card Number" styleClass="text-field"/>
                 <HBox spacing="15">
@@ -37,8 +37,8 @@
          </VBox>
          
          <HBox spacing="15.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
-             <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
-             <Button fx:id="payButton" text="Confirm Payment" onAction="#handleDeposit" styleClass="button-primary"/>
+             <Button fx:id="cancelButton" text="%common.cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
+             <Button fx:id="payButton" text="%deposit.confirm.button" onAction="#handleDeposit" styleClass="button-primary"/>
          </HBox>
       </children>
    </VBox>

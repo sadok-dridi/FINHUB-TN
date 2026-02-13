@@ -253,6 +253,7 @@ public class AdminUserController {
                 try {
                     javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                             getClass().getResource("/view/admin_user_details.fxml"));
+                    loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
                     javafx.scene.Parent view = loader.load();
 
                     AdminUserDetailsController controller = loader.getController();
@@ -278,7 +279,8 @@ public class AdminUserController {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    tn.finhub.util.DialogUtil.showError("Navigation Error", "Could not load user details.");
+                    javafx.application.Platform.runLater(() -> tn.finhub.util.DialogUtil.showError("Navigation Error",
+                            "Could not load user details."));
                 }
             };
 

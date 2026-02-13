@@ -9,8 +9,8 @@
       spacing="15" style="-fx-padding: 20;">
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Search help articles..." HBox.hgrow="ALWAYS" styleClass="search-field"/>
-        <Button text="Search" onAction="#handleSearch" styleClass="button-primary"/>
+        <TextField fx:id="searchField" promptText="%support.kb.search" HBox.hgrow="ALWAYS" styleClass="search-field"/>
+        <Button text="%common.search" onAction="#handleSearch" styleClass="button-primary"/>
     </HBox>
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">

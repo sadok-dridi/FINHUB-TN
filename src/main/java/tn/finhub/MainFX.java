@@ -6,12 +6,15 @@ import javafx.scene.Scene;
 import javafx.scene.Parent;
 import javafx.stage.Stage;
 import tn.finhub.controller.MainLayoutController;
+import tn.finhub.util.LanguageManager;
 
 public class MainFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/MainLayout.fxml"));
+        // Load with resource bundle for internationalization
+        loader.setResources(LanguageManager.getInstance().getResourceBundle());
         Parent root = loader.load();
 
         Scene scene = new Scene(root);
@@ -24,8 +27,8 @@ public class MainFX extends Application {
         stage.show();
 
         // maximize
-        //MainLayoutController controller = loader.getController();
-        //controller.maximizeWindow();
+        // MainLayoutController controller = loader.getController();
+        // controller.maximizeWindow();
     }
 
     public static void main(String[] args) {

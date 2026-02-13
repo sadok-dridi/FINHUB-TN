@@ -27,6 +27,8 @@ public class LoginController {
     private void setView(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            // Load with current resource bundle
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent newView = loader.load();
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) emailField.getScene()
                     .lookup("#contentArea");
@@ -50,8 +52,8 @@ public class LoginController {
             e.printStackTrace();
             Platform.runLater(() -> {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error Loading View");
-                alert.setHeaderText("Could not load " + fxmlPath);
+                alert.setTitle(LanguageManager.getInstance().getString("login.error.loading.view"));
+                alert.setHeaderText(LanguageManager.getInstance().getString("common.error") + " " + fxmlPath);
                 alert.setContentText(e.getMessage());
                 alert.showAndWait();
             });
@@ -85,7 +87,7 @@ public class LoginController {
         String email = emailField.getText();
         if (!ValidationUtils.isValidEmail(email)) {
             messageLabel.setStyle("-fx-text-fill: red;");
-            messageLabel.setText("Invalid email format");
+            messageLabel.setText(LanguageManager.getInstance().getString("login.invalid.email"));
             return;
         }
 
@@ -114,12 +116,12 @@ public class LoginController {
 
         if (passwordField.getText().isEmpty()) {
             messageLabel.setStyle("-fx-text-fill: red;");
-            messageLabel.setText("Password cannot be empty");
+            messageLabel.setText(LanguageManager.getInstance().getString("login.empty.password"));
             return;
         }
 
         messageLabel.setStyle("-fx-text-fill: orange;");
-        messageLabel.setText("Logging in...");
+        messageLabel.setText(LanguageManager.getInstance().getString("login.logging.in"));
 
         new Thread(() -> {
             try {
@@ -181,7 +183,7 @@ public class LoginController {
 
                 Platform.runLater(() -> {
                     messageLabel.setStyle("-fx-text-fill: green;");
-                    messageLabel.setText("Login successful");
+                    messageLabel.setText(LanguageManager.getInstance().getString("login.success"));
                 });
                 SessionManager.login(
                         user.getInt("id"),
@@ -360,7 +362,8 @@ public class LoginController {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                Platform.runLater(() -> messageLabel.setText(" Server error"));
+                Platform.runLater(
+                        () -> messageLabel.setText(LanguageManager.getInstance().getString("login.server.error")));
             }
         }).start();
     }

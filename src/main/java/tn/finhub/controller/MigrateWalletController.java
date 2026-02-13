@@ -9,6 +9,7 @@ import tn.finhub.util.SessionManager;
 import tn.finhub.util.MailClient;
 import tn.finhub.model.User;
 import javafx.fxml.FXMLLoader;
+import tn.finhub.util.LanguageManager;
 
 public class MigrateWalletController {
 
@@ -137,6 +138,7 @@ public class MigrateWalletController {
     private void navigateToAdminDashboard() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/admin_users.fxml"));
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent view = loader.load();
 
             javafx.scene.Scene scene = migrateBtn.getScene();

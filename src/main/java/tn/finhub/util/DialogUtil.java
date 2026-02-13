@@ -8,6 +8,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import tn.finhub.controller.CustomDialogController;
+import tn.finhub.util.LanguageManager;
 
 import java.io.IOException;
 
@@ -23,6 +24,7 @@ public class DialogUtil {
         lastResult = false;
         try {
             FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource(fxmlPath));
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             Parent root = loader.load();
 
             Stage dialogStage = new Stage();
@@ -61,6 +63,7 @@ public class DialogUtil {
     private static boolean showDialog(String title, String message, String type) {
         try {
             FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource("/view/CustomDialog.fxml"));
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             Parent root = loader.load();
             CustomDialogController controller = loader.getController();
 
@@ -97,6 +100,7 @@ public class DialogUtil {
     public static String showPasswordInput(String title, String message) {
         try {
             FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource("/view/CustomDialog.fxml"));
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             Parent root = loader.load();
             CustomDialogController controller = loader.getController();
 

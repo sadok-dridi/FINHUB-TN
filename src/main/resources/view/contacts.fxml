@@ -19,10 +19,10 @@
 
     <!-- Header -->
     <HBox alignment="CENTER_LEFT" spacing="20">
-        <Label text="Saved Contacts" 
+        <Label text="%contacts.title" 
                style="-fx-text-fill: white; -fx-font-size: 28px; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 1);"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Add Contact" onAction="#handleAddContact" 
+        <Button text="%contacts.add" onAction="#handleAddContact" 
                 style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 8 16; -fx-cursor: hand;">
             <graphic>
                 <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>

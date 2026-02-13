@@ -14,15 +14,15 @@
     <!-- Header Section -->
     <HBox alignment="CENTER_LEFT" spacing="20">
         <VBox>
-            <Label text="Escrow &amp; Trust" styleClass="header-text" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-            <Label text="Secure payments held until you are satisfied." styleClass="sub-header-text" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+            <Label text="%escrow.title" styleClass="header-text" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+            <Label text="%escrow.subtitle" styleClass="sub-header-text" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
         </VBox>
         <Region HBox.hgrow="ALWAYS"/>
         
         <!-- Trust Score Card -->
         <HBox alignment="CENTER" spacing="15" style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 10 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);">
             <VBox alignment="CENTER_LEFT">
-                <Label text="Your Trust Score" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
+                <Label text="%escrow.trust.score" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
                 <Label fx:id="trustScoreLabel" text="100" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
             </VBox>
             <StackPane>
@@ -32,7 +32,7 @@
             </StackPane>
         </HBox>
 
-        <Button fx:id="createEscrowBtn" text="+ Create New Escrow" onAction="#handleCreateEscrow" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand;">
+        <Button fx:id="createEscrowBtn" text="%escrow.create.button" onAction="#handleCreateEscrow" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand;">
              <graphic>
                 <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
              </graphic>
@@ -41,16 +41,16 @@
 
     <!-- Filters / Tabs (Optional for future) -->
     <HBox spacing="15">
-        <Button text="Active" style="-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;"/>
-        <Button text="History" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
-        <Button text="Disputes" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
+        <Button text="%escrow.filter.active" style="-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;"/>
+        <Button text="%escrow.filter.history" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
+        <Button text="%escrow.filter.disputes" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
     </HBox>
 
     <!-- Escrow List (Styled) -->
     <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
         <VBox fx:id="escrowCardContainer" spacing="15" style="-fx-background-color: transparent;">
              <!-- Cards will be injected here by Controller -->
-             <Label text="Loading your secure transactions..." style="-fx-text-fill: -color-text-muted; -fx-padding: 20;"/>
+             <Label text="%common.loading" style="-fx-text-fill: -color-text-muted; -fx-padding: 20;"/>
         </VBox>
     </ScrollPane>
 

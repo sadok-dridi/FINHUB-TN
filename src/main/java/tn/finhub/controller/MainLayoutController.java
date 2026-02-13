@@ -7,6 +7,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import tn.finhub.util.LanguageManager;
 import java.io.IOException;
 
 public class MainLayoutController {
@@ -172,6 +173,8 @@ public class MainLayoutController {
     public void setView(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            // Load with current resource bundle for internationalization
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             Parent newView = loader.load();
 
             if (!contentArea.getChildren().isEmpty()) {

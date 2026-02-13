@@ -127,6 +127,7 @@ public class EscrowController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/escrow_details_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             EscrowDetailsController controller = loader.getController();
@@ -159,6 +160,7 @@ public class EscrowController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/create_escrow_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             javafx.scene.Scene scene = new javafx.scene.Scene(root);

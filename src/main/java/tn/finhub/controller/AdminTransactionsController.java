@@ -231,6 +231,7 @@ public class AdminTransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/admin_user_transactions.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent view = loader.load();
 
             AdminUserTransactionsController controller = loader.getController();

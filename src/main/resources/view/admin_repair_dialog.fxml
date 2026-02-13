@@ -12,33 +12,33 @@
    <children>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
           <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-              <Label text="Ledger Repair" styleClass="header-text" style="-fx-text-fill: #EF4444;"/>
-              <Label text="Restore corrupted transaction" styleClass="sub-header-text"/>
+              <Label text="%admin.repair.title" styleClass="header-text" style="-fx-text-fill: #EF4444;"/>
+              <Label text="%admin.repair.subtitle" styleClass="sub-header-text"/>
           </VBox>
       </HBox>
       
       <VBox spacing="10.0" style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-padding: 10; -fx-background-radius: 8;">
-         <Label text="Correction Required" style="-fx-text-fill: #EF4444; -fx-font-weight: bold;"/>
-         <Label text="Modify the values below to match the original transaction state reflected by the hash." wrapText="true" style="-fx-text-fill: #EF4444; -fx-font-size: 11px;"/>
+         <Label text="%admin.repair.required" style="-fx-text-fill: #EF4444; -fx-font-weight: bold;"/>
+         <Label text="%admin.repair.instruction" wrapText="true" style="-fx-text-fill: #EF4444; -fx-font-size: 11px;"/>
          <Label fx:id="hashLabel" text="Hash: ..." style="-fx-font-family: 'Monospaced'; -fx-text-fill: #EF4444; -fx-font-size: 10px;"/>
-         <Label fx:id="correctionHintLabel" text="Calculating..." style="-fx-text-fill: -color-text-primary; -fx-font-size: 11px; -fx-font-weight: bold;"/>
+         <Label fx:id="correctionHintLabel" text="%common.calculating" style="-fx-text-fill: -color-text-primary; -fx-font-size: 11px; -fx-font-weight: bold;"/>
       </VBox>
 
       <VBox spacing="15.0">
          <VBox spacing="5.0">
-             <Label text="Amount" style="-fx-text-fill: -color-text-secondary;"/>
+             <Label text="%common.amount" style="-fx-text-fill: -color-text-secondary;"/>
              <TextField fx:id="amountField" styleClass="text-field"/>
          </VBox>
 
          <VBox spacing="5.0">
-             <Label text="Reference" style="-fx-text-fill: -color-text-secondary;"/>
+             <Label text="%transaction.reference" style="-fx-text-fill: -color-text-secondary;"/>
              <TextField fx:id="refField" styleClass="text-field"/>
          </VBox>
       </VBox>
       
       <HBox spacing="15.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
-          <Button text="Cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
-          <Button text="Save &amp; Restore" onAction="#handleSave" styleClass="button-primary" style="-fx-background-color: #EF4444;"/>
+          <Button text="%common.cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
+          <Button text="%admin.repair.save" onAction="#handleSave" styleClass="button-primary" style="-fx-background-color: #EF4444;"/>
       </HBox>
    </children>
 </VBox>

@@ -8,8 +8,8 @@
       style="-fx-padding: 30; -fx-background-color: transparent;" spacing="20">
     
     <VBox spacing="5">
-        <Label text="Overview" styleClass="header-text"/>
-        <Label text="Key system metrics and status" styleClass="sub-header-text"/>
+        <Label text="%admin.home.overview" styleClass="header-text"/>
+        <Label text="%admin.home.subtitle" styleClass="sub-header-text"/>
     </VBox>
 
     <!-- Stats Grid -->
@@ -17,26 +17,26 @@
         
         <!-- Users Card -->
         <VBox style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" minWidth="220">
-                <Label text="Total Users" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
-                <Label fx:id="totalUsersLabel" text="Loading..." style="-fx-text-fill: -color-text-primary; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="%admin.home.total.users" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+                <Label fx:id="totalUsersLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 24px; -fx-font-weight: bold;"/>
         </VBox>
 
         <!-- Volume Card -->
         <VBox style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" minWidth="220">
-                <Label text="Total Transaction Volume" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
-                <Label fx:id="totalVolumeLabel" text="Loading..." style="-fx-text-fill: -color-text-primary; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="%admin.home.total.volume" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+                <Label fx:id="totalVolumeLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 24px; -fx-font-weight: bold;"/>
         </VBox>
 
         <!-- Tickets Card -->
         <VBox style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" minWidth="220">
-                <Label text="Open Support Tickets" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
-                <Label fx:id="openTicketsLabel" text="Loading..." style="-fx-text-fill: -color-text-primary; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="%admin.home.open.tickets" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+                <Label fx:id="openTicketsLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 24px; -fx-font-weight: bold;"/>
         </VBox>
 
         <!-- System Health Card -->
             <VBox style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);" minWidth="220">
-                <Label text="System Status" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
-                <Label fx:id="systemHealthLabel" text="Unknown" style="-fx-text-fill: -color-text-muted; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="%admin.home.system.status" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+                <Label fx:id="systemHealthLabel" text="%admin.home.unknown" style="-fx-text-fill: -color-text-muted; -fx-font-size: 24px; -fx-font-weight: bold;"/>
         </VBox>
 
     </FlowPane>

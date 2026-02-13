@@ -8,22 +8,22 @@
     <content>
         <VBox spacing="20" style="-fx-padding: 30; -fx-background-color: transparent;">
             
-            <Label text="Overview" styleClass="header-text"/>
+            <Label text="%dashboard.overview" styleClass="header-text"/>
             
             <HBox spacing="20">
                 <VBox styleClass="card" HBox.hgrow="ALWAYS">
-                    <Label text="Total Balance" styleClass="sub-header-text"/>
+                    <Label text="%dashboard.total.balance" styleClass="sub-header-text"/>
                     <Label text="\$12,450.00" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-                    <Label text="+2.5% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 12px;"/>
+                    <Label text="%dashboard.vs.last.month" style="-fx-text-fill: -color-success; -fx-font-size: 12px;"/>
                 </VBox>
                 
                 <VBox styleClass="card" HBox.hgrow="ALWAYS">
-                    <Label text="Active Cards" styleClass="sub-header-text"/>
+                    <Label text="%dashboard.active.cards" styleClass="sub-header-text"/>
                     <Label text="2" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
                 </VBox>
             </HBox>
             
-            <Label text="Recent Transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
+            <Label text="%dashboard.recent.transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
             
             <VBox styleClass="card" spacing="15">
                 <HBox spacing="10" alignment="CENTER_LEFT">

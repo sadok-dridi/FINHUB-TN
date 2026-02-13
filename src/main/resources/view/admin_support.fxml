@@ -16,33 +16,33 @@
             <!-- Ticket List -->
             <VBox spacing="10" HBox.hgrow="ALWAYS">
                 <HBox alignment="CENTER_LEFT">
-                    <Label text="All Tickets" styleClass="header-text"/>
+                    <Label text="%admin.support.all.tickets" styleClass="header-text"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button text="Refresh" onAction="#handleRefresh" styleClass="button-outlined-secondary"/>
+                    <Button text="%common.refresh" onAction="#handleRefresh" styleClass="button-outlined-secondary"/>
                 </HBox>
                 <TableView fx:id="ticketsTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                        <TableColumn fx:id="colSubject" text="Subject" prefWidth="200"/>
-                        <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
-                        <TableColumn fx:id="colPriority" text="Priority" prefWidth="80"/>
-                        <TableColumn fx:id="colDate" text="Date" prefWidth="150"/>
+                        <TableColumn fx:id="colId" text="%common.id" prefWidth="50"/>
+                        <TableColumn fx:id="colSubject" text="%support.ticket.subject" prefWidth="200"/>
+                        <TableColumn fx:id="colStatus" text="%common.status" prefWidth="100"/>
+                        <TableColumn fx:id="colPriority" text="%admin.support.priority" prefWidth="80"/>
+                        <TableColumn fx:id="colDate" text="%common.date" prefWidth="150"/>
                     </columns>
                 </TableView>
             </VBox>
 
             <!-- Ticket Details / Reply Area -->
             <VBox fx:id="chatArea" spacing="10" prefWidth="400" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12;">
-                 <Label fx:id="ticketTitleLabel" text="Select a Ticket" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: -color-text-primary;"/>
+                 <Label fx:id="ticketTitleLabel" text="%admin.support.select" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: -color-text-primary;"/>
                  
                  <Region VBox.vgrow="ALWAYS" /> <!-- Chat messages viewer would go here -->
                  
-                 <Label text="Reply as Admin:" style="-fx-text-fill: -color-text-secondary;"/>
-                 <TextArea fx:id="replyArea" prefRowCount="4" wrapText="true" promptText="Type your reply here..."/>
+                 <Label text="%admin.support.reply.as" style="-fx-text-fill: -color-text-secondary;"/>
+                 <TextArea fx:id="replyArea" prefRowCount="4" wrapText="true" promptText="%admin.support.reply.placeholder"/>
                  
                  <HBox spacing="10" alignment="CENTER_RIGHT">
-                     <Button fx:id="closeTicketButton" text="Resolve Ticket" onAction="#handleCloseTicket" style="-fx-background-color: -color-warning; -fx-text-fill: white;"/>
-                     <Button fx:id="sendButton" text="Send Reply" onAction="#handleSendReply" styleClass="button-primary"/>
+                     <Button fx:id="closeTicketButton" text="%admin.support.resolve" onAction="#handleCloseTicket" style="-fx-background-color: -color-warning; -fx-text-fill: white;"/>
+                     <Button fx:id="sendButton" text="%admin.support.send" onAction="#handleSendReply" styleClass="button-primary"/>
                  </HBox>
             </VBox>
         </HBox>

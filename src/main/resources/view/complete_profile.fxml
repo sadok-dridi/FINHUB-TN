@@ -22,28 +22,28 @@
             <Insets top="30" right="30" bottom="30" left="30"/>
         </padding>
 
-        <Label text="Complete Profile" styleClass="header-text"/>
-        <Label text="Tailor your financial experience" styleClass="sub-header-text"/>
+        <Label text="%complete.profile.title" styleClass="header-text"/>
+        <Label text="%complete.profile.subtitle" styleClass="sub-header-text"/>
 
         <Region prefHeight="10"/>
 
         <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
-            <Label text="Monthly Income" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <Label text="%complete.profile.monthly.income" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
             <TextField fx:id="incomeField" promptText="e.g. 2500.00" styleClass="text-field"/>
         </VBox>
 
         <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
-            <Label text="Monthly Expenses" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <Label text="%complete.profile.monthly.expenses" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
             <TextField fx:id="expensesField" promptText="e.g. 1200.00" styleClass="text-field"/>
         </VBox>
 
         <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
-            <Label text="Savings Goal" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <Label text="%complete.profile.savings.goal" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
             <TextField fx:id="savingsField" promptText="e.g. 10000.00" styleClass="text-field"/>
         </VBox>
 
         <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
-            <Label text="Risk Tolerance" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <Label text="%complete.profile.risk.tolerance" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
             <ComboBox fx:id="riskBox" maxWidth="Infinity" promptText="Select Risk Level" styleClass="combo-box"/>
         </VBox>
 
@@ -51,7 +51,7 @@
 
         <Region prefHeight="10"/>
 
-        <Button text="Save &amp; Continue" onAction="#handleSaveProfile" maxWidth="Infinity" styleClass="button-primary"/>
+        <Button text="%complete.profile.complete.button" onAction="#handleSaveProfile" maxWidth="Infinity" styleClass="button-primary"/>
         
         <Label fx:id="errorLabel" textFill="#ef4444" wrapText="true" textAlignment="CENTER"/>
 

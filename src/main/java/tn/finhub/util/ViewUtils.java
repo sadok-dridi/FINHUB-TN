@@ -31,6 +31,8 @@ public class ViewUtils {
     public static FXMLLoader loadContent(Pane targetContainer, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource(fxmlPath));
+            // Load with resource bundle for internationalization
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             Parent newView = loader.load();
 
             if (!targetContainer.getChildren().isEmpty()) {

@@ -17,6 +17,7 @@ import tn.finhub.model.SavedContact;
 import tn.finhub.model.User;
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
+import tn.finhub.util.LanguageManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -106,6 +107,7 @@ public class ContactsController {
     private void handleAddContact() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/add_contact_dialog.fxml"));
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             Parent root = loader.load();
 
             // We need a controller for the dialog to handle "Save".

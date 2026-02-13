@@ -12,15 +12,15 @@
         
             <!-- Header Section -->
             <VBox spacing="5">
-                <Label text="Financial Twin &amp; Market Simulation" styleClass="header-text"/>
-                <Label text="Analyze your financial health and practice trading with AI assistance." 
+                <Label text="%twin.title" styleClass="header-text"/>
+                <Label text="%twin.subtitle" 
                        styleClass="sub-header-text"/>
             </VBox>
 
             <TabPane fx:id="mainTabPane" styleClass="modern-tab-pane" tabClosingPolicy="UNAVAILABLE">
                 
                 <!-- TAB 1: Financial Health (Existing) -->
-                <Tab text="Financial Health">
+                <Tab text="%twin.tab.health">
                     <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;" vbarPolicy="AS_NEEDED" hbarPolicy="NEVER">
                         <VBox spacing="20" style="-fx-padding: 20 5 20 0;">
                         <HBox spacing="20" VBox.vgrow="ALWAYS">
@@ -29,32 +29,32 @@
                                 
                                 <!-- What-if Scenarios Card -->
                                 <VBox styleClass="card" spacing="15">
-                                    <Label text="What-If Scenarios" styleClass="section-label" style="-fx-font-size: 16px;"/>
+                                    <Label text="%twin.scenarios" styleClass="section-label" style="-fx-font-size: 16px;"/>
                                     
                                     <VBox spacing="8">
-                                        <Label text="Monthly Income (TND)" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
+                                        <Label text="%twin.monthly.income" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
                                         <Slider fx:id="incomeSlider" min="0" max="10000" blockIncrement="100"/>
                                         <TextField fx:id="incomeField" styleClass="text-field" promptText="e.g. 3000"/>
                                     </VBox>
                     
                                     <VBox spacing="8">
-                                        <Label text="Monthly Expenses (TND)" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
+                                        <Label text="%twin.monthly.expenses" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
                                         <Slider fx:id="expenseSlider" min="0" max="10000" blockIncrement="100"/>
                                         <TextField fx:id="expenseField" styleClass="text-field" promptText="e.g. 2000"/>
                                     </VBox>
                                     
                                      <VBox spacing="8">
-                                        <Label text="Savings Goal (TND)" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
+                                        <Label text="%twin.savings.goal" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
                                         <TextField fx:id="goalField" styleClass="text-field" promptText="e.g. 10000"/>
                                     </VBox>
                                     
-                                    <Button text="Run Simulation" styleClass="button-primary" onAction="#handleRunSimulation" maxWidth="Infinity"/>
-                                    <Button text="Reset to Profile" styleClass="button-subtle" onAction="#handleReset" maxWidth="Infinity"/>
+                                    <Button text="%twin.run.simulation" styleClass="button-primary" onAction="#handleRunSimulation" maxWidth="Infinity"/>
+                                    <Button text="%twin.reset" styleClass="button-subtle" onAction="#handleReset" maxWidth="Infinity"/>
                                 </VBox>
                     
                                  <!-- Health Score Card -->
                                 <VBox styleClass="card" spacing="10" alignment="CENTER">
-                                     <Label text="Financial Health Score" styleClass="section-label" style="-fx-font-size: 14px;"/>
+                                     <Label text="%twin.health.score" styleClass="section-label" style="-fx-font-size: 14px;"/>
                                      <StackPane>
                                         <ProgressIndicator fx:id="healthIndicator" progress="0.75" 
                                                           style="-fx-pref-width: 100; -fx-pref-height: 100; -fx-progress-color: -color-success;"/>
@@ -70,20 +70,20 @@
                                 
                                 <!-- Chart Card (Takes top 50-60%) -->
                                 <VBox styleClass="card" VBox.vgrow="ALWAYS" spacing="10" minHeight="350">
-                                    <Label text="12-Month Projection" styleClass="section-label"/>
+                                    <Label text="%twin.projection" styleClass="section-label"/>
                                     <LineChart fx:id="projectionsChart" animated="false" createSymbols="false" legendVisible="false" VBox.vgrow="ALWAYS">
                                         <xAxis>
-                                            <CategoryAxis label="Month"/>
+                                            <CategoryAxis label="%twin.chart.month"/>
                                         </xAxis>
                                         <yAxis>
-                                            <NumberAxis label="Projected Savings (TND)"/>
+                                            <NumberAxis label="%twin.chart.savings"/>
                                         </yAxis>
                                     </LineChart>
                                 </VBox>
                     
                                 <!-- Insights Analysis (Takes remaining space, growing) -->
                                  <VBox styleClass="card" VBox.vgrow="ALWAYS" spacing="10" minHeight="200">
-                                    <Label text="Twin Feedback" styleClass="section-label"/>
+                                    <Label text="%twin.feedback" styleClass="section-label"/>
                                     <TextArea fx:id="insightsArea" editable="false" wrapText="true" 
                                               styleClass="text-area-readonly" VBox.vgrow="ALWAYS"
                                               style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary;"/>
@@ -96,13 +96,13 @@
                 </Tab>
 
                 <!-- TAB 2: Market Simulator (Pro Design - Short & Compact) -->
-                <Tab fx:id="marketTab" text="Market Simulator">
+                <Tab fx:id="marketTab" text="%twin.tab.market">
                     <HBox style="-fx-padding: 5 0 0 0;" spacing="6" alignment="TOP_CENTER">
                         <!-- Left: Asset List -->
                         <VBox styleClass="trading-sidebar" minWidth="160" maxWidth="180" maxHeight="450" spacing="0">
-                            <Label text="Assets" styleClass="section-label" style="-fx-padding: 8; -fx-font-size: 11px;"/>
+                            <Label text="%twin.market.assets" styleClass="section-label" style="-fx-padding: 8; -fx-font-size: 11px;"/>
                             <ListView fx:id="assetListView" VBox.vgrow="ALWAYS" styleClass="asset-list-view"/>
-                            <Button text="Refresh" styleClass="button-text-secondary" onAction="#handleRefreshMarket" maxWidth="Infinity" style="-fx-border-color: #2E2A45; -fx-border-width: 1 0 0 0; -fx-font-size: 10px; -fx-padding: 5;"/>
+                            <Button text="%twin.market.refresh" styleClass="button-text-secondary" onAction="#handleRefreshMarket" maxWidth="Infinity" style="-fx-border-color: #2E2A45; -fx-border-width: 1 0 0 0; -fx-font-size: 10px; -fx-padding: 5;"/>
                         </VBox>
 
                         <!-- Center: Chart & Details -->
@@ -139,15 +139,15 @@
                             
                             <!-- Trade Execution Card -->
                             <VBox styleClass="trading-panel" style="-fx-background-radius: 6px; -fx-padding: 10;" spacing="10">
-                                <Label text="Trade" styleClass="section-label" style="-fx-font-size: 11px;"/>
+                                <Label text="%twin.market.trade" styleClass="section-label" style="-fx-font-size: 11px;"/>
                                 
                                 <HBox spacing="5">
-                                    <Button fx:id="btnBuy" text="BUY" styleClass="btn-buy-long" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#handleBuy" style="-fx-font-size: 11px; -fx-padding: 5;"/>
-                                    <Button fx:id="btnSell" text="SELL" styleClass="btn-sell-short" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#handleSell" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+                                    <Button fx:id="btnBuy" text="%twin.market.buy" styleClass="btn-buy-long" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#handleBuy" style="-fx-font-size: 11px; -fx-padding: 5;"/>
+                                    <Button fx:id="btnSell" text="%twin.market.sell" styleClass="btn-sell-short" maxWidth="Infinity" HBox.hgrow="ALWAYS" onAction="#handleSell" style="-fx-font-size: 11px; -fx-padding: 5;"/>
                                 </HBox>
 
                                 <VBox spacing="3" styleClass="trade-input-group">
-                                    <Label text="Amount" styleClass="trade-label-small" style="-fx-font-size: 9px;"/>
+                                    <Label text="%twin.market.amount" styleClass="trade-label-small" style="-fx-font-size: 9px;"/>
                                     <HBox alignment="CENTER_LEFT">
                                         <TextField fx:id="quantityField" promptText="0.0" styleClass="trade-input-field" HBox.hgrow="ALWAYS" style="-fx-font-size: 11px;"/>
                                         <Label text="UNITS" style="-fx-text-fill: -color-text-muted; -fx-font-size: 8px; -fx-padding: 0 4;"/>
@@ -171,20 +171,20 @@
 
                             <!-- Position Summary -->
                             <VBox styleClass="trading-panel" VBox.vgrow="ALWAYS" style="-fx-background-radius: 6px; -fx-padding: 10;" spacing="8">
-                                <Label text="Position" styleClass="section-label" style="-fx-font-size: 11px;"/>
+                                <Label text="%twin.market.position" styleClass="section-label" style="-fx-font-size: 11px;"/>
                                 
                                 <GridPane hgap="5" vgap="5">
-                                    <Label text="Owned" styleClass="trade-label-small" style="-fx-font-size: 9px;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                    <Label text="%twin.market.owned" styleClass="trade-label-small" style="-fx-font-size: 9px;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                                     <Label fx:id="ownedQuantityLabel" text="0" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 10px;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
                                     
-                                    <Label text="Avg" styleClass="trade-label-small" style="-fx-font-size: 9px;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                    <Label text="%twin.market.avg" styleClass="trade-label-small" style="-fx-font-size: 9px;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                                     <Label fx:id="avgCostLabel" text="0.00" style="-fx-text-fill: white; -fx-font-size: 10px;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                                 </GridPane>
 
                                 <Separator style="-fx-opacity: 0.1;"/>
                                 
                                 <VBox style="-fx-background-color: rgba(16, 185, 129, 0.1); -fx-background-radius: 6px; -fx-padding: 8;" spacing="1">
-                                    <Label text="Wallet" style="-fx-text-fill: -color-success; -fx-font-size: 9px; -fx-font-weight: bold;"/>
+                                    <Label text="%twin.market.wallet" style="-fx-text-fill: -color-success; -fx-font-size: 9px; -fx-font-weight: bold;"/>
                                     <Label fx:id="walletBalanceLabel" text="--" style="-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: 900;"/>
                                 </VBox>
                             </VBox>

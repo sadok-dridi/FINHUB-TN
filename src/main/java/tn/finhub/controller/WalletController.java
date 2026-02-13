@@ -54,6 +54,7 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/deposit_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             DepositController controller = loader.getController();
@@ -102,6 +103,7 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/transfer_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             TransferController controller = loader.getController();
@@ -158,11 +160,24 @@ public class WalletController {
         startAutoRefresh();
     }
 
+    private javafx.animation.Timeline refreshTimeline;
+
     private void startAutoRefresh() {
-        javafx.animation.Timeline timeline = new javafx.animation.Timeline(
-                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(31), e -> loadWalletData()));
-        timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
-        timeline.play();
+        if (refreshTimeline != null) {
+            refreshTimeline.stop();
+        }
+
+        refreshTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(31), e -> {
+                    // Stop if view is no longer in scene (User navigated away or logged out)
+                    if (escrowBalanceLabel.getScene() == null) {
+                        refreshTimeline.stop();
+                        return;
+                    }
+                    loadWalletData();
+                }));
+        refreshTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        refreshTimeline.play();
     }
 
     // STALE-WHILE-REVALIDATE CACHE
@@ -686,6 +701,7 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/transaction_details.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             TransactionDetailsController controller = loader.getController();
@@ -905,6 +921,7 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/financial_twin.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent view = loader.load();
 
             javafx.scene.Scene scene = cardsContainer.getScene();

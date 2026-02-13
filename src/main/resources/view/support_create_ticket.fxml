@@ -10,7 +10,7 @@
 
     <!-- Custom Window Header -->
     <HBox alignment="CENTER_LEFT" spacing="10" styleClass="dialog-header">
-        <Label text="Create New Ticket" styleClass="dialog-title"/>
+        <Label text="%support.ticket.create.title" styleClass="dialog-title"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button styleClass="window-close-button" onAction="#handleCancel">
             <graphic>
@@ -21,23 +21,23 @@
 
     <VBox spacing="15" styleClass="dialog-content">
         <VBox spacing="5">
-            <Label text="Subject" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
-            <TextField fx:id="subjectField" promptText="Brief summary of the issue"/>
+            <Label text="%support.ticket.subject" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
+            <TextField fx:id="subjectField" promptText="%support.ticket.subject.placeholder"/>
         </VBox>
         
         <VBox spacing="5">
-            <Label text="Category" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
+            <Label text="%support.ticket.category" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
             <ComboBox fx:id="categoryCombo" maxWidth="Infinity"/>
         </VBox>
         
         <VBox spacing="5">
-            <Label text="Description" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
-            <TextArea fx:id="messageArea" promptText="Describe your issue in detail..." wrapText="true" prefRowCount="5"/>
+            <Label text="%support.ticket.description" styleClass="label-bold" style="-fx-text-fill: -color-text-secondary;"/>
+            <TextArea fx:id="messageArea" promptText="%support.ticket.description.placeholder" wrapText="true" prefRowCount="5"/>
         </VBox>
         
         <HBox spacing="10" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
-            <Button text="Cancel" onAction="#handleCancel" styleClass="button-subtle"/>
-            <Button text="Submit Ticket" onAction="#handleSubmit" styleClass="button-primary"/>
+            <Button text="%common.cancel" onAction="#handleCancel" styleClass="button-subtle"/>
+            <Button text="%support.ticket.submit" onAction="#handleSubmit" styleClass="button-primary"/>
         </HBox>
     </VBox>
 

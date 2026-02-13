@@ -337,6 +337,7 @@ public class TransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/transfer_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             TransferController controller = loader.getController();
@@ -360,6 +361,7 @@ public class TransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/add_contact_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             AddContactController controller = loader.getController();
@@ -510,6 +512,7 @@ public class TransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/transaction_details.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent root = loader.load();
 
             TransactionDetailsController controller = loader.getController();

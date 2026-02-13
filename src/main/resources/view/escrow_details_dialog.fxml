@@ -28,39 +28,39 @@
 
     <!-- Amount -->
     <VBox spacing="5" alignment="CENTER">
-        <Label text="Locked Amount" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+        <Label text="%escrow.details.locked.amount" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
         <Label fx:id="amountLabel" text="0.000 TND" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
     </VBox>
 
     <!-- Condition -->
     <VBox spacing="8">
-        <Label text="Contract Condition" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <Label text="%escrow.details.condition" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
         <TextArea fx:id="conditionArea" editable="false" wrapText="true" prefRowCount="3"
                   styleClass="text-area-modern"/>
     </VBox>
 
     <!-- SENDER VIEW: QR Code -->
     <VBox fx:id="senderSection" spacing="15" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-background-radius: 12; -fx-padding: 15;">
-        <Label text="Scan to Release Funds" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <Label text="%escrow.details.scan" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
         <ImageView fx:id="qrCodeImageView" fitWidth="150" fitHeight="150" preserveRatio="true"/>
         <Label fx:id="secretCodeLabel" text="Secret Code: ..." style="-fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
-        <Label text="Show this QR code to the receiver to allow them to claim the funds." wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+        <Label text="%escrow.details.show.qr" wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
     </VBox>
 
     <!-- RECEIVER VIEW: Claim Input -->
     <VBox fx:id="receiverSection" spacing="15" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-background-radius: 12; -fx-padding: 15;">
-        <Label text="Claim Locked Funds" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-        <Label text="Enter the secret code provided by the sender or scan their QR code." wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+        <Label text="%escrow.details.claim" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <Label text="%escrow.details.enter.code" wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
         
-        <TextField fx:id="codeInputField" promptText="Enter Secret Code" styleClass="text-field-modern"/>
-        <Button fx:id="claimButton" text="Claim &amp; Release Funds" onAction="#handleClaim"
+        <TextField fx:id="codeInputField" promptText="%escrow.details.code.prompt" styleClass="text-field-modern"/>
+        <Button fx:id="claimButton" text="%escrow.details.claim.button" onAction="#handleClaim"
                 styleClass="button-primary" maxWidth="Infinity"/>
     </VBox>
 
     <!-- Footer Actions -->
     <HBox spacing="10" alignment="CENTER">
-        <Button text="Close" onAction="#handleClose" styleClass="button-outlined" prefWidth="100"/>
-        <Button fx:id="disputeButton" text="Raise Dispute" onAction="#handleDispute"
+        <Button text="%common.close" onAction="#handleClose" styleClass="button-outlined" prefWidth="100"/>
+        <Button fx:id="disputeButton" text="%escrow.details.dispute" onAction="#handleDispute"
                 style="-fx-background-color: transparent; -fx-text-fill: -color-danger; -fx-border-color: -color-danger; -fx-border-radius: 6;"
                 prefWidth="120"/>
     </HBox>

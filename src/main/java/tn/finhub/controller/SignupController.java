@@ -9,6 +9,7 @@ import java.net.http.*;
 import java.net.URI;
 import tn.finhub.util.MailClient;
 import tn.finhub.util.ValidationUtils;
+import tn.finhub.util.LanguageManager;
 import org.json.JSONObject;
 
 import tn.finhub.util.SessionManager;
@@ -222,6 +223,7 @@ public class SignupController {
         keepPolling = false; // Stop auto-login polling
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent newView = loader.load();
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameField.getScene()
                     .lookup("#contentArea");
@@ -316,6 +318,7 @@ public class SignupController {
                         System.out.println("Redirecting to Complete Profile.");
                         // Use the existing goToLogin's logic but for complete profile
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/complete_profile.fxml"));
+                        loader.setResources(LanguageManager.getInstance().getResourceBundle());
                         javafx.scene.Parent newView = loader.load();
                         javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameField.getScene()
                                 .lookup("#contentArea");
@@ -357,6 +360,7 @@ public class SignupController {
                     try {
                         System.out.println("Redirecting to User Dashboard.");
                         FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/user_dashboard.fxml"));
+                        loader.setResources(LanguageManager.getInstance().getResourceBundle());
                         javafx.scene.Parent newView = loader.load();
                         javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameField.getScene()
                                 .lookup("#contentArea");

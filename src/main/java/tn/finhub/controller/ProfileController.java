@@ -12,6 +12,7 @@ import tn.finhub.model.FinancialProfileModel; // Added import
 
 import tn.finhub.util.SessionManager;
 import tn.finhub.util.UserSession;
+import tn.finhub.util.LanguageManager;
 
 public class ProfileController {
 
@@ -39,6 +40,9 @@ public class ProfileController {
 
     @FXML
     private Label statusLabel;
+
+    @FXML
+    private ComboBox<String> languageBox;
 
     private final FinancialProfileModel profileModel = new FinancialProfileModel(); // Changed to Model
     private static final String PREF_DB_MODE = "db_mode";
@@ -81,6 +85,12 @@ public class ProfileController {
     }
 
     private void setupSettings() {
+        // Language Settings
+        languageBox.getItems().addAll(LanguageManager.getAvailableLanguages());
+        String currentLang = LanguageManager.getInstance().getCurrentLanguageName();
+        languageBox.setValue(currentLang);
+
+        // Database Settings
         dbModeBox.getItems().addAll("Hosted", "Local");
         java.util.prefs.Preferences dbPrefs = java.util.prefs.Preferences
                 .userNodeForPackage(tn.finhub.util.DBConnection.class);
@@ -184,6 +194,37 @@ public class ProfileController {
     @FXML
     private void handleSaveSettings() {
         try {
+            // Language Settings
+            String selectedLanguage = languageBox.getValue();
+            if (selectedLanguage != null) {
+                String currentLang = LanguageManager.getInstance().getCurrentLanguageName();
+                if (!selectedLanguage.equals(currentLang)) {
+                    // Set language based on selection
+                    if (selectedLanguage.equals("Français")) {
+                        LanguageManager.getInstance().setLanguage(LanguageManager.FRENCH);
+                    } else {
+                        LanguageManager.getInstance().setLanguage(LanguageManager.ENGLISH);
+                    }
+
+                    // Reload the current view to apply language changes
+                    javafx.application.Platform.runLater(() -> {
+                        try {
+                            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                                    getClass().getResource("/view/profile.fxml"),
+                                    LanguageManager.getInstance().getResourceBundle());
+                            javafx.scene.Parent newView = loader.load();
+                            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) languageBox
+                                    .getScene().lookup("#dashboardContent");
+                            if (contentArea != null) {
+                                contentArea.getChildren().setAll(newView);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            }
+
             // DB Settings
             String selectedMode = dbModeBox.getValue();
             if (selectedMode != null) {

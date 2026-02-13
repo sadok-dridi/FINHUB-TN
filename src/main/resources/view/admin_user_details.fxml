@@ -12,8 +12,8 @@
             
             <!-- Back Button & Header -->
             <HBox spacing="10" alignment="CENTER_LEFT">
-                <Button text="← Back" onAction="#handleBack" styleClass="button-back"/>
-                <Label text="User Details" styleClass="header-text"/>
+                <Button text="%common.back" onAction="#handleBack" styleClass="button-back"/>
+                <Label text="%admin.user.details.title" styleClass="header-text"/>
             </HBox>
 
             <!-- Content Scroll -->
@@ -24,7 +24,7 @@
                         <!-- User Profile Card -->
                         <HBox spacing="20">
                             <VBox styleClass="card" spacing="15" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
-                                <Label text="Personal Information" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                                <Label text="%admin.user.details.personal" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
                                 <Separator />
                                 <GridPane vgap="10" hgap="20">
                                     <Label text="Full Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
@@ -33,11 +33,11 @@
                                     <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
                                     <Label fx:id="emailLabel" text="Loading..." GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-primary;"/>
                                     
-                                    <Label text="Role:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
-                                    <Label fx:id="roleLabel" text="Loading..." GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-primary;"/>
+                                    <Label text="%common.role" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="roleLabel" text="%common.loading" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-primary;"/>
                                     
-                                    <Label text="ID:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
-                                    <Label fx:id="idLabel" text="Loading..." GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label text="%common.id" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="idLabel" text="%common.loading" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-muted;"/>
                                 </GridPane>
                             </VBox>
 
@@ -50,16 +50,16 @@
                                     <Label fx:id="currencyLabel" text="TND" style="-fx-font-size: 16px; -fx-text-fill: -color-text-secondary;"/>
                                 </HBox>
                                 <HBox spacing="10">
-                                    <Label text="Status:" style="-fx-text-fill: -color-text-muted;"/>
-                                    <Label fx:id="walletStatusLabel" text="Loading..." style="-fx-font-weight: bold;"/>
+                                    <Label text="%common.status" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="walletStatusLabel" text="%common.loading" style="-fx-font-weight: bold;"/>
                                 </HBox>
                             </VBox>
                         </HBox>
 
                         <!-- Actions Section -->
                         <HBox spacing="15" alignment="CENTER_LEFT">
-                             <Button text="View Portfolio" styleClass="button-primary" onAction="#handleViewPortfolio" style="-fx-background-color: -color-primary; -fx-text-fill: white;"/>
-                             <Button fx:id="freezeBtn" text="Freeze Wallet" styleClass="button-warning" onAction="#handleFreezeWallet"/>
+                             <Button text="%admin.user.view.portfolio" styleClass="button-primary" onAction="#handleViewPortfolio" style="-fx-background-color: -color-primary; -fx-text-fill: white;"/>
+                             <Button fx:id="freezeBtn" text="%admin.user.freeze.wallet" styleClass="button-warning" onAction="#handleFreezeWallet"/>
                         </HBox>
 
 
@@ -67,9 +67,9 @@
                         <!-- Danger Zone -->
                         <VBox style="-fx-border-color: #EF4444; -fx-border-width: 1; -fx-border-radius: 8px; -fx-padding: 20; -fx-background-color: rgba(239, 68, 68, 0.05);" spacing="10">
                             <Label text="Danger Zone" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;"/>
-                            <Label text="Once you delete a user, there is no going back. Please be certain." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                            <Label text="%admin.user.delete.warning" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
                             <HBox alignment="CENTER_RIGHT">
-                                <Button text="Delete User" styleClass="button-danger" onAction="#handleDeleteUser"/>
+                                <Button text="%admin.user.delete" styleClass="button-danger" onAction="#handleDeleteUser"/>
                             </HBox>
                         </VBox>
 

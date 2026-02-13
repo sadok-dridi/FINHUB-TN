@@ -218,6 +218,7 @@ public class DepositController {
                 try {
                     javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                             getClass().getResource("/view/otp_dialog.fxml"));
+                    loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
                     javafx.scene.Parent root = loader.load();
 
                     OtpController otpController = loader.getController();

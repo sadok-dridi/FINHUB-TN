@@ -243,6 +243,7 @@ public class AdminUserTransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/admin_repair_dialog.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent page = loader.load();
 
             javafx.stage.Stage dialogStage = new javafx.stage.Stage();
@@ -281,6 +282,7 @@ public class AdminUserTransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/admin_transactions.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent view = loader.load();
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) transactionsListView.getScene()
                     .lookup("#adminContentArea");

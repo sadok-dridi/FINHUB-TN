@@ -16,6 +16,7 @@
     -color-bg-dark: #1E1B2E;
     /* Same as card background for now, or slightly darker if needed */
     -color-card-border: #2E2A45;
+    -color-border: #2E2A45;
 
     /* Text */
     -color-text-primary: #F3F4F6;

@@ -552,6 +552,8 @@ public class FinancialTwinController {
             ownedQuantityLabel.setText("0");
         }
 
+        if (UserSession.getInstance().getUser() == null)
+            return;
         int userId = UserSession.getInstance().getUser().getId();
 
         // Use a background task to fetch portfolio data (Fresh)
@@ -600,6 +602,8 @@ public class FinancialTwinController {
     }
 
     private void updatePortfolioSummary() {
+        if (UserSession.getInstance().getUser() == null)
+            return;
         int userId = UserSession.getInstance().getUser().getId();
 
         javafx.concurrent.Task<tn.finhub.model.Wallet> task = new javafx.concurrent.Task<>() {

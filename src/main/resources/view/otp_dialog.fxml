@@ -23,8 +23,8 @@
    </StackPane>
 
    <VBox alignment="CENTER" spacing="5.0">
-      <Label text="Verification Required" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
-      <Label text="Please enter the 6-digit code sent to your email." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 13px;" wrapText="true" textAlignment="CENTER"/>
+      <Label text="%otp.title" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+      <Label text="%otp.instruction" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 13px;" wrapText="true" textAlignment="CENTER"/>
       <Label fx:id="timerLabel" text="01:00" style="-fx-text-fill: -color-primary; -fx-font-weight: bold; -fx-font-size: 14px;"/>
    </VBox>
 
@@ -35,9 +35,9 @@
           style="-fx-text-fill: -color-error; -fx-font-size: 12px;"/>
 
    <HBox alignment="CENTER" spacing="15.0">
-      <Button text="Cancel" onAction="#handleCancel" 
+      <Button text="%common.cancel" onAction="#handleCancel" 
               style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-cursor: hand; -fx-font-size: 14px;"/>
-      <Button fx:id="verifyButton" text="Verify Transaction" onAction="#handleVerify" 
+      <Button fx:id="verifyButton" text="%otp.verify" onAction="#handleVerify" 
               styleClass="button-primary"/>
    </HBox>
 

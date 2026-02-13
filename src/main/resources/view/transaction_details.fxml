@@ -22,7 +22,7 @@
                          <SVGPath content="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z" style="-fx-fill: #3B82F6;" scaleX="1.0" scaleY="1.0"/>
                      </children>
                  </javafx.scene.layout.StackPane>
-                 <Label text="Transaction Details" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                 <Label text="%transaction.details.title" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
                  <Region HBox.hgrow="ALWAYS" />
                  <Button text="✕" onAction="#handleClose" style="-fx-background-color: transparent; -fx-text-fill: #9CA3AF; -fx-font-size: 14px; -fx-cursor: hand;"/>
             </children>
@@ -43,25 +43,25 @@
         <VBox spacing="12">
             <!-- Row 1: Date -->
             <HBox>
-                <Label text="Date &amp; Time" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" prefWidth="120"/>
+                <Label text="%transaction.date.time" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" prefWidth="120"/>
                 <Label fx:id="dateLabel" text="-" style="-fx-text-fill: white; -fx-font-size: 13px;" HBox.hgrow="ALWAYS" wrapText="true"/>
             </HBox>
 
             <!-- Row 2: Reference -->
             <HBox>
-                <Label text="Reference" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" prefWidth="120"/>
+                <Label text="%transaction.reference" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" prefWidth="120"/>
                 <Label fx:id="referenceLabel" text="-" style="-fx-text-fill: white; -fx-font-size: 13px;" HBox.hgrow="ALWAYS" wrapText="true"/>
             </HBox>
 
             <!-- Row 3: Transaction ID -->
             <HBox>
-                <Label text="Transaction ID" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" prefWidth="120"/>
+                <Label text="%transaction.id" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;" prefWidth="120"/>
                 <Label fx:id="txIdLabel" text="-" style="-fx-text-fill: white; -fx-font-size: 13px; -fx-font-family: 'Monospaced';" HBox.hgrow="ALWAYS"/>
             </HBox>
 
              <!-- Row 4: Hash -->
             <VBox spacing="4">
-                 <Label text="Ledger Hash" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;"/>
+                 <Label text="%transaction.ledger.hash" style="-fx-text-fill: #9CA3AF; -fx-font-size: 13px;"/>
                  <Label fx:id="hashLabel" text="-" style="-fx-text-fill: #6B7280; -fx-font-size: 11px; -fx-font-family: 'Monospaced';" wrapText="true"/>
             </VBox>
         </VBox>
@@ -69,7 +69,7 @@
         <Separator style="-fx-opacity: 0.1;"/>
 
         <!-- Close Button -->
-        <Button text="Close" onAction="#handleClose" maxWidth="Infinity"
+        <Button text="%common.close" onAction="#handleClose" maxWidth="Infinity"
                 style="-fx-background-color: #374151; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 10; -fx-cursor: hand;"/>
 
     </children>
