@@ -32,12 +32,15 @@ public class MainLayoutController {
         // Load initial view (Login)
         setView("/view/splash.fxml");
         startBackgroundAnimation();
+<<<<<<< HEAD
 
         // Clip content to background pane
         javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
         clip.widthProperty().bind(backgroundAnimationPane.widthProperty());
         clip.heightProperty().bind(backgroundAnimationPane.heightProperty());
         backgroundAnimationPane.setClip(clip);
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     private void startBackgroundAnimation() {
@@ -92,6 +95,7 @@ public class MainLayoutController {
     private void spawnShootingStar() {
         java.util.Random rand = new java.util.Random();
         double paneWidth = backgroundAnimationPane.getWidth();
+<<<<<<< HEAD
         double paneHeight = backgroundAnimationPane.getHeight();
 
         // Randomize direction: true = Left-to-Right, false = Right-to-Left
@@ -128,6 +132,25 @@ public class MainLayoutController {
         streak.setStroke(gradient);
         streak.setStrokeWidth(2);
         streak.setOpacity(0.0); // Start invisible
+=======
+        // Start on right side (60% to 100% of width)
+        double startX = paneWidth * (0.6 + rand.nextDouble() * 0.4);
+        double startY = rand.nextDouble() * 300; // Start in top area (0-300)
+
+        // fast moving "streak"
+        javafx.scene.shape.Line streak = new javafx.scene.shape.Line(0, 0, 100, 0); // 100px long streak
+        streak.setStroke(
+                new javafx.scene.paint.LinearGradient(0, 0, 1, 0, true, javafx.scene.paint.CycleMethod.NO_CYCLE,
+                        new javafx.scene.paint.Stop(0, javafx.scene.paint.Color.TRANSPARENT),
+                        new javafx.scene.paint.Stop(1, javafx.scene.paint.Color.WHITE))); // Head (Stop 1) is white
+        streak.setStrokeWidth(2);
+
+        // Rotate to point Top-Right to Bottom-Left (approx 135 degrees)
+        // Line default is 0 deg (Right). 135 deg points Down-Left.
+        streak.setRotate(135);
+
+        streak.setOpacity(0.8);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         streak.setEffect(new javafx.scene.effect.Glow(0.8));
 
         // Position
@@ -137,6 +160,7 @@ public class MainLayoutController {
         backgroundAnimationPane.getChildren().add(streak);
 
         // Animate
+<<<<<<< HEAD
         double travelDist = 400 + rand.nextDouble() * 600;
         double duration = 1.5 + rand.nextDouble() * 1.0; // Slower: 1.5s to 2.5s
 
@@ -165,6 +189,22 @@ public class MainLayoutController {
         javafx.animation.SequentialTransition fadeSeq = new javafx.animation.SequentialTransition(fadeIn, fadeOut);
 
         javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(move, fadeSeq);
+=======
+        double travelDist = 500 + rand.nextDouble() * 300;
+        double duration = 0.8 + rand.nextDouble() * 0.5;
+
+        javafx.animation.TranslateTransition move = new javafx.animation.TranslateTransition(
+                javafx.util.Duration.seconds(duration), streak);
+        move.setByX(-travelDist); // Move LEFT (Negative X)
+        move.setByY(travelDist); // Move DOWN (Positive Y)
+
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(
+                javafx.util.Duration.seconds(duration), streak);
+        fade.setFromValue(1.0);
+        fade.setToValue(0.0);
+
+        javafx.animation.ParallelTransition pt = new javafx.animation.ParallelTransition(move, fade);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         pt.setOnFinished(e -> backgroundAnimationPane.getChildren().remove(streak));
         pt.play();
     }

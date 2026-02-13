@@ -8,7 +8,12 @@ import javafx.scene.control.Button;
 import tn.finhub.model.VirtualCard;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
+<<<<<<< HEAD
 import tn.finhub.model.WalletModel;
+=======
+import tn.finhub.service.VirtualCardService;
+import tn.finhub.service.WalletService;
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -30,6 +35,7 @@ public class WalletController {
     @FXML
     private Button generateCardButton;
 
+<<<<<<< HEAD
     @FXML
     private VBox frozenAlertBox;
 
@@ -44,13 +50,20 @@ public class WalletController {
     // private final tn.finhub.dao.MarketDAO marketDAO = new
     // tn.finhub.dao.MarketDAO(); // REMOVED (Use MarketModel)
     private final tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
+=======
+    private final WalletService walletService = new WalletService();
+    private final VirtualCardService virtualCardService = new VirtualCardService();
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private Wallet currentWallet;
 
     @FXML
     private void handleDeposit() {
+<<<<<<< HEAD
         if (currentWallet != null && "FROZEN".equals(currentWallet.getStatus())) {
             return; // Security check
         }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/deposit_dialog.fxml"));
@@ -85,6 +98,7 @@ public class WalletController {
 
             stage.showAndWait();
 
+<<<<<<< HEAD
             // Force refresh after dialog closes to capture any status changes (e.g.,
             // frozen)
             loadWalletData();
@@ -133,6 +147,8 @@ public class WalletController {
             stage.showAndWait();
             loadWalletData();
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
@@ -141,6 +157,7 @@ public class WalletController {
     @FXML
     private void handleGenerateCard() {
         if (currentWallet != null) {
+<<<<<<< HEAD
             if ("FROZEN".equals(currentWallet.getStatus()))
                 return; // Security check
 
@@ -149,12 +166,17 @@ public class WalletController {
                 virtualCardModel.createCardForWallet(currentWallet.getId());
                 javafx.application.Platform.runLater(this::loadWalletData);
             }).start();
+=======
+            virtualCardService.createCardForWallet(currentWallet.getId());
+            refreshVirtualCards(currentWallet.getId());
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         }
     }
 
     @FXML
     public void initialize() {
         loadWalletData();
+<<<<<<< HEAD
         startAutoRefresh();
     }
 
@@ -170,12 +192,15 @@ public class WalletController {
 
     public static void setCachedData(WalletDataPacket data) {
         cachedData = data;
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     private void loadWalletData() {
         tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
         if (user == null)
             return;
+<<<<<<< HEAD
 
         // FIX: Prevent Admin from creating a wallet automatically
         if ("ADMIN".equalsIgnoreCase(user.getRole())) {
@@ -308,10 +333,32 @@ public class WalletController {
             int limit = Math.min(data.transactions.size(), 4);
             for (int i = 0; i < limit; i++) {
                 transactionContainer.getChildren().add(createTransactionCard(data.transactions.get(i), data.badTxId));
+=======
+        int userId = user.getId();
+
+        // Ensure wallet exists
+        walletService.createWalletIfNotExists(userId);
+
+        currentWallet = walletService.getWallet(userId);
+        if (currentWallet != null) {
+            escrowBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getEscrowBalance());
+            availableBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getBalance());
+
+            // Load Virtual Cards
+            refreshVirtualCards(currentWallet.getId());
+
+            // Load Transactions
+            transactionContainer.getChildren().clear();
+            List<WalletTransaction> transactions = walletService.getTransactionHistory(currentWallet.getId());
+
+            for (WalletTransaction tx : transactions) {
+                transactionContainer.getChildren().add(createTransactionCard(tx));
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             }
         }
     }
 
+<<<<<<< HEAD
     // Helper Record for Data Transfer
     public static class WalletDataPacket {
         Wallet wallet;
@@ -388,6 +435,16 @@ public class WalletController {
 
         cardsContainer.getChildren().addAll(leftWrapper, rightWrapper);
 
+=======
+    private void refreshVirtualCards(int walletId) {
+        cardsContainer.getChildren().clear();
+        List<VirtualCard> cards = virtualCardService.getCardsByWallet(walletId);
+
+        for (VirtualCard card : cards) {
+            cardsContainer.getChildren().add(createVirtualCardNode(card));
+        }
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         // Disable/Hide generate button if a card exists (Max 1)
         if (!cards.isEmpty()) {
             generateCardButton.setVisible(false);
@@ -485,10 +542,14 @@ public class WalletController {
         dateCvvRow.getChildren().addAll(validBox, cvvBox);
 
         // Name Block
+<<<<<<< HEAD
         tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
         String holderName = (user != null && user.getFullName() != null) ? user.getFullName().toUpperCase()
                 : "VALUED USER";
         Label nameLabel = new Label(holderName);
+=======
+        Label nameLabel = new Label("SADOK DRIDI");
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         nameLabel.setStyle(
                 "-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: normal; -fx-opacity: 0.9; -fx-font-family: 'Segoe UI', sans-serif;");
 
@@ -548,7 +609,11 @@ public class WalletController {
     }
 
     private String formatCardNumber(String number) {
+<<<<<<< HEAD
         // ... (unchanged) ...
+=======
+        // Format as XXXX XXXX XXXX XXXX
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < number.length(); i++) {
             if (i > 0 && i % 4 == 0)
@@ -558,11 +623,16 @@ public class WalletController {
         return sb.toString();
     }
 
+<<<<<<< HEAD
     private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId) {
+=======
+    private javafx.scene.Node createTransactionCard(WalletTransaction tx) {
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
+<<<<<<< HEAD
         // Highlight if tampering detected
         if (tx.getId() == badTxId) {
             card.setStyle(
@@ -646,10 +716,39 @@ public class WalletController {
         rightDetails.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
         // Amount Logic
+=======
+        // Icon
+        javafx.scene.layout.StackPane iconBg = new javafx.scene.layout.StackPane();
+        iconBg.getStyleClass().add("transaction-icon-bg");
+        iconBg.setPrefSize(40, 40);
+
+        javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+        icon.setContent(getIconPath(tx.getType()));
+        icon.getStyleClass().add("transaction-icon");
+        iconBg.getChildren().add(icon);
+
+        // Details
+        VBox details = new VBox(3);
+        Label refLabel = new Label(tx.getReference());
+        refLabel.getStyleClass().add("transaction-ref");
+
+        Label dateLabel = new Label(
+                tx.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")));
+        dateLabel.getStyleClass().add("transaction-date");
+
+        details.getChildren().addAll(refLabel, dateLabel);
+
+        // Spacer
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        // Amount
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         Label amountLabel = new Label();
         String prefix = "";
         String styleClass = "";
 
+<<<<<<< HEAD
         if (isPositive) {
             prefix = "+";
             styleClass = "amount-positive";
@@ -658,11 +757,22 @@ public class WalletController {
             styleClass = "amount-negative";
         } else {
             styleClass = "amount-hold";
+=======
+        if ("CREDIT".equals(tx.getType()) || "RELEASE".equals(tx.getType())) {
+            prefix = "+";
+            styleClass = "amount-positive";
+        } else if ("DEBIT".equals(tx.getType())) {
+            prefix = "-";
+            styleClass = "amount-negative";
+        } else {
+            styleClass = "amount-hold"; // Hold
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         }
 
         amountLabel.setText(prefix + " TND " + tx.getAmount());
         amountLabel.getStyleClass().add(styleClass);
 
+<<<<<<< HEAD
         // Date Logic
         Label dateLabel = new Label(
                 tx.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")));
@@ -735,10 +845,23 @@ public class WalletController {
             // Lock/Hold Icon
             case "HOLD" ->
                 "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.95V5h-2.93v2.63c-1.71.49-3.1 1.4-3.1 3.03 0 1.98 1.85 2.7 3.3 3.02 1.98.51 2.44 1.15 2.44 1.91 0 .88-.74 1.41-1.95 1.41-1.55 0-2.34-.66-2.47-1.8H7.13c.12 1.83 1.32 2.7 2.87 3.12V20h2.93v-2.54c1.81-.39 3.25-1.27 3.25-3.17 0-2.02-1.76-2.81-3.19-3.15z";
+=======
+        card.getChildren().addAll(iconBg, details, spacer, amountLabel);
+        return card;
+    }
+
+    private String getIconPath(String type) {
+        return switch (type) {
+            case "CREDIT", "RELEASE" -> "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"; // Plus
+            case "DEBIT" -> "M19 13H5v-2h14v2z"; // Minus
+            case "HOLD" ->
+                "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.95V5h-2.93v2.63c-1.71.49-3.1 1.4-3.1 3.03 0 1.98 1.85 2.7 3.3 3.02 1.98.51 2.44 1.15 2.44 1.91 0 .88-.74 1.41-1.95 1.41-1.55 0-2.34-.66-2.47-1.8H7.13c.12 1.83 1.32 2.7 2.87 3.12V20h2.93v-2.54c1.81-.39 3.25-1.27 3.25-3.17 0-2.02-1.76-2.81-3.19-3.15z"; // Dollar/Lock
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             default ->
                 "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z";
         };
     }
+<<<<<<< HEAD
 
     private javafx.scene.Node createPortfolioPerformanceNode(WalletDataPacket data) {
         VBox node = new VBox(15);
@@ -930,4 +1053,6 @@ public class WalletController {
             e.printStackTrace();
         }
     }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }

@@ -36,8 +36,11 @@
             <Label text="Don't have an account?" style="-fx-text-fill: -color-text-secondary;"/>
             <Hyperlink text="Create account" onAction="#goToSignup" styleClass="hyperlink"/>
         </HBox>
+<<<<<<< HEAD
         
         <Hyperlink text="Forgot Password?" onAction="#goToForgotPassword" styleClass="hyperlink" style="-fx-font-size: 12px;"/>
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
         <Label fx:id="messageLabel" textFill="#ef4444"/>
 

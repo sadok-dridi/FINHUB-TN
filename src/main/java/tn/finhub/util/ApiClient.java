@@ -11,11 +11,14 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
+<<<<<<< HEAD
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.json.JSONObject;
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 import com.fasterxml.jackson.core.type.TypeReference;
 
 public class ApiClient {
@@ -29,7 +32,10 @@ public class ApiClient {
     public static HttpClient getClient() {
         return client;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     public static String inviteAdmin(String email) throws Exception {
 
         URL url = new URL(BASE_URL + "/admin/invite?email=" + email);
@@ -59,11 +65,19 @@ public class ApiClient {
 
         return response.toString();
     }
+<<<<<<< HEAD
 
     public static List<User> fetchUsersFromServer() {
 
         try {
             HttpURLConnection conn = (HttpURLConnection) new URL(BASE_URL + "/admin/users").openConnection();
+=======
+    public static List<User> fetchUsersFromServer() {
+
+        try {
+            HttpURLConnection conn = (HttpURLConnection)
+                    new URL(BASE_URL + "/admin/users").openConnection();
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization",
@@ -71,6 +85,7 @@ public class ApiClient {
             conn.setRequestProperty("Accept", "application/json");
 
             if (conn.getResponseCode() != 200) {
+<<<<<<< HEAD
                 InputStream errorStream = conn.getErrorStream();
                 String errorBody = "";
                 if (errorStream != null) {
@@ -82,18 +97,32 @@ public class ApiClient {
 
             String json = new BufferedReader(
                     new InputStreamReader(conn.getInputStream())).lines().collect(Collectors.joining());
+=======
+                throw new RuntimeException("Server error");
+            }
+
+            String json = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream())
+            ).lines().collect(Collectors.joining());
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(
                     json,
+<<<<<<< HEAD
                     new TypeReference<List<User>>() {
                     });
+=======
+                    new TypeReference<List<User>>() {}
+            );
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+<<<<<<< HEAD
     public static String signup(String fullName, String email, String password) throws Exception {
         String json = """
                 {
@@ -183,4 +212,6 @@ public class ApiClient {
         JSONObject body = new JSONObject(response.body());
         return body.getString("reset_link");
     }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }

@@ -3,7 +3,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 .kotlin
+<<<<<<< HEAD
 .env
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

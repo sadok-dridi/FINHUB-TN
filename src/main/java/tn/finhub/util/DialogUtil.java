@@ -13,6 +13,7 @@ import java.io.IOException;
 
 public class DialogUtil {
 
+<<<<<<< HEAD
     private static boolean lastResult = false;
 
     public static void setLastDialogResult(boolean result) {
@@ -46,6 +47,8 @@ public class DialogUtil {
         }
     }
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     public static boolean showConfirmation(String title, String message) {
         return showDialog(title, message, "CONFIRMATION");
     }
@@ -91,6 +94,7 @@ public class DialogUtil {
             e.printStackTrace();
             return false;
         }
+<<<<<<< HEAD
 
     }
 
@@ -124,5 +128,7 @@ public class DialogUtil {
             e.printStackTrace();
             return null;
         }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 }

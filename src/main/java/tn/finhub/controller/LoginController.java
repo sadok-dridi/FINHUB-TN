@@ -9,7 +9,11 @@ import java.net.http.*;
 import java.net.URI;
 import org.json.JSONObject;
 import java.sql.*;
+<<<<<<< HEAD
 import tn.finhub.model.FinancialProfileModel;
+=======
+import tn.finhub.service.FinancialProfileService;
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
 import java.net.http.HttpRequest;
 
@@ -24,6 +28,29 @@ public class LoginController {
     @FXML
     private Label messageLabel;
 
+<<<<<<< HEAD
+=======
+    private void syncUserLocal(int id, String fullName, String email, String role) throws Exception {
+        Connection conn = DBConnection.getInstance();
+
+        PreparedStatement ps = conn.prepareStatement("""
+                INSERT INTO users_local (user_id, full_name, email, role)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                  full_name = VALUES(full_name),
+                  email = VALUES(email),
+                  role = VALUES(role)
+                """);
+
+        ps.setInt(1, id);
+        ps.setString(2, fullName);
+        ps.setString(3, email);
+        ps.setString(4, role);
+
+        ps.executeUpdate();
+    }
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private void setView(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
@@ -73,6 +100,7 @@ public class LoginController {
     }
 
     @FXML
+<<<<<<< HEAD
     public void goToForgotPassword() {
         setView("/view/forgot_password.fxml");
     }
@@ -119,6 +147,10 @@ public class LoginController {
         }
 
         messageLabel.setStyle("-fx-text-fill: orange;");
+=======
+    public void handleLogin() {
+        System.out.println("[DEBUG] Login button clicked");
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         messageLabel.setText("Logging in...");
 
         new Thread(() -> {
@@ -130,7 +162,11 @@ public class LoginController {
                           "password": "%s"
                         }
                         """.formatted(
+<<<<<<< HEAD
                         email,
+=======
+                        emailField.getText(),
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                         passwordField.getText());
 
                 HttpRequest request = HttpRequest.newBuilder()
@@ -144,6 +180,7 @@ public class LoginController {
                 System.out.println("[DEBUG] Login response code: " + response.statusCode());
 
                 if (response.statusCode() != 200) {
+<<<<<<< HEAD
                     // Try to parse error details from JSON body
                     String errorMessage = "Login failed"; // Default
                     try {
@@ -171,6 +208,9 @@ public class LoginController {
                         messageLabel.setStyle("-fx-text-fill: red;");
                         messageLabel.setText(finalMsg);
                     });
+=======
+                    Platform.runLater(() -> messageLabel.setText(" Login failed"));
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                     return;
                 }
 
@@ -178,11 +218,14 @@ public class LoginController {
                 JSONObject user = body.getJSONObject("user");
 
                 System.out.println("[DEBUG] Login successful, initializing session...");
+<<<<<<< HEAD
 
                 Platform.runLater(() -> {
                     messageLabel.setStyle("-fx-text-fill: green;");
                     messageLabel.setText("Login successful");
                 });
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                 SessionManager.login(
                         user.getInt("id"),
                         user.optString("full_name", ""), // Use optString for safety
@@ -198,6 +241,7 @@ public class LoginController {
                         user.getString("role"));
 
                 // Navigate based on role and profile status
+<<<<<<< HEAD
                 // Navigate based on role and profile status
                 if (SessionManager.isAdmin()) {
                     Platform.runLater(() -> {
@@ -335,6 +379,37 @@ public class LoginController {
                         Platform.runLater(() -> messageLabel.setText("Error loading profile"));
                     }
                 }
+=======
+                Platform.runLater(() -> {
+                    try {
+                        if (SessionManager.isAdmin()) {
+                            System.out.println("User is Admin. Navigating to Admin Dashboard.");
+                            setView("/view/admin_users.fxml");
+                        } else {
+                            System.out.println("[DEBUG] Checking profile completion...");
+                            FinancialProfileService profileService = new FinancialProfileService();
+                            int userId = user.getInt("id");
+
+                            // Ensure profile exists (create with default values if not)
+                            profileService.ensureProfile(userId);
+
+                            boolean completed = profileService.isProfileCompleted(userId);
+                            System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
+
+                            if (!completed) {
+                                System.out.println("Redirecting to Complete Profile.");
+                                setView("/view/complete_profile.fxml");
+                            } else {
+                                System.out.println("Redirecting to User Dashboard.");
+                                setView("/view/user_dashboard.fxml");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        messageLabel.setText("Error loading view");
+                    }
+                });
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -342,6 +417,7 @@ public class LoginController {
             }
         }).start();
     }
+<<<<<<< HEAD
 
     private void syncUserLocal(int id, String fullName, String email, String role) throws Exception {
         Connection conn = DBConnection.getInstance();
@@ -366,4 +442,6 @@ public class LoginController {
     private void Message(String msg) {
         Platform.runLater(() -> messageLabel.setText(msg));
     }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }

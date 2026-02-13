@@ -1,7 +1,13 @@
 package tn.finhub.model;
+<<<<<<< HEAD
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+=======
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 public class User {
 
     private int id;
@@ -10,9 +16,15 @@ public class User {
     @JsonProperty("full_name")
     private String fullName;
 
+<<<<<<< HEAD
     public User() {
     }
 
+=======
+
+    public User() {
+    }
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     public User(int id, String email, String role, String fullName) {
         this.id = id;
         this.email = email;
@@ -45,6 +57,7 @@ public class User {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
+<<<<<<< HEAD
 
     // New Field for Module 6
     private int trustScore = 100;
@@ -66,4 +79,6 @@ public class User {
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
     }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }

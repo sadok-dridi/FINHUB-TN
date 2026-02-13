@@ -4,10 +4,46 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
 
+<<<<<<< HEAD
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="tn.finhub.controller.AdminUserController"
       style="-fx-padding: 15; -fx-background-color: transparent;" 
       spacing="20">
+=======
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.finhub.controller.AdminUserController"
+            style="-fx-background-color: transparent;">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0); -fx-border-color: transparent -color-card-border transparent transparent; -fx-border-width: 0 1 0 0;" prefWidth="250">
+            
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Circle radius="20" fill="#2D2A40"/>
+                <VBox>
+                    <Label text="Admin User" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                    <Label text="Administrator" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                </VBox>
+            </HBox>
+            
+            <Region prefHeight="30"/>
+            
+            <Label text="ADMINISTRATION" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+            
+            <Button text="Users" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 8px; -fx-padding: 10; -fx-cursor: hand;"/>
+            <Button text="Analytics" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
+            <Button text="Settings" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 10; -fx-cursor: hand;"/>
+            
+            <Region VBox.vgrow="ALWAYS"/>
+            
+            <Button text="Log Out" onAction="#handleLogout" maxWidth="Infinity" style="-fx-alignment: CENTER_LEFT; -fx-background-color: transparent; -fx-text-fill: -color-error; -fx-padding: 10; -fx-cursor: hand;"/>
+        </VBox>
+    </left>
+
+
+    <center>
+        <VBox style="-fx-padding: 30; -fx-background-color: transparent;" spacing="20">
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             <VBox spacing="5">
                 <Label text="User Management" styleClass="header-text"/>
                 <Label text="Manage and view all registered users" styleClass="sub-header-text"/>
@@ -25,8 +61,18 @@
 
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
                 <content>
+<<<<<<< HEAD
                     <FlowPane fx:id="usersContainer" hgap="20" vgap="20" alignment="TOP_CENTER" style="-fx-padding: 10;"/>
+=======
+                    <FlowPane fx:id="usersContainer" hgap="20" vgap="20" style="-fx-padding: 10;"/>
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                 </content>
             </ScrollPane>
 
         </VBox>
+<<<<<<< HEAD
+=======
+    </center>
+
+</BorderPane>
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853

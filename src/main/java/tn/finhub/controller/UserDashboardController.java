@@ -38,7 +38,11 @@ public class UserDashboardController {
     private javafx.scene.control.Button btnLogout;
 
     private boolean isSidebarExpanded = false;
+<<<<<<< HEAD
     private final double EXPANDED_WIDTH = 200; // Tighter width to fit content
+=======
+    private final double EXPANDED_WIDTH = 200; // set to 220 as requested
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private final double COLLAPSED_WIDTH = 60; // 60px minimum for icons
 
     @FXML
@@ -57,26 +61,39 @@ public class UserDashboardController {
         // Load User Data from Session (Database Local)
         tn.finhub.model.User currentUser = tn.finhub.util.UserSession.getInstance().getUser();
         if (currentUser != null) {
+<<<<<<< HEAD
             String displayName = currentUser.getFullName();
+=======
+            String displayName = currentUser.getEmail().split("@")[0];
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             userNameLabel.setText(displayName);
             userRoleLabel.setText(currentUser.getRole());
         }
 
         // Load Default View
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/wallet_dashboard.fxml");
+<<<<<<< HEAD
         setActiveButton(btnDashboard);
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     @FXML
     private void handleDashboard() {
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/wallet_dashboard.fxml");
+<<<<<<< HEAD
         setActiveButton(btnDashboard);
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     @FXML
     private void handleSettings() {
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/profile.fxml");
+<<<<<<< HEAD
         setActiveButton(btnSettings);
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     @FXML
@@ -88,6 +105,7 @@ public class UserDashboardController {
 
         double targetWidth = isSidebarExpanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH;
 
+<<<<<<< HEAD
         // Use EASE_OUT for a more natural, "momentum-based" feel
         javafx.animation.KeyValue minWidthValue = new javafx.animation.KeyValue(sidebar.minWidthProperty(), targetWidth,
                 javafx.animation.Interpolator.EASE_OUT);
@@ -182,6 +200,30 @@ public class UserDashboardController {
             }
             sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER);
             menuSpacer.setPrefHeight(45); // Compensate for hidden menuLabel
+=======
+        javafx.animation.KeyValue minWidthValue = new javafx.animation.KeyValue(sidebar.minWidthProperty(), targetWidth,
+                javafx.animation.Interpolator.EASE_BOTH);
+        javafx.animation.KeyValue maxWidthValue = new javafx.animation.KeyValue(sidebar.maxWidthProperty(), targetWidth,
+                javafx.animation.Interpolator.EASE_BOTH);
+        javafx.animation.KeyValue prefWidthValue = new javafx.animation.KeyValue(sidebar.prefWidthProperty(),
+                targetWidth, javafx.animation.Interpolator.EASE_BOTH);
+
+        javafx.animation.KeyFrame frame = new javafx.animation.KeyFrame(javafx.util.Duration.millis(300), minWidthValue,
+                maxWidthValue, prefWidthValue);
+        timeline.getKeyFrames().add(frame);
+        timeline.play();
+
+        updateSidebarState();
+    }
+
+    private void updateSidebarState() {
+        // Dynamic Padding Adjustment to prevent clipping in collapsed mode
+        if (isSidebarExpanded) {
+            sidebar.setStyle("-fx-padding: 25;");
+        } else {
+            // Top/Bottom 20, Left/Right 5 to center icons in 60px width
+            sidebar.setStyle("-fx-padding: 20 5 15 10;");
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         }
 
         // Toggle Visibility & Management of Header Elements
@@ -192,6 +234,7 @@ public class UserDashboardController {
         menuLabel.setVisible(isSidebarExpanded);
         menuLabel.setManaged(isSidebarExpanded);
 
+<<<<<<< HEAD
         // Button Layout managed by CSS entirely now for smoothness
         javafx.scene.control.ContentDisplay display = isSidebarExpanded ? javafx.scene.control.ContentDisplay.LEFT
                 : javafx.scene.control.ContentDisplay.GRAPHIC_ONLY;
@@ -265,6 +308,34 @@ public class UserDashboardController {
     private void resetButtonStyle(javafx.scene.control.Button btn) {
         btn.getStyleClass().remove("active");
         btn.setStyle(""); // Clear inline styles
+=======
+        // Header Alignment
+        if (isSidebarExpanded) {
+            sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        } else {
+            sidebarHeader.setAlignment(javafx.geometry.Pos.CENTER);
+        }
+
+        // Toggle Button Text and Alignment
+        javafx.scene.control.ContentDisplay display = isSidebarExpanded ? javafx.scene.control.ContentDisplay.LEFT
+                : javafx.scene.control.ContentDisplay.GRAPHIC_ONLY;
+        javafx.geometry.Pos alignment = isSidebarExpanded ? javafx.geometry.Pos.CENTER_LEFT
+                : javafx.geometry.Pos.CENTER;
+
+        setButtonStyle(btnDashboard, display, alignment);
+        setButtonStyle(btnTransactions, display, alignment);
+        setButtonStyle(btnEscrow, display, alignment);
+        setButtonStyle(btnSimulation, display, alignment);
+        setButtonStyle(btnSupport, display, alignment);
+        setButtonStyle(btnSettings, display, alignment);
+        setButtonStyle(btnLogout, display, alignment);
+    }
+
+    private void setButtonStyle(javafx.scene.control.Button btn, javafx.scene.control.ContentDisplay display,
+            javafx.geometry.Pos alignment) {
+        btn.setContentDisplay(display);
+        btn.setAlignment(alignment);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     @FXML

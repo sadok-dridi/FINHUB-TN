@@ -10,6 +10,7 @@ public class DBConnection {
 
     private static Connection instance;
 
+<<<<<<< HEAD
     private static final io.github.cdimascio.dotenv.Dotenv dotenv = io.github.cdimascio.dotenv.Dotenv.configure()
             .ignoreIfMissing().load();
 
@@ -69,6 +70,23 @@ public class DBConnection {
 
                 instance = DriverManager.getConnection(url, user, password);
                 logger.info("Database connection established ({})", mode);
+=======
+    private static final String URL = "jdbc:mariadb://localhost:3306/finhub";
+    private static final String USER = "root";
+    private static final String PASSWORD = ""; // put password if you have one
+
+    private DBConnection() {
+    }
+    private static final Logger logger =
+            LoggerFactory.getLogger(DBConnection.class);
+
+
+    public static Connection getInstance() {
+        try {
+            if (instance == null || instance.isClosed()) {
+                instance = DriverManager.getConnection(URL, USER, PASSWORD);
+                logger.info("Database connection established");
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             }
         } catch (SQLException e) {
             logger.error("Database connection failed", e);
@@ -76,6 +94,7 @@ public class DBConnection {
         return instance;
     }
 
+<<<<<<< HEAD
     public static Connection getLocalConnection() {
         try {
             return DriverManager.getConnection(URL_LOCAL, USER_LOCAL, PASSWORD_LOCAL);
@@ -106,4 +125,6 @@ public class DBConnection {
         }
     }
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }

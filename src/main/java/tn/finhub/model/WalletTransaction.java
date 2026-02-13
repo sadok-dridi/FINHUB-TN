@@ -7,11 +7,16 @@ public class WalletTransaction {
 
     private int id;
     private int walletId;
+<<<<<<< HEAD
     private String type; // CREDIT | DEBIT | HOLD | RELEASE
+=======
+    private String type;       // CREDIT | DEBIT | HOLD | RELEASE
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private BigDecimal amount;
     private String reference;
     private LocalDateTime createdAt;
 
+<<<<<<< HEAD
     private String prevHash;
     private String txHash;
 
@@ -22,13 +27,23 @@ public class WalletTransaction {
             BigDecimal amount, String reference,
             String prevHash, String txHash,
             LocalDateTime createdAt) {
+=======
+    public WalletTransaction() {}
+
+    public WalletTransaction(int id, int walletId, String type,
+                             BigDecimal  amount, String reference,
+                             LocalDateTime createdAt) {
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         this.id = id;
         this.walletId = walletId;
         this.type = type;
         this.amount = amount;
         this.reference = reference;
+<<<<<<< HEAD
         this.prevHash = prevHash;
         this.txHash = txHash;
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         this.createdAt = createdAt;
     }
 
@@ -45,7 +60,11 @@ public class WalletTransaction {
         return type;
     }
 
+<<<<<<< HEAD
     public BigDecimal getAmount() {
+=======
+    public BigDecimal  getAmount() {
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         return amount;
     }
 
@@ -53,6 +72,7 @@ public class WalletTransaction {
         return reference;
     }
 
+<<<<<<< HEAD
     public String getPrevHash() {
         return prevHash;
     }
@@ -61,6 +81,8 @@ public class WalletTransaction {
         return txHash;
     }
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -78,7 +100,11 @@ public class WalletTransaction {
         this.type = type;
     }
 
+<<<<<<< HEAD
     public void setAmount(BigDecimal amount) {
+=======
+    public void setAmount(BigDecimal  amount) {
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         this.amount = amount;
     }
 
@@ -86,6 +112,7 @@ public class WalletTransaction {
         this.reference = reference;
     }
 
+<<<<<<< HEAD
     public void setPrevHash(String prevHash) {
         this.prevHash = prevHash;
     }
@@ -94,6 +121,8 @@ public class WalletTransaction {
         this.txHash = txHash;
     }
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }

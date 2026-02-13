@@ -8,8 +8,12 @@ import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 import tn.finhub.model.FinancialProfile;
 import tn.finhub.model.User;
+<<<<<<< HEAD
 import tn.finhub.model.FinancialProfileModel; // Added import
 
+=======
+import tn.finhub.service.FinancialProfileService;
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 import tn.finhub.util.SessionManager;
 import tn.finhub.util.UserSession;
 
@@ -32,17 +36,24 @@ public class ProfileController {
     private ComboBox<String> riskBox;
     @FXML
     private ComboBox<String> currencyBox;
+<<<<<<< HEAD
     @FXML
     private ComboBox<String> dbModeBox;
     @FXML
     private TextField apiKeyField;
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
     @FXML
     private Label statusLabel;
 
+<<<<<<< HEAD
     private final FinancialProfileModel profileModel = new FinancialProfileModel(); // Changed to Model
     private static final String PREF_DB_MODE = "db_mode";
     private static final String PREF_API_KEY = "market_api_key";
+=======
+    private final FinancialProfileService profileService = new FinancialProfileService();
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
     @FXML
     public void initialize() {
@@ -57,9 +68,12 @@ public class ProfileController {
         // Load Financial Profile
         setupFinancialFields();
         loadFinancialData();
+<<<<<<< HEAD
 
         // Load App Settings
         setupSettings();
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     private void setupFinancialFields() {
@@ -67,6 +81,7 @@ public class ProfileController {
         currencyBox.getItems().addAll("TND", "EUR", "USD");
     }
 
+<<<<<<< HEAD
     private void setupSettings() {
         dbModeBox.getItems().addAll("Hosted", "Local");
         java.util.prefs.Preferences dbPrefs = java.util.prefs.Preferences
@@ -135,6 +150,20 @@ public class ProfileController {
             currencyBox.getItems().add(profile.getCurrency());
         }
         currencyBox.setValue(profile.getCurrency());
+=======
+    private void loadFinancialData() {
+        int userId = SessionManager.getUserId();
+        profileService.ensureProfile(userId); // Safety check
+        FinancialProfile profile = profileService.getByUserId(userId);
+
+        if (profile != null) {
+            incomeField.setText(String.valueOf(profile.getMonthlyIncome()));
+            expensesField.setText(String.valueOf(profile.getMonthlyExpenses()));
+            savingsField.setText(String.valueOf(profile.getSavingsGoal()));
+            riskBox.setValue(profile.getRiskTolerance());
+            currencyBox.setValue(profile.getCurrency());
+        }
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     }
 
     @FXML
@@ -159,7 +188,11 @@ public class ProfileController {
             // We need the ID for the update to work correctly if the DAO uses ID,
             // but the current update implementation uses userId so this is fine.
 
+<<<<<<< HEAD
             profileModel.update(profile);
+=======
+            profileService.updateProfile(profile);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
             showStatus("Profile updated successfully!");
 
@@ -173,6 +206,7 @@ public class ProfileController {
         }
     }
 
+<<<<<<< HEAD
     @FXML
     private void handleSaveSettings() {
         try {
@@ -217,6 +251,13 @@ public class ProfileController {
             statusLabel.setTextFill(javafx.scene.paint.Color.web("#10B981"));
         } else {
             statusLabel.setTextFill(javafx.scene.paint.Color.RED);
+=======
+    private void showStatus(String message) {
+        statusLabel.setText(message);
+        statusLabel.setVisible(true);
+        if (message.contains("Successfully")) {
+            statusLabel.setTextFill(javafx.scene.paint.Color.web("#10B981"));
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         }
 
         PauseTransition pause = new PauseTransition(Duration.seconds(3));

@@ -3,8 +3,12 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+<<<<<<< HEAD
 import tn.finhub.model.WalletModel; // Added import
 
+=======
+import tn.finhub.service.WalletService;
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -26,7 +30,11 @@ public class DepositController {
     @FXML
     private javafx.scene.control.Button cancelButton;
 
+<<<<<<< HEAD
     private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
+=======
+    private final WalletService walletService = new WalletService();
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private Runnable onSuccessCallback;
 
     public void setOnSuccessCallback(Runnable callback) {
@@ -34,6 +42,7 @@ public class DepositController {
     }
 
     @FXML
+<<<<<<< HEAD
     public void initialize() {
         // 1. Card Number Formatting (Spaces every 4 digits)
         cardNumberField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -116,6 +125,8 @@ public class DepositController {
     }
 
     @FXML
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private void handleDeposit() {
         try {
             String amountText = amountField.getText();
@@ -129,6 +140,7 @@ public class DepositController {
                 return;
             }
 
+<<<<<<< HEAD
             // --- STRICT PAYMENT VALIDATION ---
             String cleanCardNumber = cardNumber.replaceAll("\\s+", "");
 
@@ -175,12 +187,15 @@ public class DepositController {
 
             // ---------------------------------
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             BigDecimal amount = new BigDecimal(amountText);
             if (amount.compareTo(BigDecimal.ZERO) <= 0) {
                 DialogUtil.showError("Invalid Amount", "Amount must be greater than 0.");
                 return;
             }
 
+<<<<<<< HEAD
             // UI Feedback: Sending OTP
             payButton.setDisable(true);
             cancelButton.setDisable(true);
@@ -209,10 +224,31 @@ public class DepositController {
                     }
 
                     tn.finhub.util.MailClient.sendOtpEmail(targetEmail, otp);
+=======
+            // UI Feedback: Processing State
+            payButton.setDisable(true);
+            cancelButton.setDisable(true);
+            payButton.setText("Processing...");
+
+            // Background Task
+            javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    // Simulate Network Delay
+                    Thread.sleep(2000);
+
+                    // Actual Logic (DB Operations)
+                    int userId = UserSession.getInstance().getUser().getId();
+                    int walletId = walletService.getWallet(userId).getId();
+
+                    walletService.credit(walletId, amount,
+                            "DEPOSIT via Card **** " + cardNumber.substring(Math.max(0, cardNumber.length() - 4)));
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                     return null;
                 }
             };
 
+<<<<<<< HEAD
             emailTask.setOnSucceeded(event -> {
                 // 3. Open OTP Dialog
                 try {
@@ -257,11 +293,34 @@ public class DepositController {
             });
 
             new Thread(emailTask).start();
+=======
+            task.setOnSucceeded(e -> {
+                handleCancel(); // Close current dialog first
+
+                // Run success dialog in next tick to allow stage to close properly
+                javafx.application.Platform.runLater(() -> {
+                    DialogUtil.showInfo("Success", "Payment Approved! Funds added.");
+                    if (onSuccessCallback != null) {
+                        onSuccessCallback.run();
+                    }
+                });
+            });
+
+            task.setOnFailed(e -> {
+                Throwable error = task.getException();
+                error.printStackTrace();
+                DialogUtil.showError("Transaction Failed", error.getMessage());
+                resetUI();
+            });
+
+            new Thread(task).start();
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
         } catch (NumberFormatException e) {
             DialogUtil.showError("Invalid Input", "Please enter a valid amount.");
         } catch (Exception e) {
             e.printStackTrace();
+<<<<<<< HEAD
             DialogUtil.showError("Error", "Request failed: " + e.getMessage());
         }
     }
@@ -341,6 +400,12 @@ public class DepositController {
         new Thread(task).start();
     }
 
+=======
+            DialogUtil.showError("Error", "Deposit failed: " + e.getMessage());
+        }
+    }
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private void resetUI() {
         payButton.setDisable(false);
         cancelButton.setDisable(false);

@@ -18,6 +18,7 @@
          <content>
             <VBox spacing="25.0" style="-fx-padding: 30;">
                <children>
+<<<<<<< HEAD
                   <!-- Frozen Account Alert -->
                   <VBox fx:id="frozenAlertBox" visible="false" managed="false" spacing="10" style="-fx-background-color: rgba(239, 68, 68, 0.15); -fx-border-color: #EF4444; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 15;">
                       <children>
@@ -29,21 +30,30 @@
                       </children>
                   </VBox>
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                   <HBox alignment="CENTER_LEFT" spacing="20.0">
                      <children>
                         <Label text="Wallet" styleClass="header-text"/>
                         <Region HBox.hgrow="ALWAYS" />
+<<<<<<< HEAD
 
                         <Button fx:id="topUpButton" text="Top Up" onAction="#handleDeposit" styleClass="button-primary">
+=======
+                        <Button text="Top Up" onAction="#handleDeposit" styleClass="button-primary">
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                            <graphic>
                               <javafx.scene.shape.SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
                            </graphic>
                         </Button>
+<<<<<<< HEAD
                         <Button fx:id="transferButton" text="Transfer Money" onAction="#handleTransfer" styleClass="button-primary" style="-fx-background-color: #8B5CF6;">
                            <graphic>
                               <javafx.scene.shape.SVGPath content="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" style="-fx-fill: white;"/>
                            </graphic>
                         </Button>
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                      </children>
                   </HBox>
                   
@@ -51,7 +61,11 @@
                   <HBox spacing="20.0">
                      <children>
                         <!-- Total Balance Card -->
+<<<<<<< HEAD
                         <VBox styleClass="card-balance" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
+=======
+                        <VBox styleClass="card-balance" HBox.hgrow="ALWAYS">
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                            <children>
                               <Label text="Available Balance" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
                               <Label fx:id="availableBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
@@ -59,7 +73,11 @@
                         </VBox>
       
                         <!-- Escrow Balance Card -->
+<<<<<<< HEAD
                          <VBox styleClass="card-escrow" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
+=======
+                         <VBox styleClass="card-escrow" HBox.hgrow="ALWAYS">
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
                            <children>
                               <Label text="In Escrow (Held)" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
                               <Label fx:id="escrowBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>

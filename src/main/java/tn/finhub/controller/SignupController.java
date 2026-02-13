@@ -3,6 +3,7 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
+<<<<<<< HEAD
 import javafx.application.Platform;
 import tn.finhub.util.ApiClient;
 import java.net.http.*;
@@ -20,6 +21,16 @@ public class SignupController {
 
     private volatile boolean keepPolling = true;
 
+=======
+import tn.finhub.util.ApiClient;
+import java.net.http.*;
+import java.net.URI;
+import tn.finhub.service.MailService;
+import org.json.JSONObject;
+
+public class SignupController {
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     @FXML
     private TextField emailField;
 
@@ -38,6 +49,7 @@ public class SignupController {
     @FXML
     public void handleSignup() {
         try {
+<<<<<<< HEAD
             // Input Validation
             if (!ValidationUtils.isValidName(nameField.getText())) {
                 messageLabel.setStyle("-fx-text-fill: red;");
@@ -59,6 +71,8 @@ public class SignupController {
                 return;
             }
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             String role = "CLIENT";
 
             String json = """
@@ -71,6 +85,7 @@ public class SignupController {
                     """.formatted(
                     nameField.getText(),
                     emailField.getText(),
+<<<<<<< HEAD
                     password,
                     role);
 
@@ -212,6 +227,48 @@ public class SignupController {
         pollingThread.start();
     }
 
+=======
+                    passwordField.getText(),
+                    role);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(ApiClient.BASE_URL + "/signup"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .build();
+
+            HttpResponse<String> response = ApiClient.getClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                if (response.statusCode() == 409) {
+                    messageLabel.setText("❌ Email already exists");
+                } else {
+                    messageLabel.setText("❌ Signup failed: " + response.statusCode());
+                }
+                return;
+            }
+
+            JSONObject body = new JSONObject(response.body());
+
+            String verificationLink = body.getString("verification_link");
+
+            // 🚨 EMAIL SENT FROM JAVA (YES, WE KNOW)
+            MailService.sendVerificationEmail(
+                    emailField.getText(),
+                    verificationLink);
+
+            messageLabel.setText(
+                    "✅ Account created. Verification email sent.");
+            System.out.println("📧 Sending verification email to: " + emailField.getText());
+            System.out.println("🔗 Link: " + verificationLink);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            messageLabel.setText("❌ Error sending email");
+        }
+    }
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     @FXML
     public void handleGoogleSignup() {
         messageLabel.setText("✅ Google account created (simulated)");
@@ -219,7 +276,10 @@ public class SignupController {
 
     @FXML
     public void goToLogin() {
+<<<<<<< HEAD
         keepPolling = false; // Stop auto-login polling
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
             javafx.scene.Parent newView = loader.load();
@@ -254,6 +314,7 @@ public class SignupController {
         fadeIn.setToValue(1.0);
         fadeIn.play();
     }
+<<<<<<< HEAD
 
     private void syncUserLocal(int id, String fullName, String email, String role) throws Exception {
         Connection conn = DBConnection.getInstance();
@@ -373,4 +434,6 @@ public class SignupController {
             Platform.runLater(() -> messageLabel.setText("❌ Error during auto-login"));
         }
     }
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }

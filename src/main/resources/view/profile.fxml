@@ -66,6 +66,7 @@
                     <Button text="Update Financial Profile" onAction="#handleUpdateProfile" styleClass="button-primary"/>
                 </HBox>
             </VBox>
+<<<<<<< HEAD
 
             <!-- Application Settings Section -->
             <VBox styleClass="card" spacing="15">
@@ -92,6 +93,8 @@
                    <Button text="Save Settings" onAction="#handleSaveSettings" styleClass="button-primary"/>
                 </HBox>
             </VBox>
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             
         </VBox>
     </content>

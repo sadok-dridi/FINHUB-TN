@@ -104,6 +104,7 @@ public class CustomDialogController {
     }
 
     @FXML
+<<<<<<< HEAD
     private javafx.scene.control.PasswordField inputField;
 
     private String resultInput = null;
@@ -139,6 +140,9 @@ public class CustomDialogController {
         if (inputField.isVisible()) {
             resultInput = inputField.getText();
         }
+=======
+    private void handleYes() {
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         confirmed = true;
         dialogStage.close();
     }
@@ -146,7 +150,10 @@ public class CustomDialogController {
     @FXML
     private void handleNo() {
         confirmed = false;
+<<<<<<< HEAD
         resultInput = null;
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         dialogStage.close();
     }
 }

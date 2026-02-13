@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+<<<<<<< HEAD
 // import javafx.scene.Node; // Removed unused import
 import tn.finhub.model.User;
 import tn.finhub.util.MailClient;
@@ -11,6 +12,13 @@ import tn.finhub.util.MailClient;
 import tn.finhub.util.ApiClient;
 import tn.finhub.util.SessionManager;
 import tn.finhub.util.ViewUtils;
+=======
+import tn.finhub.model.User;
+import tn.finhub.service.MailService;
+import tn.finhub.service.UserService;
+import tn.finhub.util.ApiClient;
+import tn.finhub.util.SessionManager;
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
 public class AdminUserController {
 
@@ -20,13 +28,21 @@ public class AdminUserController {
     @FXML
     private TextField searchField;
 
+<<<<<<< HEAD
     private tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+=======
+    private UserService userService = new UserService();
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private ObservableList<User> allUsers;
 
     @FXML
     public void initialize() {
         // Load all users initially
+<<<<<<< HEAD
         allUsers = FXCollections.observableArrayList(userModel.findAll());
+=======
+        allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         refreshUserCards(allUsers);
 
         // Add search listener
@@ -56,6 +72,27 @@ public class AdminUserController {
 
         refreshUserCards(filteredList);
     }
+<<<<<<< HEAD
+=======
+    @FXML
+    public void handleRefresh() {
+        try {
+            userService.syncUsersFromServer();
+            loadUsers();
+
+            tn.finhub.util.DialogUtil.showInfo(
+                    "Sync Completed",
+                    "Users successfully refreshed from server."
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            tn.finhub.util.DialogUtil.showError(
+                    "Sync Failed",
+                    "Could not refresh users from server."
+            );
+        }
+    }
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
     private void refreshUserCards(ObservableList<User> users) {
         usersContainer.getChildren().clear();
@@ -68,9 +105,15 @@ public class AdminUserController {
         // Card Container
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(10);
         card.getStyleClass().add("user-card");
+<<<<<<< HEAD
         card.setPrefWidth(240);
         card.setMinWidth(240);
         card.setMaxWidth(240);
+=======
+        card.setPrefWidth(280);
+        card.setMinWidth(280);
+        card.setMaxWidth(280);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
         // Header: Initial + Name + Role
         javafx.scene.layout.HBox header = new javafx.scene.layout.HBox(10);
@@ -112,6 +155,7 @@ public class AdminUserController {
 
         details.getChildren().addAll(emailLabel, idLabel);
 
+<<<<<<< HEAD
         // Only show Trust Score for non-admins
         if (!"ADMIN".equals(user.getRole())) {
             javafx.scene.control.Label trustLabel = new javafx.scene.control.Label(
@@ -120,6 +164,8 @@ public class AdminUserController {
             details.getChildren().add(trustLabel);
         }
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         // Actions
         javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(10);
         actions.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
@@ -134,6 +180,7 @@ public class AdminUserController {
             actions.getChildren().add(makeAdminBtn);
         }
 
+<<<<<<< HEAD
         // Delete button removed as per requirements
 
         // Add Hover Effect & Click Action ONLY for non-admins
@@ -157,6 +204,19 @@ public class AdminUserController {
             card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
         }
 
+=======
+        if (!isSelf && !isAdmin ) {
+            Button deleteBtn = new Button("Delete");
+            deleteBtn.getStyleClass().add("button-small-danger");
+            deleteBtn.setOnAction(e -> handleDelete(user));
+            actions.getChildren().add(deleteBtn);
+        }
+
+        // Add Hover Effect
+        card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
+        card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         card.getChildren().addAll(header, new Separator(), details, new javafx.scene.layout.Region(), actions);
         javafx.scene.layout.VBox.setVgrow(details, javafx.scene.layout.Priority.ALWAYS); // Push actions to bottom if
                                                                                          // fixed height
@@ -176,7 +236,11 @@ public class AdminUserController {
             String jsonResponse = ApiClient.inviteAdmin(user.getEmail());
             org.json.JSONObject json = new org.json.JSONObject(jsonResponse);
             String inviteLink = json.getString("invite_link");
+<<<<<<< HEAD
             MailClient.sendAdminInviteEmail(user.getEmail(), inviteLink);
+=======
+            MailService.sendAdminInviteEmail(user.getEmail(), inviteLink);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 
             tn.finhub.util.DialogUtil.showInfo(
                     "Admin Invitation Sent",
@@ -194,6 +258,7 @@ public class AdminUserController {
         }
     }
 
+<<<<<<< HEAD
     @FXML
     public void handleRefresh() {
         try {
@@ -213,6 +278,8 @@ public class AdminUserController {
 
     // ...
 
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
     private void handleDelete(User user) {
         boolean confirmed = tn.finhub.util.DialogUtil.showConfirmation("Delete User",
                 "Are you sure you want to delete " + user.getFullName() + "?");
@@ -221,7 +288,11 @@ public class AdminUserController {
             return;
 
         try {
+<<<<<<< HEAD
             userModel.deleteUser(user.getId());
+=======
+            userService.deleteUser(user.getId());
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
             loadUsers();
         } catch (Exception e) {
             e.printStackTrace();
@@ -231,6 +302,7 @@ public class AdminUserController {
 
     // Helper to reload data
     public void loadUsers() {
+<<<<<<< HEAD
         allUsers = FXCollections.observableArrayList(userModel.findAll());
         filterUsers(searchField.getText());
     }
@@ -296,10 +368,28 @@ public class AdminUserController {
                 loadView.run();
             }
 
+=======
+        allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+        filterUsers(searchField.getText());
+    }
+
+    @FXML
+    public void handleLogout() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/view/login.fxml"));
+            javafx.scene.Parent view = loader.load();
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) usersContainer.getScene()
+                    .lookup("#contentArea");
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(view);
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+<<<<<<< HEAD
 
     // Navigation Handlers removed - these belong in AdminDashboardController only
+=======
+>>>>>>> 3239865d261585c607c2f3379522c60b1fede853
 }
