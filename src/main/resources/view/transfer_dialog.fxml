@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.control.Separator?>
+
+<VBox xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="tn.finhub.controller.TransferController"
+      style="-fx-background-color: #1F2937; -fx-padding: 30; -fx-background-radius: 12; -fx-border-color: rgba(255,255,255,0.1); -fx-border-radius: 12;" 
+      prefWidth="450" spacing="20">
+
+    <children>
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <children>
+                 <javafx.scene.layout.StackPane style="-fx-background-color: rgba(16, 185, 129, 0.15); -fx-background-radius: 30; -fx-min-width: 48; -fx-min-height: 48;">
+                     <children>
+                         <SVGPath content="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" style="-fx-fill: #10B981;" scaleX="1.2" scaleY="1.2"/>
+                     </children>
+                 </javafx.scene.layout.StackPane>
+                 <VBox>
+                     <Label text="Send Money" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+                     <Label text="Transfer funds instantly to another user." style="-fx-text-fill: #9CA3AF; -fx-font-size: 14px;"/>
+                 </VBox>
+            </children>
+        </HBox>
+
+        <Separator style="-fx-opacity: 0.1;"/>
+
+        <!-- Form -->
+        <VBox spacing="15">
+             <VBox spacing="8">
+                 <Label text="Recipient Email" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
+                 <TextField fx:id="recipientField" promptText="Enter recipient email"
+                            style="-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;"/>
+             </VBox>
+
+             <VBox spacing="8">
+                 <Label text="Amount (TND)" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
+                 <TextField fx:id="amountField" promptText="0.000" 
+                            style="-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+             </VBox>
+        </VBox>
+
+        <!-- Actions -->
+        <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+             <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"
+                     style="-fx-background-color: transparent; -fx-text-fill: #9CA3AF; -fx-border-color: #4B5563; -fx-border-radius: 6; -fx-padding: 10 20; -fx-cursor: hand;"/>
+             
+             <Button fx:id="sendButton" text="Send Money" onAction="#handleTransfer"
+                     style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 10 25; -fx-cursor: hand;">
+                 <graphic>
+                      <SVGPath content="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" style="-fx-fill: white;" scaleX="0.8" scaleY="0.8"/>
+                 </graphic>
+             </Button>
+        </HBox>
+    </children>
+</VBox>

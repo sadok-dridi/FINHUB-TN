@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+    <content>
+        <VBox spacing="20" style="-fx-padding: 30; -fx-background-color: transparent;">
+            
+            <Label text="Overview" styleClass="header-text"/>
+            
+            <HBox spacing="20">
+                <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                    <Label text="Total Balance" styleClass="sub-header-text"/>
+                    <Label text="\$12,450.00" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                    <Label text="+2.5% vs last month" style="-fx-text-fill: -color-success; -fx-font-size: 12px;"/>
+                </VBox>
+                
+                <VBox styleClass="card" HBox.hgrow="ALWAYS">
+                    <Label text="Active Cards" styleClass="sub-header-text"/>
+                    <Label text="2" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                </VBox>
+            </HBox>
+            
+            <Label text="Recent Transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
+            
+            <VBox styleClass="card" spacing="15">
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Circle radius="15" fill="#2D2A40"/>
+                    <VBox>
+                        <Label text="Netflix Subscription" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                        <Label text="Entertainment" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="-\$15.00" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                </HBox>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Circle radius="15" fill="#2D2A40"/>
+                    <VBox>
+                         <Label text="Spotify Premium" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                         <Label text="Entertainment" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="-\$9.99" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                </HBox>
+            </VBox>
+            
+        </VBox>
+    </content>
+</ScrollPane>

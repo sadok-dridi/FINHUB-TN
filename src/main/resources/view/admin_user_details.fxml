@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.AdminUserDetailsController"
+      style="-fx-padding: 30; -fx-background-color: transparent;" 
+      spacing="20">
+            
+            <!-- Back Button & Header -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button text="← Back" onAction="#handleBack" styleClass="button-back"/>
+                <Label text="User Details" styleClass="header-text"/>
+            </HBox>
+
+            <!-- Content Scroll -->
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+                <content>
+                    <VBox spacing="20" style="-fx-padding: 10;">
+                        
+                        <!-- User Profile Card -->
+                        <HBox spacing="20">
+                            <VBox styleClass="card" spacing="15" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                                <Label text="Personal Information" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                                <Separator />
+                                <GridPane vgap="10" hgap="20">
+                                    <Label text="Full Name:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="nameLabel" text="Loading..." GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;"/>
+                                    
+                                    <Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="emailLabel" text="Loading..." GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-primary;"/>
+                                    
+                                    <Label text="Role:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="roleLabel" text="Loading..." GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-primary;"/>
+                                    
+                                    <Label text="ID:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="idLabel" text="Loading..." GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: -color-text-muted;"/>
+                                </GridPane>
+                            </VBox>
+
+                            <!-- Wallet Status Card -->
+                            <VBox styleClass="card" spacing="15" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                                <Label text="Wallet Status" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                                <Separator />
+                                <HBox spacing="10" alignment="BASELINE_LEFT">
+                                    <Label fx:id="balanceLabel" text="0.00" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+                                    <Label fx:id="currencyLabel" text="TND" style="-fx-font-size: 16px; -fx-text-fill: -color-text-secondary;"/>
+                                </HBox>
+                                <HBox spacing="10">
+                                    <Label text="Status:" style="-fx-text-fill: -color-text-muted;"/>
+                                    <Label fx:id="walletStatusLabel" text="Loading..." style="-fx-font-weight: bold;"/>
+                                </HBox>
+                            </VBox>
+                        </HBox>
+
+                        <!-- Ledger Alert Box (Conditional) -->
+                        <VBox fx:id="ledgerAlertBox" managed="false" visible="false" style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-border-color: #EF4444; -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-padding: 15;">
+                            <Label text="⚠ LEDGER ALERT" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <Label fx:id="ledgerAlertMessage" text="Details here..." wrapText="true" style="-fx-text-fill: #EF4444;"/>
+                        </VBox>
+
+                        <!-- Audit Logs Section -->
+                        <VBox styleClass="card" spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                            <Label text="Recent Ledger Activity" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                            <Separator />
+                            <VBox fx:id="auditLogsContainer" spacing="5">
+                                <!-- Logs will be populated here -->
+                                <Label text="No recent activity." style="-fx-text-fill: -color-text-muted;"/>
+                            </VBox>
+                        </VBox>
+
+                        <!-- Actions Section -->
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                             <Button fx:id="freezeBtn" text="Freeze Wallet" styleClass="button-warning" onAction="#handleFreezeWallet"/>
+                        </HBox>
+
+                        <!-- Danger Zone -->
+                        <VBox style="-fx-border-color: #EF4444; -fx-border-width: 1; -fx-border-radius: 8px; -fx-padding: 20; -fx-background-color: rgba(239, 68, 68, 0.05);" spacing="10">
+                            <Label text="Danger Zone" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                            <Label text="Once you delete a user, there is no going back. Please be certain." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                            <HBox alignment="CENTER_RIGHT">
+                                <Button text="Delete User" styleClass="button-danger" onAction="#handleDeleteUser"/>
+                            </HBox>
+                        </VBox>
+
+                    </VBox>
+                </content>
+            </ScrollPane>
+
+        </VBox>

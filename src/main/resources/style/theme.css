@@ -1,0 +1,1311 @@
+/* Modern Dark Fintech Theme */
+.root {
+    /* Branding Colors */
+    -color-primary: #8B5CF6;
+    /* Violet 500 */
+    -color-primary-hover: #7C3AED;
+    /* Violet 600 */
+    -color-secondary: #D946EF;
+    /* Fuchsia 500 - Gradient accent */
+
+    /* Dark Mode Palette */
+    -color-bg: #0F0E17;
+    /* Deep Dark Violet/Black */
+    -color-card-bg: #1E1B2E;
+    /* Lighter Dark Violet */
+    -color-bg-dark: #1E1B2E;
+    /* Same as card background for now, or slightly darker if needed */
+    -color-card-border: #2E2A45;
+
+    /* Text */
+    -color-text-primary: #F3F4F6;
+    /* Cool White */
+    -color-text-secondary: #9CA3AF;
+    /* Cool Gray */
+    -color-text-muted: #6B7280;
+
+    /* States */
+    -color-success: #10B981;
+    /* Emerald 500 */
+    -color-success: #10B981;
+    /* Emerald 500 */
+    -color-warning: #F59E0B;
+    /* Amber 500 */
+    -color-error: #EF4444;
+    /* Red 500 */
+
+    /* Subtle Backgrounds */
+    -color-primary-subtle: rgba(139, 92, 246, 0.15);
+    -color-bg-subtle: rgba(255, 255, 255, 0.05);
+
+    /* UI Elements */
+    -input-bg: #2D2A40;
+    -input-border: #3F3C55;
+
+
+
+    /* Base JavaFX overrides */
+    -fx-background-color: -color-bg;
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-primary;
+}
+
+/* --- Typography --- */
+.header-text {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 10, 0, 0, 0);
+}
+
+.sub-header-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+/* --- Cards --- */
+.card {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 20, 0, 0, 8);
+    -fx-padding: 30;
+}
+
+/* --- Buttons --- */
+.button-primary {
+    -fx-background-color: linear-gradient(to right, -color-primary, -color-secondary);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 16px;
+    -fx-padding: 12 24;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.4), 15, 0, 0, 5);
+}
+
+.button-primary:hover {
+    -fx-background-color: linear-gradient(to right, -color-primary-hover, -color-primary);
+    -fx-scale-x: 1.03;
+    -fx-scale-y: 1.03;
+}
+
+.button-icon {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+
+.button-icon:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: white;
+    -fx-background-radius: 50%;
+}
+
+.button-icon .sidebar-icon {
+    -fx-fill: -color-text-secondary;
+}
+
+.button-icon:hover .sidebar-icon {
+    -fx-fill: white;
+}
+
+.button-success {
+    -fx-background-color: -color-success;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.3), 10, 0, 0, 3);
+}
+
+.button-success:hover {
+    -fx-background-color: derive(-color-success, -10%);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button-danger {
+    -fx-background-color: -color-error;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.3), 10, 0, 0, 3);
+}
+
+.button-danger:hover {
+    -fx-background-color: derive(-color-error, -10%);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button-warning {
+    -fx-background-color: -color-warning;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(245, 158, 11, 0.3), 10, 0, 0, 3);
+}
+
+.button-warning:hover {
+    -fx-background-color: derive(-color-warning, -10%);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button-back {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: -color-text-secondary;
+    -fx-background-radius: 8px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 8px;
+    -fx-font-weight: bold;
+}
+
+.button-back:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+/* --- Text Fields --- */
+.text-field {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 12;
+    -fx-text-fill: white;
+    /* Warning: JavaFX text-field uses -fx-text-fill */
+    -fx-prompt-text-fill: -color-text-muted;
+}
+
+.text-field:focused {
+    -fx-border-color: -color-primary;
+    -fx-background-color: -input-bg;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.25), 8, 0, 0, 0);
+}
+
+/* --- ComboBox --- */
+/* --- ComboBox --- */
+.combo-box {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 8 12;
+    /* More padding for a clickable feel */
+    -fx-min-height: 45px;
+    /* Consistent height */
+}
+
+.combo-box:hover {
+    -fx-border-color: -color-text-secondary;
+}
+
+.combo-box:showing {
+    -fx-border-color: -color-primary;
+}
+
+/* The text field area inside the combo box */
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 0;
+}
+
+/* The arrow button on the right */
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 10 0 0;
+}
+
+
+/* --- Asset List View --- */
+.list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+/* Hide Horizontal Scrollbar */
+.list-view .scroll-bar:horizontal {
+    -fx-pref-height: 0;
+    -fx-opacity: 0;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 6 10;
+    /* Reduced padding */
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8px;
+    /* Slightly smaller radius */
+    -fx-border-radius: 8px;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-cursor: hand;
+}
+
+.list-cell:filled:selected,
+.list-cell:filled:selected:focused {
+    -fx-background-color: linear-gradient(to right, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+    -fx-border-width: 0;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.1), 5, 0, 0, 1);
+    /* subtler shadow */
+}
+
+.asset-symbol {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    /* Slightly smaller font */
+}
+
+.asset-price {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 12px;
+    -fx-font-family: 'Monospaced';
+    /* Better for numbers */
+}
+
+.asset-change {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.asset-change-pos {
+    -fx-text-fill: -color-success;
+    -fx-background-color: rgba(16, 185, 129, 0.1);
+    -fx-background-radius: 6px;
+    -fx-padding: 2 6;
+}
+
+.asset-change-neg {
+    -fx-text-fill: -color-error;
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+    -fx-background-radius: 6px;
+    -fx-padding: 2 6;
+}
+
+.combo-box:hover .arrow {
+    -fx-background-color: white;
+}
+
+/* The popup list */
+.combo-box-popup .list-view {
+    -fx-background-color: -color-card-bg;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 15, 0, 5, 5);
+    -fx-padding: 5;
+    -fx-background-radius: 8px;
+    /* Rounded corners for the dropdown */
+    -fx-border-radius: 8px;
+}
+
+/* Items in the dropdown */
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-padding: 10 15;
+    -fx-font-size: 14px;
+    -fx-background-radius: 4px;
+    /* Slight rounding for items */
+}
+
+.combo-box-popup .list-view .list-cell:hover {
+    -fx-background-color: rgba(139, 92, 246, 0.1);
+    /* Subtle primary tint */
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.combo-box-popup .list-view .list-cell:filled:selected,
+.combo-box-popup .list-view .list-cell:filled:selected:hover {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+/* --- Sidebar --- */
+/* --- Sidebar --- */
+/* --- Sidebar --- */
+.sidebar {
+    /* Top color matches -color-card-bg (#1E1B2E) for seamless transition, fading to transparent bottom */
+    -fx-background-color: linear-gradient(to bottom, #1E1B2E 0%, rgba(30, 27, 46, 0.95) 15%, rgba(30, 27, 46, 0.8) 100%);
+    -fx-padding: 25 10 25 10;
+    /* Reduced horizontal padding to 10px to match collapsed state offset (10px margin + 12px btn pad = 22px) */
+    -fx-alignment: TOP_LEFT;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
+    -fx-border-color: transparent rgba(255, 255, 255, 0.05) transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.sidebar.collapsed {
+    -fx-padding: 25 0 25 0;
+    -fx-alignment: TOP_CENTER;
+}
+
+.sidebar-button {
+    -fx-alignment: CENTER_LEFT;
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-padding: 10 10 10 12;
+    /* consistent left padding for smoothness (12px = centered in 40px box inside 60px sidebar) */
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-min-height: 45px;
+    /* Prevent shrinking when text is hidden */
+}
+
+.sidebar.collapsed .sidebar-button {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 0 10 12;
+    /* Visual centering (60px width -> 10px margin + 12px padding + 8px icon half = 30px center) */
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-background-radius: 10px;
+    /* More rounded for icon shape */
+}
+
+.sidebar-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: -color-text-primary;
+}
+
+.sidebar-button:hover .sidebar-icon {
+    -fx-fill: -color-text-primary;
+}
+
+.sidebar-button-danger {
+    -fx-alignment: CENTER;
+    /* Center text and icon inside the button box */
+    -fx-background-color: rgba(239, 68, 68, 0.05);
+    -fx-text-fill: -color-error;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-border-color: rgba(239, 68, 68, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.sidebar.collapsed .sidebar-button-danger {
+    -fx-alignment: CENTER;
+    -fx-padding: 10 0;
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-background-radius: 10px;
+}
+
+#sidebarHeader {
+    -fx-padding: 0 0 20 0;
+}
+
+.user-info-box {
+    -fx-padding: 0 0 0 10;
+}
+
+.user-name-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 14px;
+}
+
+.user-role-label {
+    -fx-text-fill: -color-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.menu-label {
+    -fx-text-fill: -color-text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 10;
+}
+
+.sidebar-button-danger:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.15);
+    -fx-border-color: -color-error;
+}
+
+.sidebar-icon {
+    -fx-fill: -color-text-secondary;
+    -fx-scale-x: 0.8;
+    -fx-scale-y: 0.8;
+}
+
+/* --- Logo --- */
+.logo-text {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -color-text-primary;
+}
+
+.logo-text-accent {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 18px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -color-primary;
+}
+
+/* --- Improved Window Controls --- */
+.window-button {
+    -fx-background-color: transparent;
+    -fx-padding: 8 12;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+}
+
+.window-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+.window-button.window-close:hover {
+    -fx-background-color: -color-error;
+}
+
+.window-button.window-close:hover .window-button-icon {
+    -fx-fill: white;
+    -fx-stroke: white;
+}
+
+.window-button-icon {
+    -fx-fill: -color-text-secondary;
+    -fx-stroke: -color-text-secondary;
+    -fx-stroke-width: 1.5;
+}
+
+/* --- Hyperlinks --- */
+.hyperlink {
+    -fx-text-fill: -color-secondary;
+    /* Pinkish accent for links */
+    -fx-border-color: transparent;
+    -fx-underline: false;
+}
+
+.hyperlink:hover {
+    -fx-underline: true;
+    -fx-text-fill: white;
+}
+
+/* --- Window Controls --- */
+.window-bar {
+    -fx-background-color: -color-card-bg;
+    /* Dark header */
+    -fx-padding: 10 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 4);
+    -fx-border-color: transparent transparent -color-card-border transparent;
+}
+
+.window-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-primary;
+}
+
+.window-close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-family: "Segoe MDL2 Assets", "Arial";
+    -fx-font-size: 12px;
+}
+
+.window-close-button:hover {
+    -fx-background-color: -color-error;
+    -fx-text-fill: white;
+}
+
+/* --- TableView (Admin) --- */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -color-card-bg;
+    -fx-border-color: transparent transparent -color-primary transparent;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-background-color: -color-card-bg;
+    -fx-border-color: transparent transparent -input-border transparent;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: derive(-color-card-bg, 5%);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.2);
+}
+
+.table-row-cell .text {
+    -fx-fill: white;
+}
+
+/* --- ScrollBar --- */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: -input-border;
+    -fx-background-radius: 10px;
+}
+
+/* --- Admin User Cards --- */
+.user-card {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 2);
+    -fx-min-width: 280px;
+    -fx-pref-width: 280px;
+    -fx-max-width: 280px;
+}
+
+.user-card-hover {
+    -fx-background-color: derive(-color-card-bg, 5%);
+    -fx-border-color: -color-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 15, 0, 0, 5);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-cursor: hand;
+}
+
+.role-badge {
+    -fx-background-radius: 6px;
+    -fx-padding: 2 6;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.search-field {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-padding: 8 16;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -color-text-muted;
+}
+
+.search-field:focused {
+    -fx-border-color: -color-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.2), 8, 0, 0, 0);
+}
+
+.button-small-primary {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-padding: 5 10;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.button-small-primary:hover {
+    -fx-background-color: -color-primary-hover;
+}
+
+.button-small-danger {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-error;
+    -fx-border-radius: 6px;
+    -fx-text-fill: -color-error;
+    -fx-font-size: 11px;
+    -fx-padding: 4 9;
+    /* compensate border */
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+/* --- Wallet Gradients --- */
+/* --- Wallet Gradients (Refined) --- */
+.card-balance {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: #10B981;
+    -fx-border-width: 2px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.5), 15, 0, 0, 0);
+    -fx-padding: 30;
+}
+
+.card-escrow {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: #F59E0B;
+    -fx-border-width: 2px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(245, 158, 11, 0.5), 15, 0, 0, 0);
+    -fx-padding: 30;
+}
+
+.card-total {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: #6366F1;
+    -fx-border-width: 2px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(99, 102, 241, 0.5), 15, 0, 0, 0);
+    -fx-padding: 30;
+}
+
+/* --- Virtual Card Spoiler Effect --- */
+
+
+
+/* --- Transaction List --- */
+/* --- Transaction List --- */
+.transaction-item {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 12px;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+.transaction-item:hover {
+    -fx-background-color: derive(-color-card-bg, 5%);
+    -fx-cursor: hand;
+}
+
+/* --- Dark Scrollbar Styling --- */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:horizontal .track,
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0em;
+}
+
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0em;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #374151;
+    -fx-background-radius: 5em;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #4B5563;
+}
+
+.transaction-icon-bg {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-background-radius: 50%;
+}
+
+.amount-positive {
+    -fx-text-fill: -color-success;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.amount-negative {
+    -fx-text-fill: #F59E0B;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+.amount-hold {
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+}
+
+/* --- Deposit Dialog --- */
+.deposit-dialog {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 30, 0, 0, 10);
+}
+
+.amount-input-container {
+    -fx-background-color: rgba(139, 92, 246, 0.1);
+    /* Very subtle violet tint */
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-primary;
+    -fx-border-radius: 12px;
+    -fx-padding: 15;
+}
+
+.currency-label {
+    -fx-text-fill: -color-primary;
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+}
+
+.amount-field-large {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-prompt-text-fill: -color-text-muted;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.amount-field-large:focused {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+    -fx-effect: null;
+}
+
+.card-form-container {
+    -fx-background-color: -input-bg;
+    -fx-padding: 20;
+    -fx-background-radius: 16px;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 16px;
+}
+
+.section-label {
+    -fx-text-fill: -color-text-primary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* --- Dialog Icons --- */
+.dialog-icon-container {
+    -fx-background-radius: 50%;
+    -fx-min-width: 50px;
+    -fx-min-height: 50px;
+    -fx-max-width: 50px;
+    -fx-max-height: 50px;
+    -fx-alignment: center;
+}
+
+.dialog-icon-warning {
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+}
+
+.dialog-icon-error {
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+}
+
+.dialog-icon-info {
+    -fx-background-color: rgba(139, 92, 246, 0.1);
+}
+
+/* --- Transaction List Items --- */
+.transaction-ref {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.transaction-date {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 12px;
+}
+
+.transaction-icon {
+    -fx-fill: white;
+}
+
+.transaction-icon-positive {
+    -fx-fill: -color-success;
+}
+
+.transaction-icon-negative {
+    -fx-fill: #F59E0B;
+}
+
+/* --- Transparent Window & Controls --- */
+.window-close-icon {
+    -fx-fill: -color-text-secondary;
+    -fx-cursor: hand;
+}
+
+.window-close-icon:hover {
+    -fx-fill: -color-error;
+}
+
+.button-text-secondary {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+}
+
+.button-text-secondary:hover {
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8px;
+}
+
+/* --- Virtual Card --- */
+/* --- Virtual Card --- */
+.virtual-card {
+    -fx-background-color: #1E1B2E;
+    /* Hardcoded opaque dark color */
+    -fx-background-radius: 16px;
+    -fx-border-color: #3B82F6;
+    -fx-border-width: 2px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(59, 130, 246, 0.4), 25, 0, 0, 0);
+    -fx-padding: 25;
+    -fx-min-width: 340px;
+    -fx-min-height: 210px;
+    -fx-max-width: 340px;
+    -fx-max-height: 210px;
+}
+
+.virtual-card-chip {
+    -fx-fill: linear-gradient(to bottom right, #FCD34D, #B45309);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 2, 0, 1, 1);
+}
+
+.virtual-card-number {
+    -fx-text-fill: white;
+    -fx-font-family: "Consolas", "Monospaced", "Courier New";
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 1, 0, 1, 1);
+}
+
+.virtual-card-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-transform: uppercase;
+}
+
+.virtual-card-value {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 1, 0, 1, 1);
+}
+
+.virtual-card-logo {
+    -fx-fill: white;
+    -fx-font-weight: 900;
+    -fx-font-style: italic;
+    -fx-font-size: 28px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 2, 0, 2, 2);
+}
+
+/* --- Modern TabPane (Support Dashboard) --- */
+.modern-tab-pane {
+    -fx-tab-min-height: 40px;
+    -fx-tab-max-height: 40px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.modern-tab-pane>.tab-header-area {
+    -fx-padding: 0 0 10 0;
+}
+
+.modern-tab-pane>.tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.modern-tab-pane .tab {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 30px;
+    -fx-border-radius: 30px;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-padding: 8 20;
+    -fx-cursor: hand;
+    -fx-margin: 0 5 0 0;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+}
+
+.modern-tab-pane .tab:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.modern-tab-pane .tab:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.15);
+    -fx-border-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+.modern-tab-pane .tab-label {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER;
+}
+
+.modern-tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.modern-tab-pane .tab:focused {
+    -fx-background-insets: 0;
+    -fx-background-radius: 30px;
+}
+
+.modern-tab-pane .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-padding: 10 0 0 0;
+}
+
+.modern-tab-pane>.tab-header-area {
+    -fx-alignment: CENTER;
+}
+
+.modern-tab-pane .tab-header-area .headers-region {
+    -fx-alignment: CENTER;
+}
+
+.page-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 10, 0, 0, 0);
+}
+
+.text-muted {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 14px;
+}
+
+/* Styled ScrollBar for Asset List */
+.asset-list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    /* Critically important for JavaFX views */
+    -fx-padding: 0;
+}
+
+.asset-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-padding: 10;
+    -fx-border-color: #2E2A45;
+    -fx-border-width: 0 0 1 0;
+}
+
+.asset-list-view .list-cell:filled:selected {
+    -fx-background-color: rgba(46, 189, 133, 0.15);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: #2ebd85;
+    -fx-border-width: 0 0 1 2;
+}
+
+.asset-list-view .list-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-cursor: hand;
+}
+
+/* --- Navigation Buttons (Support Dashboard) --- */
+.nav-button-container {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 10 0;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-background-radius: 30px;
+    -fx-border-radius: 30px;
+    -fx-cursor: hand;
+    -fx-border-width: 1px;
+    -fx-border-color: transparent;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-button:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.15);
+    -fx-text-fill: white;
+    -fx-border-color: -color-primary;
+}
+
+.nav-button .nav-icon {
+    -fx-fill: -color-text-secondary;
+    -fx-scale-x: 0.7;
+    -fx-scale-y: 0.7;
+}
+
+.nav-button:selected .nav-icon {
+    -fx-fill: -color-primary;
+}
+
+
+/* --- Dialogs --- */
+.dialog-root {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-border-color: -color-card-border;
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 20, 0, 0, 10);
+    -fx-padding: 0;
+}
+
+.dialog-header {
+    -fx-padding: 15 20;
+    -fx-border-color: transparent transparent -color-card-border transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.dialog-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.dialog-content {
+    -fx-padding: 20;
+}
+
+/* --- Text Area --- */
+.text-area {
+    -fx-background-color: -input-bg;
+    -fx-text-fill: white;
+}
+
+.text-area .content {
+    -fx-background-color: -input-bg;
+    -fx-background-radius: 12px;
+}
+
+.text-area:focused .content {
+    -fx-background-color: -input-bg;
+}
+
+.text-area .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.text-area .viewport {
+    -fx-background-color: -input-bg;
+}
+
+/* --- Subtle Button --- */
+.button-subtle {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+    -fx-border-color: transparent;
+}
+
+.button-subtle:hover {
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8px;
+}
+
+/* Candlestick Chart Styles */
+.candle-bullish {
+    -fx-background-color: #10b981;
+    /* Green */
+    -fx-stroke: #10b981;
+}
+
+.candle-bearish {
+    -fx-background-color: #ef4444;
+    /* Red */
+    -fx-stroke: #ef4444;
+}
+
+.candle-body {
+    -fx-background-radius: 0;
+}
+
+.candle-line {
+    -fx-stroke-width: 1px;
+}
+
+/* --- Explicit Chart Transparency --- */
+.chart {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-content {
+    -fx-background-color: transparent;
+}
+
+.axis {
+    -fx-tick-label-fill: -color-text-secondary;
+    -fx-tick-mark-stroke: transparent;
+}
+
+.axis:left {
+    -fx-border-color: transparent;
+}
+
+.axis:bottom {
+    -fx-border-color: transparent;
+}
+
+.chart-vertical-grid-lines,
+.chart-horizontal-grid-lines {
+    -fx-stroke: rgba(255, 255, 255, 0.05);
+    /* Faint grid lines */
+}
+
+/* --- Trading Buttons --- */
+.btn-buy-long {
+    -fx-background-color: linear-gradient(to right, #10B981, #059669);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.4), 8, 0, 0, 2);
+}
+
+.btn-buy-long:hover {
+    -fx-background-color: linear-gradient(to right, #34D399, #10B981);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.btn-sell-short {
+    -fx-background-color: linear-gradient(to right, #EF4444, #B91C1C);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.4), 8, 0, 0, 2);
+}
+
+.btn-sell-short:hover {
+    -fx-background-color: linear-gradient(to right, #F87171, #EF4444);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+/* --- Escrow Dialog Fix --- */
+.escrow-dialog {
+    -fx-background-color: -color-bg;
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 20, 0, 0, 10);
+}
+
+.text-field-modern {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -color-text-muted;
+}
+
+.text-field-modern:focused {
+    -fx-border-color: -color-primary;
+    -fx-background-color: -input-bg;
+}
+
+.combo-box-modern {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.text-area-modern {
+    -fx-background-color: -input-bg;
+    -fx-text-fill: white;
+    -fx-control-inner-background: -input-bg;
+    -fx-background-radius: 8px;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+}
+
+.text-area-modern .content {
+    -fx-background-color: -input-bg;
+}
+
+.button-outlined {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-text-secondary;
+    -fx-border-radius: 8px;
+    -fx-text-fill: -color-text-secondary;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+}
+
+.button-outlined:hover {
+    -fx-border-color: -color-text-primary;
+    -fx-text-fill: -color-text-primary;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
