@@ -334,4 +334,36 @@ public class UserModel {
         }
         return photoMap;
     }
+
+    public java.util.Map<String, String> findProfilePhotosByEmails(java.util.Set<String> emails) {
+        java.util.Map<String, String> photoMap = new java.util.HashMap<>();
+        if (emails == null || emails.isEmpty()) {
+            return photoMap;
+        }
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT email, profile_photo_url FROM users_local WHERE email IN (");
+        for (int i = 0; i < emails.size(); i++) {
+            sql.append(i == 0 ? "?" : ", ?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int index = 1;
+            for (String email : emails) {
+                ps.setString(index++, email);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String email = rs.getString("email");
+                String photoUrl = rs.getString("profile_photo_url");
+                if (photoUrl != null && !photoUrl.isEmpty()) {
+                    photoMap.put(email, photoUrl);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching profile photos by emails", e);
+        }
+        return photoMap;
+    }
 }

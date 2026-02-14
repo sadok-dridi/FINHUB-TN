@@ -99,7 +99,7 @@ public class TransactionsController {
                     }
                 }
 
-                // Add Contact Names to Fetch List
+                // Add Contact Names to Fetch List (Legacy/Fallback)
                 for (tn.finhub.model.SavedContact contact : contacts) {
                     if (contact.getContactName() != null) {
                         namesToFetch.add(contact.getContactName().trim());
@@ -109,6 +109,17 @@ public class TransactionsController {
                 // Use Case-Insensitive Map for robust lookup (User 'Sadok' vs ref 'sadok')
                 java.util.Map<String, String> profilePhotos = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
                 profilePhotos.putAll(userModel.findProfilePhotosByNames(namesToFetch));
+
+                // 4. Fetch Profile Photos by Email (For Saved Contacts - Better Accuracy)
+                java.util.Set<String> emailsToFetch = new java.util.HashSet<>();
+                for (tn.finhub.model.SavedContact contact : contacts) {
+                    if (contact.getContactEmail() != null && !contact.getContactEmail().isEmpty()) {
+                        emailsToFetch.add(contact.getContactEmail().trim());
+                    }
+                }
+                if (!emailsToFetch.isEmpty()) {
+                    profilePhotos.putAll(userModel.findProfilePhotosByEmails(emailsToFetch));
+                }
 
                 boolean isFrozen = wallet != null && "FROZEN".equals(wallet.getStatus());
 
@@ -183,9 +194,14 @@ public class TransactionsController {
 
         boolean photoLoaded = false;
         if (profilePhotos != null) {
-            String name = contact.getContactName().trim();
-            if (profilePhotos.containsKey(name)) {
-                String url = profilePhotos.get(name);
+            // Try lookup by Email first (Primary match)
+            String lookupKey = contact.getContactEmail();
+            if (lookupKey == null || lookupKey.isEmpty()) {
+                lookupKey = contact.getContactName().trim(); // Fallback to name
+            }
+
+            if (profilePhotos.containsKey(lookupKey)) {
+                String url = profilePhotos.get(lookupKey);
                 if (url != null && !url.isEmpty()) {
                     try {
                         javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
