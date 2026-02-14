@@ -13,7 +13,12 @@
         <VBox fx:id="sidebar" spacing="10" styleClass="sidebar" prefWidth="60" alignment="TOP_CENTER">
             
             <!-- User Profile & Toggle -->
-            <HBox fx:id="sidebarHeader" alignment="CENTER_LEFT" spacing="10" minHeight="50">
+            <HBox fx:id="sidebarHeader" alignment="CENTER_LEFT" spacing="5" minHeight="60" prefHeight="60" maxHeight="60">
+                <StackPane fx:id="profileImageContainer" alignment="CENTER">
+                    <Circle fx:id="defaultProfileCircle" radius="18" style="-fx-fill: rgba(255,255,255,0.1);"/>
+                    <javafx.scene.shape.SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" style="-fx-fill: rgba(255,255,255,0.5);" scaleX="1.1" scaleY="1.1"/>
+                    <javafx.scene.image.ImageView fx:id="sidebarProfileImage" fitHeight="36" fitWidth="36" preserveRatio="true"/>
+                </StackPane>
                 <VBox fx:id="userInfoBox" alignment="CENTER_LEFT" styleClass="user-info-box">
                     <Label fx:id="userNameLabel" text="User" styleClass="user-name-label"/>
                     <Label fx:id="userRoleLabel" text="Role" styleClass="user-role-label"/>

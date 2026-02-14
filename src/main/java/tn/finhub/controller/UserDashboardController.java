@@ -20,6 +20,10 @@ public class UserDashboardController {
     private javafx.scene.layout.VBox userInfoBox;
     @FXML
     private javafx.scene.layout.Region headerSpacer;
+    @FXML
+    private javafx.scene.layout.StackPane profileImageContainer;
+    @FXML
+    private javafx.scene.image.ImageView sidebarProfileImage;
 
     // Menu Buttons
     @FXML
@@ -55,11 +59,52 @@ public class UserDashboardController {
         updateSidebarState();
 
         // Load User Data from Session (Database Local)
-        tn.finhub.model.User currentUser = tn.finhub.util.UserSession.getInstance().getUser();
-        if (currentUser != null) {
+        // Load User Data from Session (Database Local)
+        tn.finhub.model.User sessionUser = tn.finhub.util.UserSession.getInstance().getUser();
+        if (sessionUser != null) {
+            // Fetch fresh from DB to get latest profile photo
+            tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+            tn.finhub.model.User currentUser = userModel.findById(sessionUser.getId());
+
+            // Fallback to session if DB fails (shouldn't happen)
+            if (currentUser == null)
+                currentUser = sessionUser;
+
             String displayName = currentUser.getFullName();
             userNameLabel.setText(displayName);
             userRoleLabel.setText(currentUser.getRole());
+
+            // Load Profile Image for Sidebar
+            if (currentUser.getProfilePhotoUrl() != null && !currentUser.getProfilePhotoUrl().isEmpty()) {
+                try {
+                    javafx.scene.image.Image image = new javafx.scene.image.Image(currentUser.getProfilePhotoUrl(),
+                            true);
+                    sidebarProfileImage.setImage(image);
+
+                    // Update size to be larger for clarity (36px)
+                    sidebarProfileImage.setFitWidth(36);
+                    sidebarProfileImage.setFitHeight(36);
+
+                    // Circular Clip for new size
+                    javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(18, 18, 18);
+                    sidebarProfileImage.setClip(clip);
+
+                    sidebarProfileImage.setVisible(true);
+
+                    // Hide default placeholder
+                    if (profileImageContainer.getChildren().size() > 0) {
+                        profileImageContainer.getChildren().get(0).setVisible(false); // Circle
+                        profileImageContainer.getChildren().get(1).setVisible(false); // Icon
+                    }
+                } catch (Exception e) {
+                    System.err.println("Failed to load sidebar profile image: " + e.getMessage());
+                    sidebarProfileImage.setVisible(false);
+                    showDefaultProfileIcon();
+                }
+            } else {
+                sidebarProfileImage.setVisible(false);
+                showDefaultProfileIcon();
+            }
         }
 
         // Load Default View
@@ -192,6 +237,14 @@ public class UserDashboardController {
         menuLabel.setVisible(isSidebarExpanded);
         menuLabel.setManaged(isSidebarExpanded);
 
+        // Hide profile image in collapsed mode to save space (or keep it if it fits?)
+        // User said "dont move any thing". Keeping it aligned with text visibility for
+        // now.
+        if (profileImageContainer != null) {
+            profileImageContainer.setVisible(isSidebarExpanded);
+            profileImageContainer.setManaged(isSidebarExpanded);
+        }
+
         // Button Layout managed by CSS entirely now for smoothness
         javafx.scene.control.ContentDisplay display = isSidebarExpanded ? javafx.scene.control.ContentDisplay.LEFT
                 : javafx.scene.control.ContentDisplay.GRAPHIC_ONLY;
@@ -265,6 +318,13 @@ public class UserDashboardController {
     private void resetButtonStyle(javafx.scene.control.Button btn) {
         btn.getStyleClass().remove("active");
         btn.setStyle(""); // Clear inline styles
+    }
+
+    private void showDefaultProfileIcon() {
+        if (profileImageContainer.getChildren().size() > 1) {
+            profileImageContainer.getChildren().get(0).setVisible(true); // Circle
+            profileImageContainer.getChildren().get(1).setVisible(true); // Icon
+        }
     }
 
     @FXML

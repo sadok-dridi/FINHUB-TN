@@ -120,6 +120,24 @@ public class EscrowManager {
         updateAdminApprover(escrowId, adminUserId);
     }
 
+    // 3.1 Release by Sender (Voluntary)
+    public void releaseEscrowBySender(int escrowId, int userId) {
+        Escrow escrow = findById(escrowId);
+        if (escrow == null)
+            throw new RuntimeException("Escrow not found");
+
+        Wallet senderWallet = walletModel.findByUserId(userId);
+        if (senderWallet == null || senderWallet.getId() != escrow.getSenderWalletId()) {
+            throw new RuntimeException("Unauthorized: Only sender can release funds manually.");
+        }
+
+        if (!"LOCKED".equals(escrow.getStatus())) {
+            throw new RuntimeException("Escrow is not LOCKED");
+        }
+
+        processRelease(escrow);
+    }
+
     private void processRelease(Escrow escrow) {
         // Calculate Fee (1%)
         BigDecimal fee = escrow.getAmount().multiply(new BigDecimal("0.01"));
@@ -166,6 +184,28 @@ public class EscrowManager {
         blockchainManager.addBlock("ESCROW_REFUND",
                 "Refunded Escrow " + escrowId,
                 null, escrowId);
+    }
+
+    // 4.1 Claim Refund (Expiry)
+    public void claimRefund(int escrowId, int userId) {
+        Escrow escrow = findById(escrowId);
+        if (escrow == null)
+            throw new RuntimeException("Escrow not found");
+
+        Wallet senderWallet = walletModel.findByUserId(userId);
+        if (senderWallet == null || senderWallet.getId() != escrow.getSenderWalletId()) {
+            throw new RuntimeException("Unauthorized: Only sender can claim refund.");
+        }
+
+        if (!"LOCKED".equals(escrow.getStatus())) {
+            throw new RuntimeException("Escrow is not LOCKED");
+        }
+
+        if (escrow.getExpiryDate().isAfter(LocalDateTime.now())) {
+            throw new RuntimeException("Escrow has not expired yet. Expiry: " + escrow.getExpiryDate());
+        }
+
+        refundEscrow(escrowId);
     }
 
     // 5. Dispute

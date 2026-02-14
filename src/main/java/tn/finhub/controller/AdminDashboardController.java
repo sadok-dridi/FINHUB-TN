@@ -47,6 +47,8 @@ public class AdminDashboardController {
     @FXML
     private Button btnAlerts;
     @FXML
+    private Button btnKYC;
+    @FXML
     private Button btnLogout;
 
     private boolean isSidebarExpanded = false;
@@ -122,6 +124,7 @@ public class AdminDashboardController {
         setTextFill(btnEscrows, opacity);
         setTextFill(btnSupport, opacity);
         setTextFill(btnAlerts, opacity);
+        setTextFill(btnKYC, opacity);
         setTextFill(btnLogout, opacity);
         menuLabel.setTextFill(mutedColor);
     }
@@ -154,6 +157,9 @@ public class AdminDashboardController {
                                 javafx.animation.Interpolator.EASE_BOTH)),
                 new KeyFrame(duration,
                         new KeyValue(btnAlerts.textFillProperty(), targetColorPrim,
+                                javafx.animation.Interpolator.EASE_BOTH)),
+                new KeyFrame(duration,
+                        new KeyValue(btnKYC.textFillProperty(), targetColorPrim,
                                 javafx.animation.Interpolator.EASE_BOTH)),
                 new KeyFrame(duration,
                         new KeyValue(btnLogout.textFillProperty(), targetColorPrim,
@@ -196,6 +202,7 @@ public class AdminDashboardController {
         setButtonStyle(btnEscrows, display);
         setButtonStyle(btnSupport, display);
         setButtonStyle(btnAlerts, display);
+        setButtonStyle(btnKYC, display);
         setButtonStyle(btnLogout, display);
     }
 
@@ -212,6 +219,7 @@ public class AdminDashboardController {
         resetButtonStyle(btnEscrows);
         resetButtonStyle(btnSupport);
         resetButtonStyle(btnAlerts);
+        resetButtonStyle(btnKYC);
 
         // Apply active style
         activeButton.getStyleClass().add("active");
@@ -263,5 +271,11 @@ public class AdminDashboardController {
     private void handleGoToAlerts() {
         ViewUtils.loadContent(adminContentArea, "/view/admin_alerts.fxml");
         setActiveButton(btnAlerts);
+    }
+
+    @FXML
+    private void handleGoToKYC() {
+        ViewUtils.loadContent(adminContentArea, "/view/admin_kyc_requests.fxml");
+        setActiveButton(btnKYC);
     }
 }

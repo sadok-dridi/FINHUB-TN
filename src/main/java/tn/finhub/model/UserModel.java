@@ -28,7 +28,7 @@ public class UserModel {
 
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT user_id, email, role, full_name, trust_score FROM users_local";
+        String sql = "SELECT user_id, email, role, full_name, phone_number, profile_photo_url, trust_score FROM users_local";
 
         try (Statement st = getConnection().createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
@@ -39,6 +39,8 @@ public class UserModel {
                         rs.getString("email"),
                         rs.getString("role"),
                         rs.getString("full_name"));
+                u.setPhoneNumber(rs.getString("phone_number"));
+                u.setProfilePhotoUrl(rs.getString("profile_photo_url"));
                 // u.setEmailVerified(rs.getBoolean("email_verified")); // Not in local DB
                 u.setTrustScore(rs.getInt("trust_score"));
                 users.add(u);
@@ -63,7 +65,7 @@ public class UserModel {
     }
 
     public User findByEmail(String email) {
-        String sql = "SELECT user_id, email, role, full_name, trust_score FROM users_local WHERE LOWER(email) = LOWER(?)";
+        String sql = "SELECT user_id, email, role, full_name, phone_number, profile_photo_url, trust_score FROM users_local WHERE LOWER(email) = LOWER(?)";
 
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, email);
@@ -75,6 +77,8 @@ public class UserModel {
                         rs.getString("email"),
                         rs.getString("role"),
                         rs.getString("full_name"));
+                u.setPhoneNumber(rs.getString("phone_number"));
+                u.setProfilePhotoUrl(rs.getString("profile_photo_url"));
                 // u.setEmailVerified(rs.getBoolean("email_verified")); // Not in local DB
                 u.setTrustScore(rs.getInt("trust_score"));
                 return u;
@@ -86,13 +90,15 @@ public class UserModel {
     }
 
     public User findById(int id) {
-        String sql = "SELECT user_id, email, role, full_name, trust_score FROM users_local WHERE user_id = ?";
+        String sql = "SELECT user_id, email, role, full_name, phone_number, profile_photo_url, trust_score FROM users_local WHERE user_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 User u = new User(rs.getInt("user_id"), rs.getString("email"), rs.getString("role"),
                         rs.getString("full_name"));
+                u.setPhoneNumber(rs.getString("phone_number"));
+                u.setProfilePhotoUrl(rs.getString("profile_photo_url"));
                 // u.setEmailVerified(rs.getBoolean("email_verified")); // Not in local DB
                 u.setTrustScore(rs.getInt("trust_score"));
                 return u;
@@ -105,12 +111,14 @@ public class UserModel {
 
     public void insert(User u) {
         String sql = """
-                    INSERT INTO users_local (user_id, email, role, full_name)
-                    VALUES (?, ?, ?, ?)
+                    INSERT INTO users_local (user_id, email, role, full_name, phone_number, profile_photo_url)
+                    VALUES (?, ?, ?, ?, ?, ?)
                     ON DUPLICATE KEY UPDATE
                     email = VALUES(email),
                     role = VALUES(role),
-                    full_name = VALUES(full_name)
+                    full_name = VALUES(full_name),
+                    phone_number = VALUES(phone_number),
+                    profile_photo_url = VALUES(profile_photo_url)
                 """;
 
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
@@ -118,6 +126,8 @@ public class UserModel {
             ps.setString(2, u.getEmail());
             ps.setString(3, u.getRole());
             ps.setString(4, u.getFullName());
+            ps.setString(5, u.getPhoneNumber());
+            ps.setString(6, u.getProfilePhotoUrl());
             ps.executeUpdate();
         } catch (SQLException e) {
             logger.error("Error upserting user {}", u.getEmail(), e);
@@ -279,5 +289,49 @@ public class UserModel {
         } catch (SQLException e) {
             logger.error("Error updating trust score for user {}", userId, e);
         }
+    }
+
+    public void updateProfile(User user) {
+        String sql = "UPDATE users_local SET phone_number = ?, profile_photo_url = ? WHERE user_id = ?";
+        try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setString(1, user.getPhoneNumber());
+            ps.setString(2, user.getProfilePhotoUrl());
+            ps.setInt(3, user.getId());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Error updating profile for user {}", user.getId(), e);
+        }
+    }
+
+    public java.util.Map<String, String> findProfilePhotosByNames(java.util.Set<String> names) {
+        java.util.Map<String, String> photoMap = new java.util.HashMap<>();
+        if (names == null || names.isEmpty()) {
+            return photoMap;
+        }
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT full_name, profile_photo_url FROM users_local WHERE full_name IN (");
+        for (int i = 0; i < names.size(); i++) {
+            sql.append(i == 0 ? "?" : ", ?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int index = 1;
+            for (String name : names) {
+                ps.setString(index++, name);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String fullName = rs.getString("full_name");
+                String photoUrl = rs.getString("profile_photo_url");
+                if (photoUrl != null && !photoUrl.isEmpty()) {
+                    photoMap.put(fullName, photoUrl);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching profile photos by names", e);
+        }
+        return photoMap;
     }
 }

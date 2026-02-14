@@ -27,8 +27,8 @@
             </VBox>
             <StackPane>
                 <Circle radius="22" style="-fx-fill: transparent; -fx-stroke: -color-bg; -fx-stroke-width: 4;"/>
-                <Circle radius="22" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 4; -fx-stroke-dash-array: 100 100;"/>
-                <SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" scaleX="0.8" scaleY="0.8" style="-fx-fill: -color-primary;"/>
+                <Circle fx:id="trustScoreCircle" radius="22" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 4; -fx-stroke-dash-array: 0 1000;"/>
+                <SVGPath fx:id="trustScoreIcon" content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" scaleX="0.8" scaleY="0.8" style="-fx-fill: -color-primary;"/>
             </StackPane>
         </HBox>
 
@@ -41,9 +41,9 @@
 
     <!-- Filters / Tabs (Optional for future) -->
     <HBox spacing="15">
-        <Button text="%escrow.filter.active" style="-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;"/>
-        <Button text="%escrow.filter.history" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
-        <Button text="%escrow.filter.disputes" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
+        <Button fx:id="btnActive" text="%escrow.filter.active" onAction="#handleFilterActive" style="-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;"/>
+        <Button fx:id="btnHistory" text="%escrow.filter.history" onAction="#handleFilterHistory" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
+        <Button fx:id="btnDisputes" text="%escrow.filter.disputes" onAction="#handleFilterDisputes" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
     </HBox>
 
     <!-- Escrow List (Styled) -->

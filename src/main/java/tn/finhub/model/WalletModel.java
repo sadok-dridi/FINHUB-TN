@@ -291,7 +291,9 @@ public class WalletModel {
                 ps.setBigDecimal(1, amount);
                 ps.setBigDecimal(2, amount);
                 ps.setInt(3, walletId);
-                ps.executeUpdate();
+                int rows = ps.executeUpdate();
+                if (rows == 0)
+                    throw new RuntimeException("Wallet " + walletId + " not found or hold update failed");
             }
 
             recordTransaction(walletId, "HOLD", amount, ref);
@@ -325,7 +327,9 @@ public class WalletModel {
                 ps.setBigDecimal(1, amount);
                 ps.setBigDecimal(2, amount);
                 ps.setInt(3, walletId);
-                ps.executeUpdate();
+                int rows = ps.executeUpdate();
+                if (rows == 0)
+                    throw new RuntimeException("Wallet " + walletId + " not found or release update failed");
             }
 
             recordTransaction(walletId, "RELEASE", amount, ref);
@@ -448,7 +452,9 @@ public class WalletModel {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBigDecimal(1, amount);
             ps.setInt(2, walletId);
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            if (rows == 0)
+                throw new SQLException("Wallet " + walletId + " not found or update failed");
         }
     }
 
@@ -742,7 +748,9 @@ public class WalletModel {
             try (PreparedStatement ps = conn.prepareStatement(sqlSender)) {
                 ps.setBigDecimal(1, totalAmount);
                 ps.setInt(2, senderId);
-                ps.executeUpdate();
+                int rows = ps.executeUpdate();
+                if (rows == 0)
+                    throw new RuntimeException("Sender wallet " + senderId + " not found or update failed");
             }
             // Use existing helper
             recordTransaction(senderId, "ESCROW_SENT", totalAmount, "Released to Wallet " + receiverId);
@@ -783,7 +791,9 @@ public class WalletModel {
                 ps.setBigDecimal(1, amount);
                 ps.setBigDecimal(2, amount);
                 ps.setInt(3, senderId);
-                ps.executeUpdate();
+                int rows = ps.executeUpdate();
+                if (rows == 0)
+                    throw new RuntimeException("Sender wallet " + senderId + " not found or update failed");
             }
 
             recordTransaction(senderId, "ESCROW_REFUND", amount, "Refunded from Escrow");

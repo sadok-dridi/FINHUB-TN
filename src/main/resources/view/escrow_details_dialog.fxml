@@ -45,6 +45,11 @@
         <ImageView fx:id="qrCodeImageView" fitWidth="150" fitHeight="150" preserveRatio="true"/>
         <Label fx:id="secretCodeLabel" text="Secret Code: ..." style="-fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
         <Label text="%escrow.details.show.qr" wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+        
+        <HBox spacing="10" alignment="CENTER">
+             <Button text="Release Funds" onAction="#handleSenderRelease" styleClass="button-success" />
+             <Button fx:id="refundButton" text="Claim Refund" onAction="#handleSenderRefund" styleClass="button-danger" visible="false" managed="false"/>
+        </HBox>
     </VBox>
 
     <!-- RECEIVER VIEW: Claim Input -->
@@ -61,10 +66,10 @@
     <HBox spacing="10" alignment="CENTER">
         <Button text="%common.close" onAction="#handleClose" styleClass="button-outlined" prefWidth="100"/>
         <Button fx:id="disputeButton" text="%escrow.details.dispute" onAction="#handleDispute"
-                style="-fx-background-color: transparent; -fx-text-fill: -color-danger; -fx-border-color: -color-danger; -fx-border-radius: 6;"
+                style="-fx-background-color: transparent; -fx-text-fill: #dc2626; -fx-border-color: #dc2626; -fx-border-radius: 6;"
                 prefWidth="120"/>
     </HBox>
 
-    <Label fx:id="errorLabel" visible="false" wrapText="true" style="-fx-text-fill: -color-danger;"/>
+    <Label fx:id="errorLabel" visible="false" wrapText="true" style="-fx-text-fill: #dc2626;"/>
 
 </VBox>

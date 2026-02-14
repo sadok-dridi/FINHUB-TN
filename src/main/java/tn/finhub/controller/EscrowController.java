@@ -20,26 +20,74 @@ public class EscrowController {
     private Label trustScoreLabel;
     @FXML
     private javafx.scene.control.Button createEscrowBtn;
+    @FXML
+    private javafx.scene.control.Button btnActive;
+    @FXML
+    private javafx.scene.control.Button btnHistory;
+    @FXML
+    private javafx.scene.control.Button btnDisputes;
+    @FXML
+    private javafx.scene.shape.Circle trustScoreCircle;
+    @FXML
+    private javafx.scene.shape.SVGPath trustScoreIcon;
 
     private final EscrowManager escrowManager = new EscrowManager();
     private final WalletModel walletModel = new WalletModel();
+    private final tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+
+    private enum FilterType {
+        ACTIVE, HISTORY, DISPUTES
+    }
+
+    private FilterType currentFilter = FilterType.ACTIVE;
 
     @FXML
     public void initialize() {
         loadEscrowData();
+        updateFilterUI();
     }
 
     private void loadEscrowData() {
-        // Get Current User Wallet
-        tn.finhub.model.User currentUser = UserSession.getInstance().getUser();
-        if (currentUser == null)
+        // Get Current User
+        tn.finhub.model.User sessionUser = UserSession.getInstance().getUser();
+        if (sessionUser == null)
             return;
+
+        // FETCH LIVE USER DATA (Fix for stale Trust Score)
+        tn.finhub.model.User currentUser = userModel.findById(sessionUser.getId());
+        if (currentUser == null)
+            currentUser = sessionUser; // Fallback
 
         Wallet wallet = walletModel.findByUserId(currentUser.getId());
 
         if (wallet != null) {
             // Load Trust Score
-            trustScoreLabel.setText(String.valueOf(currentUser.getTrustScore()));
+            int score = currentUser.getTrustScore();
+            trustScoreLabel.setText(String.valueOf(score));
+
+            // Visual Update (Circle & Color)
+            double maxScore = 100.0;
+            double radius = 22.0;
+            double circumference = 2 * Math.PI * radius;
+            double progress = Math.min(Math.max(score, 0), maxScore) / maxScore * circumference;
+
+            if (trustScoreCircle != null) {
+                trustScoreCircle.getStrokeDashArray().setAll(progress, circumference);
+
+                // Color Logic
+                String color;
+                if (score < 30)
+                    color = "#ef4444"; // Red
+                else if (score < 70)
+                    color = "#f59e0b"; // Orange
+                else
+                    color = "#10b981"; // Green
+
+                trustScoreCircle.setStyle("-fx-fill: transparent; -fx-stroke-width: 4; -fx-stroke: " + color + ";");
+                if (trustScoreIcon != null) {
+                    trustScoreIcon.setStyle("-fx-fill: " + color + ";");
+                }
+            }
 
             // Check Frozen Status
             boolean isFrozen = "FROZEN".equals(wallet.getStatus());
@@ -48,19 +96,71 @@ public class EscrowController {
             }
 
             // Load Escrows
-            List<Escrow> escrows = escrowManager.getEscrowsByWalletId(wallet.getId());
+            List<Escrow> allEscrows = escrowManager.getEscrowsByWalletId(wallet.getId());
             escrowCardContainer.getChildren().clear();
 
-            if (escrows.isEmpty()) {
-                Label emptyLabel = new Label("No active escrow transactions.");
+            // Filter
+            List<Escrow> filtered = allEscrows.stream()
+                    .filter(e -> {
+                        switch (currentFilter) {
+                            case ACTIVE:
+                                return "LOCKED".equals(e.getStatus());
+                            case HISTORY:
+                                return "RELEASED".equals(e.getStatus()) || "REFUNDED".equals(e.getStatus());
+                            case DISPUTES:
+                                return "DISPUTED".equals(e.getStatus());
+                            default:
+                                return true;
+                        }
+                    })
+                    .toList();
+
+            if (filtered.isEmpty()) {
+                Label emptyLabel = new Label("No " + currentFilter.name().toLowerCase() + " escrow transactions.");
                 emptyLabel.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 14px; -fx-padding: 20;");
                 escrowCardContainer.getChildren().add(emptyLabel);
             } else {
-                for (Escrow e : escrows) {
+                for (Escrow e : filtered) {
                     escrowCardContainer.getChildren().add(createEscrowCard(e));
                 }
             }
         }
+    }
+
+    @FXML
+    private void handleFilterActive() {
+        if (currentFilter != FilterType.ACTIVE) {
+            currentFilter = FilterType.ACTIVE;
+            updateFilterUI();
+            loadEscrowData();
+        }
+    }
+
+    @FXML
+    private void handleFilterHistory() {
+        if (currentFilter != FilterType.HISTORY) {
+            currentFilter = FilterType.HISTORY;
+            updateFilterUI();
+            loadEscrowData();
+        }
+    }
+
+    @FXML
+    private void handleFilterDisputes() {
+        if (currentFilter != FilterType.DISPUTES) {
+            currentFilter = FilterType.DISPUTES;
+            updateFilterUI();
+            loadEscrowData();
+        }
+    }
+
+    private void updateFilterUI() {
+        String activeStyle = "-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;";
+        String inactiveStyle = "-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;";
+
+        btnActive.setStyle(currentFilter == FilterType.ACTIVE ? activeStyle : inactiveStyle);
+        btnHistory.setStyle(currentFilter == FilterType.HISTORY ? activeStyle : inactiveStyle);
+        btnDisputes.setStyle(currentFilter == FilterType.DISPUTES ? activeStyle : inactiveStyle);
     }
 
     private javafx.scene.Node createEscrowCard(Escrow e) {

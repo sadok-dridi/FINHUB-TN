@@ -24,6 +24,7 @@ public class TransactionsController {
 
     private final WalletModel walletModel = new WalletModel();
     private final SavedContactModel contactModel = new SavedContactModel();
+    private final tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
 
     // STALE-WHILE-REVALIDATE CACHE
     private static TransactionData cachedData = null;
@@ -44,7 +45,8 @@ public class TransactionsController {
                     setStyle("-fx-background-color: transparent;");
                 } else {
                     int badTxId = (cachedData != null) ? cachedData.badTxId : -1;
-                    setGraphic(createTransactionCard(tx, badTxId));
+                    java.util.Map<String, String> photos = (cachedData != null) ? cachedData.profilePhotos : null;
+                    setGraphic(createTransactionCard(tx, badTxId, photos));
                     setStyle("-fx-background-color: transparent; -fx-padding: 0 0 10 0;");
                 }
             }
@@ -80,13 +82,43 @@ public class TransactionsController {
                 // 2. Fetch Contacts
                 List<tn.finhub.model.SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
 
+                // 3. Fetch Profile Photos for Transactions
+                java.util.Set<String> namesToFetch = new java.util.HashSet<>();
+                for (WalletTransaction tx : transactions) {
+                    String ref = tx.getReference();
+                    if (ref != null) {
+                        String cleanRef = ref.replace("Transfer to ", "")
+                                .replace("Transfer from ", "")
+                                .trim();
+                        // Ignore obvious system messages to reduce DB load
+                        if (!cleanRef.toUpperCase().startsWith("MARKET ") &&
+                                !cleanRef.toUpperCase().startsWith("DEPOSIT") &&
+                                !cleanRef.equals("Initial Bank Balance")) {
+                            namesToFetch.add(cleanRef);
+                        }
+                    }
+                }
+
+                // Add Contact Names to Fetch List
+                for (tn.finhub.model.SavedContact contact : contacts) {
+                    if (contact.getContactName() != null) {
+                        namesToFetch.add(contact.getContactName().trim());
+                    }
+                }
+
+                // Use Case-Insensitive Map for robust lookup (User 'Sadok' vs ref 'sadok')
+                java.util.Map<String, String> profilePhotos = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                profilePhotos.putAll(userModel.findProfilePhotosByNames(namesToFetch));
+
                 boolean isFrozen = wallet != null && "FROZEN".equals(wallet.getStatus());
 
-                return new TransactionData(user.getId(), transactions, contacts, badTxId, isFrozen);
+                return new TransactionData(user.getId(), transactions, contacts, badTxId, isFrozen, profilePhotos);
             }
         };
 
-        task.setOnSucceeded(e -> {
+        task.setOnSucceeded(e ->
+
+        {
             TransactionData data = task.getValue();
             cachedData = data;
             updateUI(data);
@@ -104,7 +136,7 @@ public class TransactionsController {
         if (contactsContainer != null) {
             contactsContainer.getChildren().clear();
             for (tn.finhub.model.SavedContact contact : data.contacts) {
-                contactsContainer.getChildren().add(createContactCard(contact, data.isFrozen));
+                contactsContainer.getChildren().add(createContactCard(contact, data.isFrozen, data.profilePhotos));
             }
         }
 
@@ -130,7 +162,8 @@ public class TransactionsController {
         loadData();
     }
 
-    private javafx.scene.Node createContactCard(tn.finhub.model.SavedContact contact, boolean isFrozen) {
+    private javafx.scene.Node createContactCard(tn.finhub.model.SavedContact contact, boolean isFrozen,
+            java.util.Map<String, String> profilePhotos) {
         javafx.scene.layout.StackPane card = new javafx.scene.layout.StackPane();
 
         // Premium Dark Gradient Background & Border
@@ -147,7 +180,33 @@ public class TransactionsController {
 
         Label initial = new Label(contact.getContactName().substring(0, 1).toUpperCase());
         initial.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 20px;");
-        iconBg.getChildren().add(initial);
+
+        boolean photoLoaded = false;
+        if (profilePhotos != null) {
+            String name = contact.getContactName().trim();
+            if (profilePhotos.containsKey(name)) {
+                String url = profilePhotos.get(name);
+                if (url != null && !url.isEmpty()) {
+                    try {
+                        javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
+                                tn.finhub.util.ImageCache.get(url));
+                        imgView.setFitWidth(48);
+                        imgView.setFitHeight(48);
+                        imgView.setPreserveRatio(true);
+                        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(24, 24, 24);
+                        imgView.setClip(clip);
+                        iconBg.getChildren().add(imgView);
+                        photoLoaded = true;
+                    } catch (Exception e) {
+                        // Fallback
+                    }
+                }
+            }
+        }
+
+        if (!photoLoaded) {
+            iconBg.getChildren().add(initial);
+        }
 
         Label nameLabel = new Label(contact.getContactName());
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 13px; -fx-font-weight: bold;");
@@ -386,14 +445,16 @@ public class TransactionsController {
         List<tn.finhub.model.SavedContact> contacts;
         int badTxId;
         boolean isFrozen;
+        java.util.Map<String, String> profilePhotos;
 
         public TransactionData(int uid, List<WalletTransaction> txs, List<tn.finhub.model.SavedContact> contacts,
-                int badTxId, boolean isFrozen) {
+                int badTxId, boolean isFrozen, java.util.Map<String, String> profilePhotos) {
             this.userId = uid;
             this.transactions = txs;
             this.contacts = contacts;
             this.badTxId = badTxId;
             this.isFrozen = isFrozen;
+            this.profilePhotos = profilePhotos;
         }
     }
 
@@ -402,7 +463,8 @@ public class TransactionsController {
     }
 
     // --- SHARED LOGIC FROM WalletController (Should be refactored eventually) ---
-    private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId) {
+    private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId,
+            java.util.Map<String, String> profilePhotos) {
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -438,11 +500,8 @@ public class TransactionsController {
         icon.getStyleClass().addAll("transaction-icon", iconClass);
         iconBg.getChildren().add(icon);
 
-        // --- Left Details (Reference + "Money Send") ---
-        VBox leftDetails = new VBox(3);
-        leftDetails.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-        // Text Cleaning
+        // --- Left Details (Also needed for name lookup) ---
+        // Clean text first so we can use it for lookup
         String displayRef = tx.getReference();
         if (displayRef != null) {
             displayRef = displayRef.replace("Transfer to ", "")
@@ -452,7 +511,40 @@ public class TransactionsController {
             if (displayRef.startsWith("DEPOSIT via")) {
                 displayRef = "Deposit";
             }
+        } else {
+            displayRef = "Unknown";
         }
+
+        // --- Profile Photo Override ---
+        if (profilePhotos != null) {
+            // Use the cleaned displayRef as the lookup key (matches logic in loadData)
+            String lookupName = displayRef.trim();
+
+            if (!lookupName.isEmpty() && profilePhotos.containsKey(lookupName)) {
+                String url = profilePhotos.get(lookupName);
+                if (url != null && !url.isEmpty()) {
+                    try {
+                        javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
+                                tn.finhub.util.ImageCache.get(url));
+                        imgView.setFitWidth(40);
+                        imgView.setFitHeight(40);
+                        imgView.setPreserveRatio(true);
+                        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+                        imgView.setClip(clip);
+                        iconBg.getChildren().clear(); // Remove default icon
+                        iconBg.getChildren().add(imgView);
+                    } catch (Exception e) {
+                        // Keep default icon on error
+                    }
+                }
+            }
+        }
+
+        // --- Left Details ---
+        VBox leftDetails = new VBox(3);
+        leftDetails.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        // displayRef is already calculated above
 
         Label refLabel = new Label(displayRef);
         refLabel.getStyleClass().add("transaction-ref");

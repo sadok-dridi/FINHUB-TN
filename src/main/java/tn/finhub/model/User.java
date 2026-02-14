@@ -9,6 +9,8 @@ public class User {
     private String role;
     @JsonProperty("full_name")
     private String fullName;
+    private String phoneNumber;
+    private String profilePhotoUrl;
 
     public User() {
     }
@@ -18,6 +20,15 @@ public class User {
         this.email = email;
         this.role = role;
         this.fullName = fullName;
+    }
+
+    public User(int id, String email, String role, String fullName, String phoneNumber, String profilePhotoUrl) {
+        this.id = id;
+        this.email = email;
+        this.role = role;
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+        this.profilePhotoUrl = profilePhotoUrl;
     }
 
     // Getters
@@ -44,6 +55,22 @@ public class User {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getProfilePhotoUrl() {
+        return profilePhotoUrl;
+    }
+
+    public void setProfilePhotoUrl(String profilePhotoUrl) {
+        this.profilePhotoUrl = profilePhotoUrl;
     }
 
     // New Field for Module 6

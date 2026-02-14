@@ -44,6 +44,7 @@ public class WalletController {
     // private final tn.finhub.dao.MarketDAO marketDAO = new
     // tn.finhub.dao.MarketDAO(); // REMOVED (Use MarketModel)
     private final tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
+    private final tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel(); // Added UserModel
     private Wallet currentWallet;
 
     @FXML
@@ -266,8 +267,30 @@ public class WalletController {
                     }
                 }
 
+                // 7. Fetch Profile Photos for Recent Transactions (Limit 4)
+                int limit = Math.min(transactions.size(), 4);
+                java.util.Set<String> namesToFetch = new java.util.HashSet<>();
+                for (int i = 0; i < limit; i++) {
+                    WalletTransaction tx = transactions.get(i);
+                    String ref = tx.getReference();
+                    if (ref != null) {
+                        String cleanRef = ref.replace("Transfer to ", "")
+                                .replace("Transfer from ", "")
+                                .trim();
+                        // Ignore obvious system messages
+                        if (!cleanRef.toUpperCase().startsWith("MARKET ") &&
+                                !cleanRef.toUpperCase().startsWith("DEPOSIT") &&
+                                !cleanRef.equals("Initial Bank Balance")) {
+                            namesToFetch.add(cleanRef);
+                        }
+                    }
+                }
+                // Case-Insensitive map for robust lookup
+                java.util.Map<String, String> profilePhotos = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                profilePhotos.putAll(userModel.findProfilePhotosByNames(namesToFetch));
+
                 return new WalletDataPacket(wallet, cards, transactions, badTxId, currentValue, totalInvested,
-                        bestAsset, maxPnlPercent, assetCount);
+                        bestAsset, maxPnlPercent, assetCount, profilePhotos);
             }
         };
 
@@ -322,7 +345,8 @@ public class WalletController {
             transactionContainer.getChildren().clear();
             int limit = Math.min(data.transactions.size(), 4);
             for (int i = 0; i < limit; i++) {
-                transactionContainer.getChildren().add(createTransactionCard(data.transactions.get(i), data.badTxId));
+                transactionContainer.getChildren()
+                        .add(createTransactionCard(data.transactions.get(i), data.badTxId, data.profilePhotos));
             }
         }
     }
@@ -338,10 +362,11 @@ public class WalletController {
         String bestAsset;
         java.math.BigDecimal maxPnlPercent;
         int assetCount;
+        java.util.Map<String, String> profilePhotos;
 
         public WalletDataPacket(Wallet w, List<VirtualCard> c, List<WalletTransaction> t, int badId,
                 java.math.BigDecimal val, java.math.BigDecimal inv, String best, java.math.BigDecimal maxPnl,
-                int count) {
+                int count, java.util.Map<String, String> photos) {
             this.wallet = w;
             this.cards = c;
             this.transactions = t;
@@ -351,6 +376,7 @@ public class WalletController {
             this.bestAsset = best;
             this.maxPnlPercent = maxPnl;
             this.assetCount = count;
+            this.profilePhotos = photos;
         }
     }
 
@@ -573,7 +599,8 @@ public class WalletController {
         return sb.toString();
     }
 
-    private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId) {
+    private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId,
+            java.util.Map<String, String> profilePhotos) {
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -594,31 +621,73 @@ public class WalletController {
                 : (isNegative ? "transaction-icon-negative" : "transaction-icon");
 
         // --- Icon ---
+        // --- Icon or Profile Photo ---
         javafx.scene.layout.StackPane iconBg = new javafx.scene.layout.StackPane();
         iconBg.getStyleClass().add("transaction-icon-bg");
         iconBg.setPrefSize(40, 40);
         iconBg.setMinSize(40, 40);
         iconBg.setMaxSize(40, 40);
 
-        javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
-        icon.setContent(getIconPath(tx.getType()));
-        icon.getStyleClass().addAll("transaction-icon", iconClass); // Base class + color modifier
-        iconBg.getChildren().add(icon);
+        // Prepare text for lookup
+        String displayRef = tx.getReference();
+        if (displayRef != null) {
+            displayRef = displayRef.replace("Transfer to ", "")
+                    .replace("Transfer from ", "");
+            displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "");
+
+            if (displayRef.startsWith("DEPOSIT via")) {
+                displayRef = "Deposit";
+            }
+        } else {
+            displayRef = "Unknown";
+        }
+
+        boolean photoLoaded = false;
+        if (profilePhotos != null) {
+            String lookupName = displayRef.trim();
+            if (!lookupName.isEmpty() && profilePhotos.containsKey(lookupName)) {
+                String url = profilePhotos.get(lookupName);
+                if (url != null && !url.isEmpty()) {
+                    try {
+                        javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
+                                tn.finhub.util.ImageCache.get(url));
+                        imgView.setFitWidth(40);
+                        imgView.setFitHeight(40);
+                        imgView.setPreserveRatio(true);
+                        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
+                        imgView.setClip(clip);
+                        iconBg.getChildren().add(imgView);
+                        photoLoaded = true;
+                    } catch (Exception e) {
+                        // Fallback
+                    }
+                }
+            }
+        }
+
+        if (!photoLoaded) {
+            javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+            icon.setContent(getIconPath(tx.getType()));
+            icon.getStyleClass().addAll("transaction-icon", iconClass); // Base class + color modifier
+            iconBg.getChildren().add(icon);
+        }
 
         // --- Left Details (Reference + "Money Send") ---
         VBox leftDetails = new VBox(3);
         leftDetails.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         // Text Cleaning
-        String displayRef = tx.getReference();
+        // String displayRef = tx.getReference(); // Removed duplicate declaration
         if (displayRef != null) {
             // Remove "Transfer to/from " prefixes
-            displayRef = displayRef.replace("Transfer to ", "")
-                    .replace("Transfer from ", "");
+            // Logic moved up to support Photo Lookup
+            // displayRef = displayRef.replace("Transfer to ", "")
+            // .replace("Transfer from ", "");
 
             // Remove " to <id>" or " from <id>" at end of string
             // Regex: match space + (from|to) + space + digits + end of line
-            displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "");
+            // displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", ""); //
+            // Already done above for logic
 
             if (displayRef.startsWith("DEPOSIT via")) {
                 displayRef = "Deposit";

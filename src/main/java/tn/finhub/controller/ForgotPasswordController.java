@@ -62,7 +62,10 @@ public class ForgotPasswordController {
     @FXML
     public void handleBackToLogin() {
         try {
-            Parent loginView = FXMLLoader.load(getClass().getResource("/view/login.fxml"));
+            java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("messages_en");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
+            loader.setResources(bundle);
+            Parent loginView = loader.load();
 
             // Find the content area to preserve the main layout/background
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) emailField.getScene()

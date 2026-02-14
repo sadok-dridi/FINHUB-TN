@@ -56,8 +56,8 @@
 .header-text {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
-    -fx-text-fill: -color-text-primary;
-    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 10, 0, 0, 0);
+    -fx-text-fill: #E9D5FF;
+    -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.6), 15, 0.4, 0, 0);
 }
 
 .sub-header-text {
@@ -188,9 +188,9 @@
     -fx-border-radius: 12px;
     -fx-background-radius: 12px;
     -fx-padding: 12;
-    -fx-text-fill: white;
-    /* Warning: JavaFX text-field uses -fx-text-fill */
-    -fx-prompt-text-fill: -color-text-muted;
+    -fx-text-fill: -color-text-primary;
+    -fx-prompt-text-fill: -color-text-secondary;
+    /* Lighter gray for better visibility */
 }
 
 .text-field:focused {
@@ -223,8 +223,12 @@
 /* The text field area inside the combo box */
 .combo-box .list-cell {
     -fx-background-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: -color-text-primary;
     -fx-padding: 0;
+}
+
+.combo-box:filled .list-cell {
+    -fx-text-fill: -color-text-primary;
 }
 
 /* The arrow button on the right */

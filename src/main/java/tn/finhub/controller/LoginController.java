@@ -318,18 +318,20 @@ public class LoginController {
 
                                     // Wallet Controller Cache
                                     String bestAsset = "N/A"; // Simplified for pre-fetch
-                                    java.math.BigDecimal maxPnl = java.math.BigDecimal.ZERO;
+                                    java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.ZERO;
                                     int assetCount = items.size();
 
-                                    WalletController.WalletDataPacket packet = new WalletController.WalletDataPacket(
-                                            wallet, cards, transactions, badTxId,
-                                            portValue, totalInvested, bestAsset, maxPnl, assetCount);
-                                    WalletController.setCachedData(packet);
+                                    WalletController.WalletDataPacket walletData = new WalletController.WalletDataPacket(
+                                            wallet, cards, transactions, badTxId, portValue, totalInvested,
+                                            bestAsset,
+                                            maxPnlPercent, assetCount, new java.util.HashMap<>());
+                                    WalletController.setCachedData(walletData);
 
                                     // Transactions Controller Cache
                                     boolean isFrozen = "FROZEN".equals(wallet.getStatus());
                                     TransactionsController.TransactionData txData = new TransactionsController.TransactionData(
-                                            userId, transactions, contacts, badTxId, isFrozen);
+                                            userId, transactions, contacts, badTxId, isFrozen,
+                                            new java.util.HashMap<>());
                                     TransactionsController.setCachedData(txData);
 
                                     // Financial Twin Cache

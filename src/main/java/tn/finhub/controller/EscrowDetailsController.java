@@ -13,6 +13,8 @@ public class EscrowDetailsController {
 
     @FXML
     private Label escrowIdLabel;
+
+    private javafx.animation.Timeline pollingTimeline;
     @FXML
     private Label amountLabel;
     @FXML
@@ -41,6 +43,8 @@ public class EscrowDetailsController {
     private Button disputeButton;
     @FXML
     private Label errorLabel;
+    @FXML
+    private Button refundButton;
 
     private Escrow currentEscrow;
     private final EscrowManager escrowManager = new EscrowManager();
@@ -91,10 +95,19 @@ public class EscrowDetailsController {
                 secretCodeLabel.setText("Secret Code: " + currentEscrow.getSecretCode());
 
                 if ("QR_CODE".equals(currentEscrow.getEscrowType())) {
-                    loadQrCode(currentEscrow.getSecretCode());
+                    String qrData = "https://escrowfinhub.work.gd/escrow/claim_ui?id=" + currentEscrow.getId()
+                            + "&secret=" + currentEscrow.getSecretCode();
+                    loadQrCode(qrData);
+                    startPolling(); // Start listening for remote release
                 } else {
                     qrCodeImageView.setVisible(false);
                     secretCodeLabel.setText("Waiting for Admin Approval");
+                }
+
+                // Show Refund Button if Expired
+                if (currentEscrow.getExpiryDate().isBefore(java.time.LocalDateTime.now())) {
+                    refundButton.setVisible(true);
+                    refundButton.setManaged(true);
                 }
             } else if (isReceiver) {
                 // Receiver sees Input Field
@@ -105,10 +118,42 @@ public class EscrowDetailsController {
     }
 
     private void loadQrCode(String data) {
-        // Use QR Server API
-        String url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + data;
-        Image image = new Image(url, true); // background loading
-        qrCodeImageView.setImage(image);
+        try {
+            String encodedData = java.net.URLEncoder.encode(data, "UTF-8");
+            String url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodedData;
+            Image image = new Image(url, true);
+            qrCodeImageView.setImage(image);
+        } catch (java.io.UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startPolling() {
+        if (pollingTimeline != null) {
+            pollingTimeline.stop();
+        }
+
+        pollingTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(2), event -> {
+                    Escrow updated = escrowManager.findById(currentEscrow.getId());
+                    if (updated != null && "RELEASED".equals(updated.getStatus())) {
+                        stopPolling();
+                        javafx.application.Platform.runLater(() -> {
+                            showInfo("Funds Released!",
+                                    "The receiver has successfully scanned the code. Funds released.");
+                            closeDialog();
+                        });
+                    }
+                }));
+        pollingTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        pollingTimeline.play();
+    }
+
+    private void stopPolling() {
+        if (pollingTimeline != null) {
+            pollingTimeline.stop();
+            pollingTimeline = null;
+        }
     }
 
     @FXML
@@ -142,11 +187,36 @@ public class EscrowDetailsController {
     }
 
     @FXML
+    private void handleSenderRelease() {
+        try {
+            int userId = UserSession.getInstance().getUser().getId();
+            escrowManager.releaseEscrowBySender(currentEscrow.getId(), userId);
+            showInfo("Funds Released", "You have successfully released the funds to the receiver.");
+            closeDialog();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleSenderRefund() {
+        try {
+            int userId = UserSession.getInstance().getUser().getId();
+            escrowManager.claimRefund(currentEscrow.getId(), userId);
+            showInfo("Refund Claimed", "The escrow has expired and funds have been refunded to your wallet.");
+            closeDialog();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleClose() {
         closeDialog();
     }
 
     private void closeDialog() {
+        stopPolling();
         Stage stage = (Stage) escrowIdLabel.getScene().getWindow();
         stage.close();
     }

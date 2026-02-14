@@ -23,8 +23,6 @@ public class DBConnection {
     private static final String USER_LOCAL = dotenv.get("DB_LOCAL_USER");
     private static final String PASSWORD_LOCAL = dotenv.get("DB_LOCAL_PASSWORD");
 
-    private static final String PREF_DB_MODE = "db_mode";
-
     private DBConnection() {
     }
 
@@ -50,22 +48,12 @@ public class DBConnection {
                     }
                 }
 
-                java.util.prefs.Preferences prefs = java.util.prefs.Preferences.userNodeForPackage(DBConnection.class);
-                String mode = prefs.get(PREF_DB_MODE, "Hosted"); // Default to Hosted
-
-                String url, user, password;
-
-                if ("Local".equalsIgnoreCase(mode)) {
-                    url = URL_LOCAL;
-                    user = USER_LOCAL;
-                    password = PASSWORD_LOCAL;
-                    logger.info("Connecting to LOCAL database...");
-                } else {
-                    url = URL_HOSTED;
-                    user = USER_HOSTED;
-                    password = PASSWORD_HOSTED;
-                    logger.info("Connecting to HOSTED database...");
-                }
+                // FORCE HOSTED MODE
+                String mode = "Hosted";
+                String url = URL_HOSTED;
+                String user = USER_HOSTED;
+                String password = PASSWORD_HOSTED;
+                logger.info("Connecting to HOSTED database (Enforced)...");
 
                 instance = DriverManager.getConnection(url, user, password);
                 logger.info("Database connection established ({})", mode);
