@@ -1,4 +1,4 @@
-# FinHub – FinTech Escrow Platform
+# FinHub – Escrow Platform
 
 FinHub is a collaborative university project developed.  
 The goal of this project is to design and implement a  platform centered around a secure **escrow system**, ensuring safe transactions between multiple parties.
