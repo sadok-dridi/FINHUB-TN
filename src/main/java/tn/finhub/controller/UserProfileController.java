@@ -11,6 +11,12 @@ import tn.finhub.util.CloudinaryService;
 import tn.finhub.util.UserSession;
 import tn.finhub.util.ViewUtils;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
 import java.io.File;
 
 public class UserProfileController {
@@ -149,25 +155,46 @@ public class UserProfileController {
         tn.finhub.model.KYCModel kycModel = new tn.finhub.model.KYCModel();
         java.util.List<tn.finhub.model.KYCRequest> requests = kycModel.findByUserId(currentUser.getId());
 
-        // Find if there's any PENDING or VERIFIED request
+        System.out.println("KYC DEBUG: Checking for User ID: " + currentUser.getId());
+        System.out.println("KYC DEBUG: Found " + requests.size() + " requests.");
+        for (tn.finhub.model.KYCRequest r : requests) {
+            System.out.println("KYC DEBUG: Request ID=" + r.getRequestId() + ", Status=" + r.getStatus());
+        }
+
+        // Find if there's any PENDING or APPROVED request
         boolean isPending = requests.stream().anyMatch(r -> "PENDING".equalsIgnoreCase(r.getStatus()));
-        boolean isVerified = requests.stream().anyMatch(r -> "VERIFIED".equalsIgnoreCase(r.getStatus()));
+        boolean isVerified = requests.stream().anyMatch(r -> "APPROVED".equalsIgnoreCase(r.getStatus()));
+
+        System.out.println("KYC DEBUG: isPending=" + isPending + ", isVerified=" + isVerified);
 
         if (kycButton != null) {
+            javafx.scene.shape.SVGPath icon = null;
+            if (kycButton.getGraphic() instanceof javafx.scene.shape.SVGPath) {
+                icon = (javafx.scene.shape.SVGPath) kycButton.getGraphic();
+            }
+
             if (isVerified) {
-                kycButton.setDisable(true);
-                kycButton.setText("Verified");
+                kycButton.setDisable(true); // Keep disabled but look "Good"
+                kycButton.setText("Identity Verified");
                 kycButton.setStyle(
-                        "-fx-background-color: transparent; -fx-text-fill: -color-success; -fx-border-color: -color-success; -fx-border-radius: 12px; -fx-opacity: 1.0; -fx-font-weight: bold;");
+                        "-fx-background-color: rgba(16, 185, 129, 0.15); -fx-text-fill: #10B981; -fx-border-color: #10B981; -fx-border-radius: 12px; -fx-opacity: 1.0; -fx-font-weight: bold; -fx-border-width: 1.5;");
+                if (icon != null)
+                    icon.setFill(javafx.scene.paint.Color.valueOf("#10B981")); // Emerald Icon
+
             } else if (isPending) {
                 kycButton.setDisable(true);
                 kycButton.setText("Pending Verification");
                 kycButton.setStyle(
-                        "-fx-background-color: rgba(245, 158, 11, 0.1); -fx-text-fill: -color-warning; -fx-border-color: -color-warning; -fx-border-radius: 12px; -fx-opacity: 1.0; -fx-font-weight: bold;");
+                        "-fx-background-color: rgba(245, 158, 11, 0.1); -fx-text-fill: #F59E0B; -fx-border-color: #F59E0B; -fx-border-radius: 12px; -fx-opacity: 1.0; -fx-font-weight: bold;");
+                if (icon != null)
+                    icon.setFill(javafx.scene.paint.Color.valueOf("#F59E0B")); // Orange Icon
+
             } else {
                 kycButton.setDisable(false);
                 kycButton.setText("Verify Identity (KYC)");
                 kycButton.setStyle(""); // Reset to default CSS class style
+                if (icon != null)
+                    icon.setFill(javafx.scene.paint.Color.WHITE); // Default White
             }
         }
 
@@ -175,10 +202,11 @@ public class UserProfileController {
             if (isPending) {
                 kycStatusLabel.setText("Your verification request is under review.");
                 kycStatusLabel.setVisible(true);
+                kycStatusLabel.setStyle("-fx-text-fill: #F59E0B;");
             } else if (isVerified) {
                 kycStatusLabel.setText("Your identity has been verified.");
                 kycStatusLabel.setVisible(true);
-                kycStatusLabel.setStyle("-fx-text-fill: -color-success;");
+                kycStatusLabel.setStyle("-fx-text-fill: #10B981;");
             } else {
                 kycStatusLabel.setVisible(false);
             }
@@ -217,26 +245,51 @@ public class UserProfileController {
 
         if (selectedFile != null) {
             try {
-                // Upload to Cloudinary
-                String url = CloudinaryService.upload(selectedFile, "profiles");
+                // Open Cropper Dialog
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/image_cropper.fxml"));
+                Parent root = loader.load();
 
-                // Update Model
-                currentUser.setProfilePhotoUrl(url);
-                userModel.updateProfile(currentUser); // Save URL to DB
+                ImageCropperController cropper = loader.getController();
 
-                // Update UI
-                profileImageView.setImage(new Image(url));
+                Stage cropperStage = new Stage();
+                cropperStage.setTitle("Crop Image");
+                cropperStage.setScene(new Scene(root));
+                cropperStage.initModality(Modality.WINDOW_MODAL);
+                cropperStage.initOwner(nameLabel.getScene().getWindow());
 
-                // Show Success Dialog
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                        javafx.scene.control.Alert.AlertType.INFORMATION);
-                alert.setTitle("Success");
-                alert.setHeaderText(null);
-                alert.setContentText("Profile photo updated successfully!");
-                alert.showAndWait();
+                cropper.setStage(cropperStage);
+                cropper.setImage(selectedFile);
 
-                // Sync Sidebar
-                UserDashboardController.refreshProfile();
+                cropperStage.showAndWait();
+
+                // Get Result
+                File croppedFile = cropper.getCroppedFile();
+
+                if (croppedFile != null) {
+                    // Upload Cropped File to Cloudinary
+                    String url = CloudinaryService.upload(croppedFile, "profiles");
+
+                    // Update Model
+                    currentUser.setProfilePhotoUrl(url);
+                    userModel.updateProfile(currentUser); // Save URL to DB
+
+                    // Update UI
+                    profileImageView.setImage(new Image(url));
+
+                    // Show Success Dialog
+                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                            javafx.scene.control.Alert.AlertType.INFORMATION);
+                    alert.setTitle("Success");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Profile photo updated successfully!");
+                    alert.showAndWait();
+
+                    // Sync Sidebar
+                    UserDashboardController.refreshProfile();
+
+                    // Cleanup Temp File
+                    croppedFile.delete();
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
