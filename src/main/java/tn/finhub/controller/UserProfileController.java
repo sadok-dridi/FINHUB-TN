@@ -226,7 +226,17 @@ public class UserProfileController {
 
                 // Update UI
                 profileImageView.setImage(new Image(url));
-                showStatus("Photo updated successfully!", false);
+
+                // Show Success Dialog
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Profile photo updated successfully!");
+                alert.showAndWait();
+
+                // Sync Sidebar
+                UserDashboardController.refreshProfile();
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -238,13 +248,32 @@ public class UserProfileController {
     @FXML
     private void handleDeletePhoto() {
         if (currentUser != null && currentUser.getProfilePhotoUrl() != null) {
-            currentUser.setProfilePhotoUrl(null);
-            userModel.updateProfile(currentUser);
-            UserSession.getInstance().setUser(currentUser);
+            // Confirmation Dialog
+            javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(
+                    javafx.scene.control.Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Delete Photo");
+            confirm.setHeaderText("Delete Profile Photo?");
+            confirm.setContentText("Are you sure you want to remove your profile photo?");
 
-            // Reset to default view (circle with icon) by clearing image
-            profileImageView.setImage(null);
-            showStatus("Profile photo deleted.", false);
+            if (confirm.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
+                currentUser.setProfilePhotoUrl(null);
+                userModel.updateProfile(currentUser);
+                UserSession.getInstance().setUser(currentUser);
+
+                // Reset to default view (circle with icon) by clearing image
+                profileImageView.setImage(null);
+
+                // Show Success Dialog
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Profile photo deleted successfully.");
+                alert.showAndWait();
+
+                // Sync Sidebar
+                UserDashboardController.refreshProfile();
+            }
         }
     }
 

@@ -649,14 +649,13 @@ public class WalletController {
                 String url = profilePhotos.get(lookupName);
                 if (url != null && !url.isEmpty()) {
                     try {
-                        javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
-                                tn.finhub.util.ImageCache.get(url));
-                        imgView.setFitWidth(40);
-                        imgView.setFitHeight(40);
-                        imgView.setPreserveRatio(true);
-                        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
-                        imgView.setClip(clip);
-                        iconBg.getChildren().add(imgView);
+                        // Use centralized UI Helper
+                        javafx.scene.layout.StackPane customIcon = tn.finhub.util.UIUtils.createCircularImage(url, 40);
+                        iconBg.getChildren().clear(); // Remove default
+                        iconBg.getChildren().add(customIcon);
+                        // Hide original background if needed, or overlay it.
+                        // The customIcon has its own background/border.
+                        iconBg.setStyle("-fx-background-color: transparent;");
                         photoLoaded = true;
                     } catch (Exception e) {
                         // Fallback

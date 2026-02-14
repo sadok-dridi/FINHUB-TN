@@ -48,8 +48,18 @@ public class UserDashboardController {
     @FXML
     private javafx.scene.layout.StackPane dashboardContent;
 
+    private static UserDashboardController instance;
+
+    public static void refreshProfile() {
+        if (instance != null) {
+            instance.loadProfileImage();
+        }
+    }
+
     @FXML
     public void initialize() {
+        instance = this; // Capture instance for static access
+
         sidebar.setPrefWidth(COLLAPSED_WIDTH); // Start Expanded
         sidebar.setMinWidth(COLLAPSED_WIDTH);
         sidebar.setMaxWidth(EXPANDED_WIDTH);
@@ -59,14 +69,12 @@ public class UserDashboardController {
         updateSidebarState();
 
         // Load User Data from Session (Database Local)
-        // Load User Data from Session (Database Local)
         tn.finhub.model.User sessionUser = tn.finhub.util.UserSession.getInstance().getUser();
         if (sessionUser != null) {
-            // Fetch fresh from DB to get latest profile photo
+            // Fetch fresh from DB to get latest
             tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
             tn.finhub.model.User currentUser = userModel.findById(sessionUser.getId());
 
-            // Fallback to session if DB fails (shouldn't happen)
             if (currentUser == null)
                 currentUser = sessionUser;
 
@@ -74,42 +82,45 @@ public class UserDashboardController {
             userNameLabel.setText(displayName);
             userRoleLabel.setText(currentUser.getRole());
 
-            // Load Profile Image for Sidebar
-            if (currentUser.getProfilePhotoUrl() != null && !currentUser.getProfilePhotoUrl().isEmpty()) {
-                try {
-                    javafx.scene.image.Image image = new javafx.scene.image.Image(currentUser.getProfilePhotoUrl(),
-                            true);
-                    sidebarProfileImage.setImage(image);
-
-                    // Update size to be larger for clarity (36px)
-                    sidebarProfileImage.setFitWidth(36);
-                    sidebarProfileImage.setFitHeight(36);
-
-                    // Circular Clip for new size
-                    javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(18, 18, 18);
-                    sidebarProfileImage.setClip(clip);
-
-                    sidebarProfileImage.setVisible(true);
-
-                    // Hide default placeholder
-                    if (profileImageContainer.getChildren().size() > 0) {
-                        profileImageContainer.getChildren().get(0).setVisible(false); // Circle
-                        profileImageContainer.getChildren().get(1).setVisible(false); // Icon
-                    }
-                } catch (Exception e) {
-                    System.err.println("Failed to load sidebar profile image: " + e.getMessage());
-                    sidebarProfileImage.setVisible(false);
-                    showDefaultProfileIcon();
-                }
-            } else {
-                sidebarProfileImage.setVisible(false);
-                showDefaultProfileIcon();
-            }
+            loadProfileImage();
         }
 
         // Load Default View
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/wallet_dashboard.fxml");
         setActiveButton(btnDashboard);
+    }
+
+    private void loadProfileImage() {
+        tn.finhub.model.User sessionUser = tn.finhub.util.UserSession.getInstance().getUser();
+        if (sessionUser == null)
+            return;
+
+        tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+        tn.finhub.model.User currentUser = userModel.findById(sessionUser.getId());
+        if (currentUser == null)
+            currentUser = sessionUser;
+
+        // Load Profile Image for Sidebar
+        if (currentUser.getProfilePhotoUrl() != null && !currentUser.getProfilePhotoUrl().isEmpty()) {
+            try {
+                // Use centralized UI Helper for Sidebar Image (36px)
+                javafx.scene.layout.StackPane customIcon = tn.finhub.util.UIUtils
+                        .createCircularImage(currentUser.getProfilePhotoUrl(), 36);
+
+                profileImageContainer.getChildren().clear(); // Remove default placeholders
+                profileImageContainer.getChildren().add(customIcon);
+
+            } catch (Exception e) {
+                System.err.println("Failed to load sidebar profile image: " + e.getMessage());
+                showDefaultProfileIcon();
+            }
+        } else {
+            // Clear any custom image
+            profileImageContainer.getChildren().clear();
+            // We need to restore the default placeholders if we cleared them
+            // Since we cleared them, we should probably just re-create or show default
+            showDefaultProfileIcon();
+        }
     }
 
     @FXML

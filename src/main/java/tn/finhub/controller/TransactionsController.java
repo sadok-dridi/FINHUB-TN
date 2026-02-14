@@ -185,7 +185,7 @@ public class TransactionsController {
         // Avatar with initials
         javafx.scene.layout.StackPane iconBg = new javafx.scene.layout.StackPane();
         iconBg.setStyle(
-                "-fx-background-color: rgba(16, 185, 129, 0.2); -fx-background-radius: 30; -fx-border-color: rgba(16, 185, 129, 0.3); -fx-border-radius: 30;");
+                "-fx-background-color: rgba(16, 185, 129, 0.1); -fx-background-radius: 30; -fx-border-color: #10B981; -fx-border-width: 2; -fx-border-radius: 30; -fx-effect: dropshadow(gaussian, rgba(16, 185, 129, 0.4), 8, 0, 0, 0);");
         iconBg.setPrefSize(48, 48);
         iconBg.setMaxSize(48, 48);
 
@@ -204,14 +204,8 @@ public class TransactionsController {
                 String url = profilePhotos.get(lookupKey);
                 if (url != null && !url.isEmpty()) {
                     try {
-                        javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
-                                tn.finhub.util.ImageCache.get(url));
-                        imgView.setFitWidth(48);
-                        imgView.setFitHeight(48);
-                        imgView.setPreserveRatio(true);
-                        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(24, 24, 24);
-                        imgView.setClip(clip);
-                        iconBg.getChildren().add(imgView);
+                        // Use centralized UI Helper
+                        iconBg = tn.finhub.util.UIUtils.createCircularImage(url, 48);
                         photoLoaded = true;
                     } catch (Exception e) {
                         // Fallback
@@ -533,22 +527,18 @@ public class TransactionsController {
 
         // --- Profile Photo Override ---
         if (profilePhotos != null) {
-            // Use the cleaned displayRef as the lookup key (matches logic in loadData)
             String lookupName = displayRef.trim();
-
             if (!lookupName.isEmpty() && profilePhotos.containsKey(lookupName)) {
                 String url = profilePhotos.get(lookupName);
                 if (url != null && !url.isEmpty()) {
                     try {
-                        javafx.scene.image.ImageView imgView = new javafx.scene.image.ImageView(
-                                tn.finhub.util.ImageCache.get(url));
-                        imgView.setFitWidth(40);
-                        imgView.setFitHeight(40);
-                        imgView.setPreserveRatio(true);
-                        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(20, 20, 20);
-                        imgView.setClip(clip);
+                        // Centralized helper for circular image with border
+                        javafx.scene.layout.StackPane customIcon = tn.finhub.util.UIUtils.createCircularImage(url, 40);
                         iconBg.getChildren().clear(); // Remove default icon
-                        iconBg.getChildren().add(imgView);
+                        iconBg.getChildren().add(customIcon);
+                        // Hide original background if needed, or overlay it.
+                        // The customIcon has its own background/border.
+                        iconBg.setStyle("-fx-background-color: transparent;"); // Clear parent bg
                     } catch (Exception e) {
                         // Keep default icon on error
                     }
