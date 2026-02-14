@@ -411,17 +411,22 @@ public class WalletModel {
             throw new RuntimeException("Recipient wallet is frozen. Cannot receive funds.");
         }
 
-        // Fetch Sender Name
+        // Fetch Sender
+        User sender = null;
         String senderName = "Unknown";
+
         Wallet senderWallet = findById(senderWalletId);
         if (senderWallet != null) {
-            User sender = userModel.findById(senderWallet.getUserId());
-            if (sender != null)
+            sender = userModel.findById(senderWallet.getUserId());
+            if (sender != null) {
                 senderName = sender.getFullName();
+            }
         }
 
-        String senderRef = "Transfer to " + recipient.getFullName();
-        String receiverRef = "Transfer from " + senderName;
+        // Format: "Transfer to [Name] (Wallet [ID])"
+        // This preserves the Name for display but keeps the ID for robust photo lookup
+        String senderRef = "Transfer to " + recipient.getFullName() + " (Wallet " + recipientWallet.getId() + ")";
+        String receiverRef = "Transfer from " + senderName + " (Wallet " + senderWalletId + ")";
 
         transferInternal(senderWalletId, recipientWallet.getId(), amount, senderRef, receiverRef);
     }
@@ -810,5 +815,41 @@ public class WalletModel {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    // ========================
+    // LOOKUP HELPERS
+    // ========================
+
+    public java.util.Map<Integer, String> findProfilePhotosByWalletIds(java.util.Set<Integer> walletIds) {
+        java.util.Map<Integer, String> photoMap = new java.util.HashMap<>();
+        if (walletIds == null || walletIds.isEmpty()) {
+            return photoMap;
+        }
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT w.id as wallet_id, u.profile_photo_url FROM wallets w JOIN users_local u ON w.user_id = u.user_id WHERE w.id IN (");
+        for (int i = 0; i < walletIds.size(); i++) {
+            sql.append(i == 0 ? "?" : ", ?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int index = 1;
+            for (Integer id : walletIds) {
+                ps.setInt(index++, id);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int wId = rs.getInt("wallet_id");
+                String photoUrl = rs.getString("profile_photo_url");
+                if (photoUrl != null && !photoUrl.isEmpty()) {
+                    photoMap.put(wId, photoUrl);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return photoMap;
     }
 }

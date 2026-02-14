@@ -2,42 +2,118 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.image.ImageView?>
 
-<VBox spacing="20" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.AdminKYCController">
-    
-    <Label text="KYC Requests" styleClass="header-text"/>
-    
-    <SplitPane VBox.vgrow="ALWAYS" dividerPositions="0.6">
-        <items>
-            <!-- Left: Table -->
-            <TableView fx:id="requestTable">
-                <columns>
-                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-                    <TableColumn fx:id="colUser" text="User" prefWidth="150"/>
-                    <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
-                    <TableColumn fx:id="colDate" text="Date" prefWidth="150"/>
-                    <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
-                </columns>
-                <columnResizePolicy>
-                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                </columnResizePolicy>
-            </TableView>
-            
-            <!-- Right: Details -->
-            <VBox fx:id="detailsBox" spacing="15" style="-fx-padding: 15;" visible="false">
-                <Label text="Request Details" styleClass="sub-header-text"/>
-                <Label fx:id="detailUserLabel" style="-fx-font-weight: bold;"/>
-                <Label fx:id="detailTypeLabel"/>
-                
-                <ImageView fx:id="detailImageView" fitWidth="300" fitHeight="200" preserveRatio="true"/>
-                <Button fx:id="btnOpenVideo" text="Open Video in Browser"/>
-                
-                <HBox spacing="10">
-                    <Button fx:id="btnApprove" text="Approve" onAction="#handleApprove" style="-fx-background-color: green; -fx-text-fill: white;"/>
-                    <Button fx:id="btnReject" text="Reject" onAction="#handleReject" style="-fx-background-color: red; -fx-text-fill: white;"/>
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.AdminKYCController" fx:id="rootStackPane">
+
+    <!-- List View -->
+    <VBox fx:id="requestsListContainer" spacing="20" style="-fx-padding: 15;">
+        
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT">
+            <Label text="KYC Requests" styleClass="header-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button onAction="#handleRefresh" styleClass="button-icon">
+                 <graphic>
+                    <SVGPath content="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" style="-fx-fill: white;"/>
+                 </graphic>
+            </Button>
+        </HBox>
+
+        <!-- Requests Grid/List -->
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">
+            <FlowPane fx:id="requestsContainer" hgap="20" vgap="20" style="-fx-padding: 5;"/>
+        </ScrollPane>
+
+    </VBox>
+
+    <!-- Details View (Overlay) -->
+    <VBox fx:id="detailsView" spacing="0" style="-fx-background-color: -color-bg-default;" visible="false">
+        
+        <!-- Header / Nav -->
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20; -fx-border-color: transparent transparent -color-card-border transparent; -fx-border-width: 0 0 1 0;">
+            <Button styleClass="button-back" onAction="#handleBack" style="-fx-border-color: rgba(255,255,255,0.2); -fx-background-color: rgba(255,255,255,0.05);">
+                <graphic>
+                    <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="-fx-fill: white;" scaleX="1.2" scaleY="1.2"/>
+                </graphic>
+            </Button>
+            <VBox spacing="4">
+                <Label text="Review KYC Request" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                     <Label fx:id="detailTypeLabel" text="Document Type" style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold; -fx-font-size: 12px; -fx-background-color: -color-bg-subtle; -fx-padding: 2 8; -fx-background-radius: 4;"/>
+                     <Label fx:id="detailDateLabel" text="Submitted on..." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
                 </HBox>
             </VBox>
-        </items>
-    </SplitPane>
-</VBox>
+        </HBox>
+
+        <!-- Content Split View -->
+        <VBox VBox.vgrow="ALWAYS" style="-fx-padding: 10;">
+             <HBox spacing="20" alignment="CENTER" VBox.vgrow="ALWAYS">
+                
+                <!-- Left: User Profile Card -->
+                <VBox style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);" 
+                      spacing="15" maxWidth="300" minWidth="280" alignment="TOP_CENTER" HBox.hgrow="NEVER">
+                    
+                    <!-- Profile Header -->
+                    <StackPane>
+                        <javafx.scene.shape.Circle radius="45" fill="#2D2A40" stroke="#3F3C55" strokeWidth="2"/>
+                        <ImageView fx:id="userProfileImage" fitWidth="90" fitHeight="90" preserveRatio="false">
+                             <clip>
+                                <javafx.scene.shape.Circle centerX="45" centerY="45" radius="45"/>
+                            </clip>
+                        </ImageView>
+                    </StackPane>
+
+                    <Label fx:id="detailUserLabel" text="User Name" style="-fx-font-size: 18px; -fx-font-weight: 900; -fx-text-fill: white; -fx-text-alignment: center;" wrapText="true"/>
+                    <Label fx:id="userEmailLabel" text="email@example.com" style="-fx-font-size: 13px; -fx-text-fill: -color-text-secondary;"/>
+
+                    <Separator style="-fx-opacity: 0.1;"/>
+
+                    <!-- Details Grid -->
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="80"/>
+                             <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <Label text="Role" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="userRoleLabel" text="USER" style="-fx-text-fill: -color-primary; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                        <Label text="Phone" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="userPhoneLabel" text="+216 ..." style="-fx-text-fill: -color-text-primary;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                        <Label text="Trust Score" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <HBox spacing="5" alignment="CENTER_LEFT" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                             <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" style="-fx-fill: -color-success;" scaleX="0.8" scaleY="0.8"/>
+                             <Label fx:id="userTrustLabel" text="100" style="-fx-text-fill: -color-success; -fx-font-weight: bold;"/>
+                        </HBox>
+                    </GridPane>
+
+                    <Region VBox.vgrow="ALWAYS"/>
+
+                    <!-- Actions -->
+                    <VBox fx:id="actionsContainer" spacing="10" maxWidth="Infinity">
+                        <Button fx:id="btnApprove" text="Approve Request" onAction="#handleApprove" styleClass="button-success" maxWidth="Infinity" style="-fx-padding: 10;"/>
+                        <Button fx:id="btnReject" text="Reject Request" onAction="#handleReject" styleClass="button-danger" maxWidth="Infinity" style="-fx-padding: 10;"/>
+                    </VBox>
+
+                </VBox>
+
+
+                <!-- Right: Document Viewer -->
+                <VBox HBox.hgrow="ALWAYS" spacing="10">
+                     <Label text="Submitted Document" styleClass="header-text" style="-fx-font-size: 14px;"/>
+                     
+                     <VBox alignment="CENTER" style="-fx-background-color: -color-card-bg; -fx-padding: 10; -fx-background-radius: 12; -fx-border-color: -color-card-border; -fx-border-width: 1; -fx-max-width: 300; -fx-max-height: 250;" VBox.vgrow="NEVER">
+                        <ImageView fx:id="detailImageView" fitWidth="250" fitHeight="180" preserveRatio="true"/>
+                        <Button fx:id="btnOpenVideo" text="Open Video Proof" styleClass="button-outlined-primary" visible="false" style="-fx-font-size: 12px; -fx-padding: 8 16;"/>
+                    </VBox>
+                </VBox>
+
+             </HBox>
+        </VBox>
+
+    </VBox>
+
+</StackPane>

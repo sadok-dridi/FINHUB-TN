@@ -43,11 +43,7 @@ public class AdminDashboardController {
     @FXML
     private Button btnEscrows;
     @FXML
-    private Button btnSupport;
-    @FXML
-    private Button btnAlerts;
-    @FXML
-    private Button btnKYC;
+    private Button btnSupportHub;
     @FXML
     private Button btnLogout;
 
@@ -122,9 +118,7 @@ public class AdminDashboardController {
         setTextFill(btnUsers, opacity);
         setTextFill(btnTransactions, opacity);
         setTextFill(btnEscrows, opacity);
-        setTextFill(btnSupport, opacity);
-        setTextFill(btnAlerts, opacity);
-        setTextFill(btnKYC, opacity);
+        setTextFill(btnSupportHub, opacity);
         setTextFill(btnLogout, opacity);
         menuLabel.setTextFill(mutedColor);
     }
@@ -153,13 +147,7 @@ public class AdminDashboardController {
                         new KeyValue(btnEscrows.textFillProperty(), targetColorPrim,
                                 javafx.animation.Interpolator.EASE_BOTH)),
                 new KeyFrame(duration,
-                        new KeyValue(btnSupport.textFillProperty(), targetColorPrim,
-                                javafx.animation.Interpolator.EASE_BOTH)),
-                new KeyFrame(duration,
-                        new KeyValue(btnAlerts.textFillProperty(), targetColorPrim,
-                                javafx.animation.Interpolator.EASE_BOTH)),
-                new KeyFrame(duration,
-                        new KeyValue(btnKYC.textFillProperty(), targetColorPrim,
+                        new KeyValue(btnSupportHub.textFillProperty(), targetColorPrim,
                                 javafx.animation.Interpolator.EASE_BOTH)),
                 new KeyFrame(duration,
                         new KeyValue(btnLogout.textFillProperty(), targetColorPrim,
@@ -200,9 +188,7 @@ public class AdminDashboardController {
         setButtonStyle(btnUsers, display);
         setButtonStyle(btnTransactions, display);
         setButtonStyle(btnEscrows, display);
-        setButtonStyle(btnSupport, display);
-        setButtonStyle(btnAlerts, display);
-        setButtonStyle(btnKYC, display);
+        setButtonStyle(btnSupportHub, display);
         setButtonStyle(btnLogout, display);
     }
 
@@ -217,9 +203,7 @@ public class AdminDashboardController {
         resetButtonStyle(btnUsers);
         resetButtonStyle(btnTransactions);
         resetButtonStyle(btnEscrows);
-        resetButtonStyle(btnSupport);
-        resetButtonStyle(btnAlerts);
-        resetButtonStyle(btnKYC);
+        resetButtonStyle(btnSupportHub);
 
         // Apply active style
         activeButton.getStyleClass().add("active");
@@ -262,20 +246,8 @@ public class AdminDashboardController {
     }
 
     @FXML
-    private void handleGoToSupport() {
-        ViewUtils.loadContent(adminContentArea, "/view/admin_support.fxml");
-        setActiveButton(btnSupport);
-    }
-
-    @FXML
-    private void handleGoToAlerts() {
-        ViewUtils.loadContent(adminContentArea, "/view/admin_alerts.fxml");
-        setActiveButton(btnAlerts);
-    }
-
-    @FXML
-    private void handleGoToKYC() {
-        ViewUtils.loadContent(adminContentArea, "/view/admin_kyc_requests.fxml");
-        setActiveButton(btnKYC);
+    private void handleGoToSupportHub() {
+        ViewUtils.loadContent(adminContentArea, "/view/admin_support_hub.fxml");
+        setActiveButton(btnSupportHub);
     }
 }

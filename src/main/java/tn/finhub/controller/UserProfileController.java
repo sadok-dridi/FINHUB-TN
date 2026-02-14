@@ -161,11 +161,13 @@ public class UserProfileController {
             System.out.println("KYC DEBUG: Request ID=" + r.getRequestId() + ", Status=" + r.getStatus());
         }
 
-        // Find if there's any PENDING or APPROVED request
+        // Find if there's any PENDING, APPROVED, or REJECTED request
         boolean isPending = requests.stream().anyMatch(r -> "PENDING".equalsIgnoreCase(r.getStatus()));
         boolean isVerified = requests.stream().anyMatch(r -> "APPROVED".equalsIgnoreCase(r.getStatus()));
+        boolean isRejected = requests.stream().anyMatch(r -> "REJECTED".equalsIgnoreCase(r.getStatus()));
 
-        System.out.println("KYC DEBUG: isPending=" + isPending + ", isVerified=" + isVerified);
+        System.out.println(
+                "KYC DEBUG: isPending=" + isPending + ", isVerified=" + isVerified + ", isRejected=" + isRejected);
 
         if (kycButton != null) {
             javafx.scene.shape.SVGPath icon = null;
@@ -189,6 +191,14 @@ public class UserProfileController {
                 if (icon != null)
                     icon.setFill(javafx.scene.paint.Color.valueOf("#F59E0B")); // Orange Icon
 
+            } else if (isRejected) {
+                kycButton.setDisable(false); // Enable so they can retry
+                kycButton.setText("Verification Rejected");
+                kycButton.setStyle(
+                        "-fx-background-color: rgba(239, 68, 68, 0.1); -fx-text-fill: #EF4444; -fx-border-color: #EF4444; -fx-border-radius: 12px; -fx-opacity: 1.0; -fx-font-weight: bold;");
+                if (icon != null)
+                    icon.setFill(javafx.scene.paint.Color.valueOf("#EF4444")); // Red Icon
+
             } else {
                 kycButton.setDisable(false);
                 kycButton.setText("Verify Identity (KYC)");
@@ -207,6 +217,10 @@ public class UserProfileController {
                 kycStatusLabel.setText("Your identity has been verified.");
                 kycStatusLabel.setVisible(true);
                 kycStatusLabel.setStyle("-fx-text-fill: #10B981;");
+            } else if (isRejected) {
+                kycStatusLabel.setText("Your previous request was rejected. Click to try again.");
+                kycStatusLabel.setVisible(true);
+                kycStatusLabel.setStyle("-fx-text-fill: #EF4444;");
             } else {
                 kycStatusLabel.setVisible(false);
             }

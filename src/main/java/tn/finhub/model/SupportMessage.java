@@ -9,6 +9,8 @@ public class SupportMessage {
     private String message;
     private Timestamp createdAt;
 
+    private String attachmentPath;
+
     public SupportMessage() {
     }
 
@@ -16,6 +18,13 @@ public class SupportMessage {
         this.ticketId = ticketId;
         this.senderRole = senderRole;
         this.message = message;
+    }
+
+    public SupportMessage(int ticketId, String senderRole, String message, String attachmentPath) {
+        this.ticketId = ticketId;
+        this.senderRole = senderRole;
+        this.message = message;
+        this.attachmentPath = attachmentPath;
     }
 
     public int getId() {
@@ -56,5 +65,13 @@ public class SupportMessage {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getAttachmentPath() {
+        return attachmentPath;
+    }
+
+    public void setAttachmentPath(String attachmentPath) {
+        this.attachmentPath = attachmentPath;
     }
 }

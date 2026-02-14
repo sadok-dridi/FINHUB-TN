@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.SupportTicket;
 
@@ -17,6 +18,10 @@ import java.util.List;
 
 public class SupportTicketsController {
 
+    @FXML
+    private StackPane rootStackPane;
+    @FXML
+    private VBox ticketsListParams;
     @FXML
     private VBox ticketsContainer;
 
@@ -83,7 +88,7 @@ public class SupportTicketsController {
         card.getStyleClass().add("card");
         card.setStyle("-fx-padding: 20; -fx-cursor: hand;");
 
-        // Header: Subject + Status
+        // Header: Subject + Status + Spacer + Delete Button
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
@@ -98,7 +103,25 @@ public class SupportTicketsController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        header.getChildren().addAll(subject, status, spacer);
+        // Delete Button (Trash Icon)
+        javafx.scene.shape.SVGPath trashIcon = new javafx.scene.shape.SVGPath();
+        trashIcon.setContent("M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z");
+        trashIcon.setStyle("-fx-fill: -color-text-muted;");
+        trashIcon.setScaleX(0.8);
+        trashIcon.setScaleY(0.8);
+
+        javafx.scene.control.Button deleteBtn = new javafx.scene.control.Button();
+        deleteBtn.setGraphic(trashIcon);
+        deleteBtn.setStyle("-fx-background-color: transparent; -fx-cursor: hand;");
+        deleteBtn.getStyleClass().add("button-icon"); // Optional if you have hover effects
+
+        // Prevent card click when clicking delete
+        deleteBtn.setOnMouseClicked(e -> {
+            e.consume();
+            handleDeleteTicket(ticket);
+        });
+
+        header.getChildren().addAll(subject, status, spacer, deleteBtn);
 
         // Meta: Category • Date
         String dateStr = ticket.getCreatedAt() != null
@@ -119,18 +142,51 @@ public class SupportTicketsController {
 
         card.getChildren().addAll(header, meta, footer);
 
-        // Add click handler to view details (feature for later or simple alert for now)
-        card.setOnMouseClicked(e -> {
-            // For now just show details in a simple confirmation-like dialog or toast
-            // In full implementation, this would open a ticket details view
-            DialogUtil.showInfo("Ticket #" + ticket.getId(),
-                    "Subject: " + ticket.getSubject() + "\n" +
-                            "Status: " + ticket.getStatus() + "\n" +
-                            "Category: " + ticket.getCategory() + "\n\n" +
-                            "(Full conversation view to be implemented)");
-        });
+        // Add click handler to view details
+        card.setOnMouseClicked(e -> showTicketDetails(ticket));
 
         return card;
+    }
+
+    private void handleDeleteTicket(SupportTicket ticket) {
+        boolean confirm = DialogUtil.showConfirmation("Delete Ticket",
+                "Are you sure you want to delete this ticket? All messages will be lost.");
+        if (confirm) {
+            try {
+                supportModel.deleteTicket(ticket.getId());
+                refreshTickets();
+                // If successful, maybe show a small toast/notification
+            } catch (Exception e) {
+                e.printStackTrace();
+                DialogUtil.showError("Error", "Failed to delete ticket.");
+            }
+        }
+    }
+
+    private void showTicketDetails(SupportTicket ticket) {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/user_ticket_details.fxml"));
+            Region detailsView = loader.load();
+            UserTicketDetailsController controller = loader.getController();
+
+            controller.setTicket(ticket, this::closeTicketDetails);
+
+            rootStackPane.getChildren().add(detailsView);
+            ticketsListParams.setVisible(false);
+
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+            DialogUtil.showError("Error", "Could not load ticket details.");
+        }
+    }
+
+    private void closeTicketDetails() {
+        if (rootStackPane.getChildren().size() > 1) {
+            rootStackPane.getChildren().remove(rootStackPane.getChildren().size() - 1);
+        }
+        ticketsListParams.setVisible(true);
+        refreshTickets(); // Refresh list to update status if changed
     }
 
     @FXML

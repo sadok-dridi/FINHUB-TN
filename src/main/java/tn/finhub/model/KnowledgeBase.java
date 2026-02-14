@@ -4,18 +4,23 @@ import java.sql.Timestamp;
 
 public class KnowledgeBase {
     private int id;
-    private String category; // WALLET, ESCROW, TRANSACTION, SECURITY
-    private String question;
-    private String answer;
+    private String title;
+    private String category;
+    private String content;
     private Timestamp createdAt;
+    private Timestamp updatedAt;
 
     public KnowledgeBase() {
     }
 
-    public KnowledgeBase(String category, String question, String answer) {
+    public KnowledgeBase(int id, String title, String category, String content, Timestamp createdAt,
+            Timestamp updatedAt) {
+        this.id = id;
+        this.title = title;
         this.category = category;
-        this.question = question;
-        this.answer = answer;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public int getId() {
@@ -26,6 +31,14 @@ public class KnowledgeBase {
         this.id = id;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getCategory() {
         return category;
     }
@@ -34,20 +47,12 @@ public class KnowledgeBase {
         this.category = category;
     }
 
-    public String getQuestion() {
-        return question;
+    public String getContent() {
+        return content;
     }
 
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public String getAnswer() {
-        return answer;
-    }
-
-    public void setAnswer(String answer) {
-        this.answer = answer;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public Timestamp getCreatedAt() {
@@ -56,5 +61,13 @@ public class KnowledgeBase {
 
     public void setCreatedAt(Timestamp createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

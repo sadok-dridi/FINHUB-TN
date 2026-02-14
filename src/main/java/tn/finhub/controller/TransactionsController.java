@@ -83,18 +83,67 @@ public class TransactionsController {
                 List<tn.finhub.model.SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
 
                 // 3. Fetch Profile Photos for Transactions
-                java.util.Set<String> namesToFetch = new java.util.HashSet<>();
+                java.util.Set<String> transactionRefs = new java.util.HashSet<>();
+                java.util.Set<Integer> walletIdsToFetch = new java.util.HashSet<>();
+                java.util.Map<String, Integer> nameToWalletIdMap = new java.util.HashMap<>();
+
+                // Regex to find Wallet IDs hidden in ref
+                // Pattern 1: Legacy "Transfer to 123"
+                java.util.regex.Pattern legacyIdPattern = java.util.regex.Pattern
+                        .compile("\\s+(?:to|from)\\s+(\\d+)(?:$|\\s)");
+                // Pattern 2: New "Name (Wallet 123)"
+                java.util.regex.Pattern walletIdPattern = java.util.regex.Pattern.compile("\\(Wallet\\s+(\\d+)\\)");
+
                 for (WalletTransaction tx : transactions) {
                     String ref = tx.getReference();
                     if (ref != null) {
                         String cleanRef = ref.replace("Transfer to ", "")
                                 .replace("Transfer from ", "")
                                 .trim();
+
+                        int wId = -1;
+                        // Try New Pattern First
+                        java.util.regex.Matcher mNew = walletIdPattern.matcher(ref);
+                        if (mNew.find()) {
+                            try {
+                                wId = Integer.parseInt(mNew.group(1));
+                            } catch (Exception ignore) {
+                            }
+                        }
+
+                        // Try Legacy Pattern if no ID found
+                        if (wId == -1) {
+                            java.util.regex.Matcher mOld = legacyIdPattern.matcher(ref);
+                            if (mOld.find()) {
+                                try {
+                                    wId = Integer.parseInt(mOld.group(1));
+                                } catch (Exception ignore) {
+                                }
+                            }
+                        }
+
+                        // Identifier Cleaning (Strip ID for display/name-lookup)
+                        String displayRef = cleanRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "")
+                                .replaceAll("\\(Wallet\\s+\\d+\\)", "")
+                                .trim();
+
+                        if (wId != -1) {
+                            walletIdsToFetch.add(wId);
+                            if (!displayRef.isEmpty()) {
+                                nameToWalletIdMap.put(displayRef, wId);
+                                if (displayRef.isEmpty() || displayRef.matches("\\d+")) {
+                                    nameToWalletIdMap.put(String.valueOf(wId), wId);
+                                }
+                            }
+                        }
+
+                        // Identifier Collection (Legacy Name or Email)
                         // Ignore obvious system messages to reduce DB load
-                        if (!cleanRef.toUpperCase().startsWith("MARKET ") &&
-                                !cleanRef.toUpperCase().startsWith("DEPOSIT") &&
-                                !cleanRef.equals("Initial Bank Balance")) {
-                            namesToFetch.add(cleanRef);
+                        if (!displayRef.toUpperCase().startsWith("MARKET ") &&
+                                !displayRef.toUpperCase().startsWith("DEPOSIT") &&
+                                !displayRef.equals("Initial Bank Balance") &&
+                                !displayRef.isEmpty()) {
+                            transactionRefs.add(displayRef);
                         }
                     }
                 }
@@ -102,13 +151,34 @@ public class TransactionsController {
                 // Add Contact Names to Fetch List (Legacy/Fallback)
                 for (tn.finhub.model.SavedContact contact : contacts) {
                     if (contact.getContactName() != null) {
-                        namesToFetch.add(contact.getContactName().trim());
+                        transactionRefs.add(contact.getContactName().trim());
                     }
+                }
+
+                // CRITICAL FIX: Exclude current user's name to prevent showing own photo for
+                // same-name recipients
+                if (user.getFullName() != null) {
+                    transactionRefs.remove(user.getFullName().trim());
                 }
 
                 // Use Case-Insensitive Map for robust lookup (User 'Sadok' vs ref 'sadok')
                 java.util.Map<String, String> profilePhotos = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                profilePhotos.putAll(userModel.findProfilePhotosByNames(namesToFetch));
+                if (!transactionRefs.isEmpty()) {
+                    profilePhotos.putAll(userModel.findProfilePhotosByNames(transactionRefs));
+                    profilePhotos.putAll(userModel.findProfilePhotosByEmails(transactionRefs));
+                }
+
+                // Overlay Wallet ID results (Highest Priority)
+                if (!walletIdsToFetch.isEmpty()) {
+                    java.util.Map<Integer, String> idPhotos = walletModel
+                            .findProfilePhotosByWalletIds(walletIdsToFetch);
+                    for (java.util.Map.Entry<String, Integer> entry : nameToWalletIdMap.entrySet()) {
+                        String url = idPhotos.get(entry.getValue());
+                        if (url != null) {
+                            profilePhotos.put(entry.getKey(), url); // Overwrite any name-based match
+                        }
+                    }
+                }
 
                 // 4. Fetch Profile Photos by Email (For Saved Contacts - Better Accuracy)
                 java.util.Set<String> emailsToFetch = new java.util.HashSet<>();
@@ -517,6 +587,7 @@ public class TransactionsController {
             displayRef = displayRef.replace("Transfer to ", "")
                     .replace("Transfer from ", "");
             displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "");
+            displayRef = displayRef.replaceAll("\\(Wallet\\s+\\d+\\)", "").trim();
 
             if (displayRef.startsWith("DEPOSIT via")) {
                 displayRef = "Deposit";

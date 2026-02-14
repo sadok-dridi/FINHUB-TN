@@ -72,4 +72,41 @@ public class SystemAlertModel {
             throw new RuntimeException("Error broadcasting alert: " + e.getMessage());
         }
     }
+
+    public List<SystemAlert> getAllBroadcasts() {
+        List<SystemAlert> alerts = new ArrayList<>();
+        // Group by message and created_at to find unique broadcasts
+        String sql = "SELECT MIN(id) as id, 0 as user_id, severity, message, source, created_at " +
+                "FROM system_alerts " +
+                "GROUP BY severity, message, source, created_at " +
+                "ORDER BY created_at DESC";
+        try (Statement stmt = getConnection().createStatement();
+                ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                SystemAlert alert = new SystemAlert();
+                alert.setId(rs.getInt("id")); // Representative ID
+                alert.setUserId(0); // Not relevant for grouped
+                alert.setSeverity(rs.getString("severity"));
+                alert.setMessage(rs.getString("message"));
+                alert.setSource(rs.getString("source"));
+                alert.setCreatedAt(rs.getTimestamp("created_at"));
+                alerts.add(alert);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return alerts;
+    }
+
+    public void deleteBroadcast(String message, Timestamp createdAt) {
+        String sql = "DELETE FROM system_alerts WHERE message = ? AND created_at = ?";
+        try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
+            stmt.setString(1, message);
+            stmt.setTimestamp(2, createdAt);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error deleting broadcast: " + e.getMessage());
+        }
+    }
 }

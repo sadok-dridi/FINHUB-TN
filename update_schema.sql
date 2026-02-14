@@ -12,3 +12,14 @@ CREATE TABLE IF NOT EXISTS kyc_requests (
     submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users_local(user_id) ON DELETE CASCADE
 );
+
+-- Knowledge Base Table
+DROP TABLE IF EXISTS knowledge_base;
+CREATE TABLE knowledge_base (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

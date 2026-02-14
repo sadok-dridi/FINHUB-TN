@@ -56,7 +56,7 @@ public class ChatAssistantModel {
         // system prompt)
         String finalPrompt = userMessage;
         if (!matches.isEmpty()) {
-            finalPrompt += "\n\n(Relevant Context from FinHub Knowledge Base: " + matches.get(0).getAnswer() + ")";
+            finalPrompt += "\n\n(Relevant Context from FinHub Knowledge Base: " + matches.get(0).getContent() + ")";
         }
 
         // 2. Determine AI Provider

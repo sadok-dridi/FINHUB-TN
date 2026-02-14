@@ -269,7 +269,17 @@ public class WalletController {
 
                 // 7. Fetch Profile Photos for Recent Transactions (Limit 4)
                 int limit = Math.min(transactions.size(), 4);
-                java.util.Set<String> namesToFetch = new java.util.HashSet<>();
+                java.util.Set<String> identifiers = new java.util.HashSet<>();
+                java.util.Set<Integer> walletIdsToFetch = new java.util.HashSet<>();
+                java.util.Map<String, Integer> nameToWalletIdMap = new java.util.HashMap<>();
+
+                // Regex to find Wallet IDs hidden in ref
+                // Pattern 1: Legacy "Transfer to 123"
+                java.util.regex.Pattern legacyIdPattern = java.util.regex.Pattern
+                        .compile("\\s+(?:to|from)\\s+(\\d+)(?:$|\\s)");
+                // Pattern 2: New "Name (Wallet 123)"
+                java.util.regex.Pattern walletIdPattern = java.util.regex.Pattern.compile("\\(Wallet\\s+(\\d+)\\)");
+
                 for (int i = 0; i < limit; i++) {
                     WalletTransaction tx = transactions.get(i);
                     String ref = tx.getReference();
@@ -277,17 +287,80 @@ public class WalletController {
                         String cleanRef = ref.replace("Transfer to ", "")
                                 .replace("Transfer from ", "")
                                 .trim();
+
+                        int wId = -1;
+                        // Try New Pattern First
+                        java.util.regex.Matcher mNew = walletIdPattern.matcher(ref);
+                        if (mNew.find()) {
+                            try {
+                                wId = Integer.parseInt(mNew.group(1));
+                            } catch (Exception ignore) {
+                            }
+                        }
+
+                        // Try Legacy Pattern if no ID found
+                        if (wId == -1) {
+                            java.util.regex.Matcher mOld = legacyIdPattern.matcher(ref);
+                            if (mOld.find()) {
+                                try {
+                                    wId = Integer.parseInt(mOld.group(1));
+                                } catch (Exception ignore) {
+                                }
+                            }
+                        }
+
+                        // Identifier Cleaning (Strip ID for display/name-lookup)
+                        String displayRef = cleanRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "")
+                                .replaceAll("\\(Wallet\\s+\\d+\\)", "")
+                                .trim();
+
+                        if (wId != -1) {
+                            walletIdsToFetch.add(wId);
+                            if (!displayRef.isEmpty()) {
+                                nameToWalletIdMap.put(displayRef, wId);
+                                // Also add ID as identifier if display is just the ID (Legacy case)
+                                if (displayRef.isEmpty() || displayRef.matches("\\d+")) {
+                                    nameToWalletIdMap.put(String.valueOf(wId), wId);
+                                }
+                            }
+                        }
+
+                        // Identifier Collection (Legacy Name or Email)
                         // Ignore obvious system messages
-                        if (!cleanRef.toUpperCase().startsWith("MARKET ") &&
-                                !cleanRef.toUpperCase().startsWith("DEPOSIT") &&
-                                !cleanRef.equals("Initial Bank Balance")) {
-                            namesToFetch.add(cleanRef);
+                        if (!displayRef.toUpperCase().startsWith("MARKET ") &&
+                                !displayRef.toUpperCase().startsWith("DEPOSIT") &&
+                                !displayRef.equals("Initial Bank Balance") &&
+                                !displayRef.isEmpty()) {
+                            identifiers.add(displayRef);
                         }
                     }
                 }
-                // Case-Insensitive map for robust lookup
+
+                // CRITICAL FIX: Exclude current user's name to prevent showing own photo for
+                // same-name recipients
+                tn.finhub.model.User currentUser = userModel.findById(userId);
+                if (currentUser != null && currentUser.getFullName() != null) {
+                    identifiers.remove(currentUser.getFullName().trim());
+                }
+
+                // Hybrid Lookup: Name + Email + Wallet ID
                 java.util.Map<String, String> profilePhotos = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-                profilePhotos.putAll(userModel.findProfilePhotosByNames(namesToFetch));
+                if (!identifiers.isEmpty()) {
+                    profilePhotos.putAll(userModel.findProfilePhotosByNames(identifiers));
+                    profilePhotos.putAll(userModel.findProfilePhotosByEmails(identifiers));
+                }
+
+                // Overlay Wallet ID results (Highest Priority)
+                if (!walletIdsToFetch.isEmpty()) {
+                    java.util.Map<Integer, String> idPhotos = walletModel
+                            .findProfilePhotosByWalletIds(walletIdsToFetch);
+                    for (java.util.Map.Entry<String, Integer> entry : nameToWalletIdMap.entrySet()) {
+                        String url = idPhotos.get(entry.getValue());
+                        if (url != null) {
+                            profilePhotos.put(entry.getKey(), url); // Overwrite any name-based match
+                        }
+                    }
+                }
 
                 return new WalletDataPacket(wallet, cards, transactions, badTxId, currentValue, totalInvested,
                         bestAsset, maxPnlPercent, assetCount, profilePhotos);
@@ -634,6 +707,7 @@ public class WalletController {
             displayRef = displayRef.replace("Transfer to ", "")
                     .replace("Transfer from ", "");
             displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "");
+            displayRef = displayRef.replaceAll("\\(Wallet\\s+\\d+\\)", "").trim();
 
             if (displayRef.startsWith("DEPOSIT via")) {
                 displayRef = "Deposit";

@@ -39,6 +39,12 @@
     -color-primary-subtle: rgba(139, 92, 246, 0.15);
     -color-bg-subtle: rgba(255, 255, 255, 0.05);
 
+    /* Transparent Colors for Badges */
+    -color-primary-transparent: rgba(139, 92, 246, 0.15);
+    -color-success-transparent: rgba(16, 185, 129, 0.15);
+    -color-warning-transparent: rgba(245, 158, 11, 0.15);
+    -color-error-transparent: rgba(239, 68, 68, 0.15);
+
     /* UI Elements */
     -input-bg: #2D2A40;
     -input-border: #3F3C55;
@@ -1310,4 +1316,105 @@
     -fx-border-color: -color-text-primary;
     -fx-text-fill: -color-text-primary;
     -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Knowledge Base --- */
+.custom-list-view {
+    -fx-background-color: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-padding: 5;
+}
+
+.custom-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.custom-list-view .article-cell {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 8px;
+    -fx-border-color: -color-card-border;
+    -fx-border-radius: 8px;
+    -fx-padding: 15;
+    -fx-margin: 0 0 10 0;
+    /* Spacing between items */
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.custom-list-view .article-cell:hover {
+    -fx-background-color: derive(-color-card-bg, 10%);
+    -fx-border-color: -color-primary;
+}
+
+.custom-list-view .article-cell:selected {
+    -fx-background-color: rgba(139, 92, 246, 0.15);
+    -fx-border-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.input-field {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10;
+    -fx-text-fill: white;
+}
+
+.input-field:focused {
+    -fx-border-color: -color-primary;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.2), 5, 0, 0, 0);
+}
+
+.button-outlined-primary {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-primary;
+    -fx-border-radius: 8px;
+    -fx-text-fill: -color-primary;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.button-outlined-primary:hover {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+.button-outlined-danger {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-error;
+    -fx-border-radius: 8px;
+    -fx-text-fill: -color-error;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+}
+
+.button-outlined-danger:hover {
+    -fx-background-color: -color-error;
+    -fx-text-fill: white;
+}
+
+.button-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+}
+
+.button-text:hover {
+    -fx-text-fill: white;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-background-radius: 8px;
 }

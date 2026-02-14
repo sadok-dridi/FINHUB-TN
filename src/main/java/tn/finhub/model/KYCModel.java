@@ -53,6 +53,29 @@ public class KYCModel {
         return requests;
     }
 
+    public List<KYCRequest> findAllRequests() {
+        List<KYCRequest> requests = new ArrayList<>();
+        String sql = """
+                    SELECT k.*, u.email
+                    FROM kyc_requests k
+                    JOIN users_local u ON k.user_id = u.user_id
+                    ORDER BY CASE WHEN k.status = 'PENDING' THEN 1 ELSE 2 END, k.submission_date DESC
+                """;
+
+        try (Statement st = getConnection().createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                KYCRequest req = mapResultSetToRequest(rs);
+                req.setUserEmail(rs.getString("email"));
+                requests.add(req);
+            }
+        } catch (SQLException e) {
+            logger.error("Error fetching all KYC requests", e);
+        }
+        return requests;
+    }
+
     public List<KYCRequest> findByUserId(int userId) {
         List<KYCRequest> requests = new ArrayList<>();
         String sql = "SELECT * FROM kyc_requests WHERE user_id = ? ORDER BY submission_date DESC";

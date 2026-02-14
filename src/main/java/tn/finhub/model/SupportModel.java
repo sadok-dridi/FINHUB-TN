@@ -162,16 +162,37 @@ public class SupportModel {
         }
     }
 
+    public void deleteTicket(int ticketId) {
+        // 1. Delete Messages for this ticket
+        String sqlMessages = "DELETE FROM support_messages WHERE ticket_id = ?";
+        try (PreparedStatement stmt = getConnection().prepareStatement(sqlMessages)) {
+            stmt.setInt(1, ticketId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting support messages for ticket " + ticketId, e);
+        }
+
+        // 2. Delete Ticket
+        String sqlTicket = "DELETE FROM support_tickets WHERE id = ?";
+        try (PreparedStatement stmt = getConnection().prepareStatement(sqlTicket)) {
+            stmt.setInt(1, ticketId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting support ticket " + ticketId, e);
+        }
+    }
+
     // ==========================================
     // MESSAGE MANAGEMENT
     // ==========================================
 
     public void createMessage(SupportMessage message) {
-        String sql = "INSERT INTO support_messages (ticket_id, sender_role, message) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO support_messages (ticket_id, sender_role, message, attachment_path) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, message.getTicketId());
             stmt.setString(2, message.getSenderRole());
             stmt.setString(3, message.getMessage());
+            stmt.setString(4, message.getAttachmentPath());
             stmt.executeUpdate();
 
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
@@ -198,6 +219,7 @@ public class SupportModel {
                     msg.setSenderRole(rs.getString("sender_role"));
                     msg.setMessage(rs.getString("message"));
                     msg.setCreatedAt(rs.getTimestamp("created_at"));
+                    msg.setAttachmentPath(rs.getString("attachment_path"));
                     messages.add(msg);
                 }
             }
@@ -209,6 +231,10 @@ public class SupportModel {
 
     public void addUserMessage(int ticketId, String content) {
         createMessage(new SupportMessage(ticketId, "USER", content));
+    }
+
+    public void addUserMessageWithImage(int ticketId, String content, String imagePath) {
+        createMessage(new SupportMessage(ticketId, "USER", content, imagePath));
     }
 
     public void addSystemMessage(int ticketId, String content) {

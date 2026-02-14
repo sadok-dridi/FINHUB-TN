@@ -30,6 +30,10 @@ public class LoginController {
             // Load with current resource bundle
             loader.setResources(LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent newView = loader.load();
+            if (emailField.getScene() == null) {
+                System.out.println("[DEBUG] View is no longer active, aborting navigation to " + fxmlPath);
+                return;
+            }
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) emailField.getScene()
                     .lookup("#contentArea");
 
@@ -215,6 +219,7 @@ public class LoginController {
                             Platform.runLater(() -> Message("Fetching admin data..."));
 
                             try {
+                                // 1. User/Wallet Data for Transactions Page
                                 tn.finhub.model.UserModel uModel = new tn.finhub.model.UserModel();
                                 java.util.List<tn.finhub.model.User> allUsersList = uModel.findAll();
                                 java.util.List<tn.finhub.controller.AdminTransactionsController.UserWalletData> cacheList = new java.util.ArrayList<>();
@@ -226,6 +231,35 @@ public class LoginController {
                                             u, status));
                                 }
                                 tn.finhub.controller.AdminTransactionsController.setCachedData(cacheList);
+
+                                // 2. Support & Safety Data
+                                Platform.runLater(() -> Message("Fetching support data..."));
+
+                                // Support Tickets
+                                tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
+                                java.util.List<tn.finhub.model.SupportTicket> tickets = supportModel.getAllTickets();
+                                tn.finhub.controller.AdminSupportController.setCachedTickets(tickets);
+
+                                // KYC Requests
+                                tn.finhub.model.KYCModel kycModel = new tn.finhub.model.KYCModel();
+                                java.util.List<tn.finhub.model.KYCRequest> kycRequests = kycModel.findAllRequests();
+                                tn.finhub.controller.AdminKYCController.setCachedRequests(kycRequests);
+
+                                // Knowledge Base
+                                tn.finhub.model.KnowledgeBaseModel kbModel = new tn.finhub.model.KnowledgeBaseModel();
+                                java.util.List<tn.finhub.model.KnowledgeBase> kbArticles = kbModel.getAllArticles();
+                                tn.finhub.controller.AdminKnowledgeBaseController.setCachedArticles(kbArticles);
+
+                                // System Alerts
+                                tn.finhub.model.SystemAlertModel alertModel = new tn.finhub.model.SystemAlertModel();
+                                java.util.List<tn.finhub.model.SystemAlert> alerts = alertModel.getAllBroadcasts();
+                                tn.finhub.controller.AdminAlertsController.setCachedAlerts(alerts);
+
+                                // Escrow Management
+                                tn.finhub.model.EscrowManager escrowManager = new tn.finhub.model.EscrowManager();
+                                java.util.List<tn.finhub.model.Escrow> escrows = escrowManager.getEscrowsForAdmin();
+                                tn.finhub.controller.AdminEscrowController.setCachedEscrows(escrows);
+
                             } catch (Exception e) {
                                 System.err.println("Admin pre-fetch failed: " + e.getMessage());
                                 // Proceed anyway

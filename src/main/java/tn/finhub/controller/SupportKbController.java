@@ -5,8 +5,6 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.KnowledgeBase;
 
@@ -60,10 +58,10 @@ public class SupportKbController {
         card.getStyleClass().add("card");
         card.setStyle("-fx-padding: 20; -fx-cursor: hand;");
 
-        // Question (Header)
-        Label question = new Label(article.getQuestion());
-        question.setWrapText(true);
-        question.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-primary;");
+        // Title (Header)
+        Label title = new Label(article.getTitle());
+        title.setWrapText(true);
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-primary;");
 
         Label category = new Label(article.getCategory());
         category.setStyle(
@@ -71,15 +69,14 @@ public class SupportKbController {
 
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
-        header.getChildren().addAll(category, question);
+        header.getChildren().addAll(category, title);
 
-        // Answer (Body) - Initially hidden or shown? Let's show it for now, or make it
-        // toggleable
-        Label answer = new Label(article.getAnswer());
-        answer.setWrapText(true);
-        answer.setStyle("-fx-font-size: 14px; -fx-text-fill: -color-text-primary; -fx-line-spacing: 4;");
+        // Content (Body)
+        Label content = new Label(article.getContent());
+        content.setWrapText(true);
+        content.setStyle("-fx-font-size: 14px; -fx-text-fill: -color-text-primary; -fx-line-spacing: 4;");
 
-        card.getChildren().addAll(header, answer);
+        card.getChildren().addAll(header, content);
         return card;
     }
 }
