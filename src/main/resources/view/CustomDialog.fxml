@@ -19,6 +19,7 @@
                         <SVGPath fx:id="iconPath" content="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" fill="TRANSPARENT" stroke="#ef4444" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeWidth="2.0" />
                      </children>
                   </VBox>
+<<<<<<< HEAD
                   <Label fx:id="titleLabel" styleClass="header-text" style="-fx-font-size: 20px;" text="Confirmation" wrapText="true" />
                </children>
             </HBox>
@@ -28,6 +29,17 @@
                <children>
                   <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleNo" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-border-color: -color-text-secondary; -fx-border-radius: 12px; -fx-background-radius: 12px; -fx-padding: 10 25; -fx-cursor: hand;" text="Cancel" />
                   <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#handleYes" styleClass="button-primary" text="Confirm" />
+=======
+                  <Label fx:id="titleLabel" styleClass="header-text" style="-fx-font-size: 20px;" text="%dialog.confirmation" wrapText="true" />
+               </children>
+            </HBox>
+            <Label fx:id="messageLabel" styleClass="sub-header-text" style="-fx-text-alignment: CENTER;" text="%dialog.confirm.message" textAlignment="CENTER" wrapText="true" />
+            <javafx.scene.control.PasswordField fx:id="inputField" promptText="%dialog.password.prompt" visible="false" managed="false" styleClass="text-field" style="-fx-max-width: 300;"/>
+            <HBox alignment="CENTER" spacing="15.0">
+               <children>
+                  <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#handleNo" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-border-color: -color-text-secondary; -fx-border-radius: 12px; -fx-background-radius: 12px; -fx-padding: 10 25; -fx-cursor: hand;" text="%common.cancel" />
+                  <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#handleYes" styleClass="button-primary" text="%common.confirm" />
+>>>>>>> cd680ce (crud+controle de saisie)
                </children>
             </HBox>
          </children>

@@ -23,23 +23,40 @@
                       <children>
                           <HBox spacing="10" alignment="CENTER_LEFT">
                               <javafx.scene.shape.SVGPath content="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" style="-fx-fill: #EF4444;" scaleX="1.2" scaleY="1.2"/>
+<<<<<<< HEAD
                               <Label text="Account Frozen" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 16px;"/>
                           </HBox>
                           <Label text="Your wallet has been frozen due to a security alert. Please contact support immediately." style="-fx-text-fill: #FCA5A5; -fx-font-size: 14px;" wrapText="true"/>
+=======
+                              <Label text="%wallet.frozen.title" style="-fx-text-fill: #EF4444; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                          </HBox>
+                          <Label text="%wallet.frozen.message" style="-fx-text-fill: #FCA5A5; -fx-font-size: 14px;" wrapText="true"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                       </children>
                   </VBox>
 
                   <HBox alignment="CENTER_LEFT" spacing="20.0">
                      <children>
+<<<<<<< HEAD
                         <Label text="Wallet" styleClass="header-text"/>
                         <Region HBox.hgrow="ALWAYS" />
 
                         <Button fx:id="topUpButton" text="Top Up" onAction="#handleDeposit" styleClass="button-primary">
+=======
+                        <Label text="%wallet.title" styleClass="header-text"/>
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <Button fx:id="topUpButton" text="%wallet.cash.in" onAction="#handleDeposit" styleClass="button-primary">
+>>>>>>> cd680ce (crud+controle de saisie)
                            <graphic>
                               <javafx.scene.shape.SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
                            </graphic>
                         </Button>
+<<<<<<< HEAD
                         <Button fx:id="transferButton" text="Transfer Money" onAction="#handleTransfer" styleClass="button-primary" style="-fx-background-color: #8B5CF6;">
+=======
+                        <Button fx:id="transferButton" text="%wallet.transfer" onAction="#handleTransfer" styleClass="button-primary" style="-fx-background-color: #8B5CF6;">
+>>>>>>> cd680ce (crud+controle de saisie)
                            <graphic>
                               <javafx.scene.shape.SVGPath content="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" style="-fx-fill: white;"/>
                            </graphic>
@@ -53,7 +70,11 @@
                         <!-- Total Balance Card -->
                         <VBox styleClass="card-balance" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
                            <children>
+<<<<<<< HEAD
                               <Label text="Available Balance" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
+=======
+                              <Label text="%wallet.available.balance" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                               <Label fx:id="availableBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                            </children>
                         </VBox>
@@ -61,7 +82,11 @@
                         <!-- Escrow Balance Card -->
                          <VBox styleClass="card-escrow" HBox.hgrow="ALWAYS" minWidth="0" prefWidth="0">
                            <children>
+<<<<<<< HEAD
                               <Label text="In Escrow (Held)" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
+=======
+                              <Label text="%wallet.escrow.balance" style="-fx-text-fill: rgba(255,255,255,0.9); -fx-font-size: 16px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                               <Label fx:id="escrowBalanceLabel" text="TND 0.00" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: white;"/>
                            </children>
                         </VBox>
@@ -72,9 +97,15 @@
                    <VBox spacing="15.0">
                       <children>
                          <HBox alignment="CENTER_LEFT">
+<<<<<<< HEAD
                              <Label text="Virtual Cards" styleClass="header-text" style="-fx-font-size: 18px;"/>
                              <Region HBox.hgrow="ALWAYS" />
                              <Button fx:id="generateCardButton" text="Generate Card" onAction="#handleGenerateCard" styleClass="button-small-primary"/>
+=======
+                             <Label text="%wallet.virtual.cards" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                             <Region HBox.hgrow="ALWAYS" />
+                             <Button fx:id="generateCardButton" text="%wallet.generate.card" onAction="#handleGenerateCard" styleClass="button-small-primary"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                          </HBox>
                          <HBox fx:id="cardsContainer" spacing="20.0" alignment="CENTER_LEFT" style="-fx-padding: 5 0;">
                               <!-- Cards added here -->
@@ -85,7 +116,11 @@
                   <!-- Transactions Section -->
                   <VBox spacing="15.0" VBox.vgrow="ALWAYS">
                      <children>
+<<<<<<< HEAD
                         <Label text="Recent Transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
+=======
+                        <Label text="%wallet.recent.transactions" styleClass="header-text" style="-fx-font-size: 18px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                         
                         <VBox fx:id="transactionContainer" spacing="15.0" style="-fx-padding: 5;">
                             <!-- Transactions will be added here dynamically -->

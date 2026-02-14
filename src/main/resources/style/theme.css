@@ -16,6 +16,10 @@
     -color-bg-dark: #1E1B2E;
     /* Same as card background for now, or slightly darker if needed */
     -color-card-border: #2E2A45;
+<<<<<<< HEAD
+=======
+    -color-border: #2E2A45;
+>>>>>>> cd680ce (crud+controle de saisie)
 
     /* Text */
     -color-text-primary: #F3F4F6;
@@ -55,8 +59,13 @@
 .header-text {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
+<<<<<<< HEAD
     -fx-text-fill: -color-text-primary;
     -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.3), 10, 0, 0, 0);
+=======
+    -fx-text-fill: #E9D5FF;
+    -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.6), 15, 0.4, 0, 0);
+>>>>>>> cd680ce (crud+controle de saisie)
 }
 
 .sub-header-text {
@@ -106,6 +115,13 @@
 }
 
 .button-icon .sidebar-icon {
+<<<<<<< HEAD
+=======
+    -fx-fill: -color-text-secondary;
+}
+
+.button-icon:hover .sidebar-icon {
+>>>>>>> cd680ce (crud+controle de saisie)
     -fx-fill: white;
 }
 
@@ -141,6 +157,44 @@
     -fx-scale-y: 1.02;
 }
 
+<<<<<<< HEAD
+=======
+.button-warning {
+    -fx-background-color: -color-warning;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(245, 158, 11, 0.3), 10, 0, 0, 3);
+}
+
+.button-warning:hover {
+    -fx-background-color: derive(-color-warning, -10%);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+.button-back {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: -color-text-secondary;
+    -fx-background-radius: 8px;
+    -fx-padding: 8 16;
+    -fx-cursor: hand;
+    -fx-border-color: rgba(255, 255, 255, 0.1);
+    -fx-border-radius: 8px;
+    -fx-font-weight: bold;
+}
+
+.button-back:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+    -fx-border-color: rgba(255, 255, 255, 0.3);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
+>>>>>>> cd680ce (crud+controle de saisie)
 /* --- Text Fields --- */
 .text-field {
     -fx-background-color: -input-bg;
@@ -148,9 +202,15 @@
     -fx-border-radius: 12px;
     -fx-background-radius: 12px;
     -fx-padding: 12;
+<<<<<<< HEAD
     -fx-text-fill: white;
     /* Warning: JavaFX text-field uses -fx-text-fill */
     -fx-prompt-text-fill: -color-text-muted;
+=======
+    -fx-text-fill: -color-text-primary;
+    -fx-prompt-text-fill: -color-text-secondary;
+    /* Lighter gray for better visibility */
+>>>>>>> cd680ce (crud+controle de saisie)
 }
 
 .text-field:focused {
@@ -183,10 +243,21 @@
 /* The text field area inside the combo box */
 .combo-box .list-cell {
     -fx-background-color: transparent;
+<<<<<<< HEAD
     -fx-text-fill: white;
     -fx-padding: 0;
 }
 
+=======
+    -fx-text-fill: -color-text-primary;
+    -fx-padding: 0;
+}
+
+.combo-box:filled .list-cell {
+    -fx-text-fill: -color-text-primary;
+}
+
+>>>>>>> cd680ce (crud+controle de saisie)
 /* The arrow button on the right */
 .combo-box .arrow-button {
     -fx-background-color: transparent;
@@ -308,24 +379,63 @@
 
 /* --- Sidebar --- */
 /* --- Sidebar --- */
+<<<<<<< HEAD
 .sidebar {
     /* Top color matches -color-card-bg (#1E1B2E) for seamless transition, fading to transparent bottom */
     -fx-background-color: linear-gradient(to bottom, #1E1B2E 0%, rgba(30, 27, 46, 0.95) 15%, rgba(30, 27, 46, 0.8) 100%);
     -fx-padding: 25;
+=======
+/* --- Sidebar --- */
+.sidebar {
+    /* Top color matches -color-card-bg (#1E1B2E) for seamless transition, fading to transparent bottom */
+    -fx-background-color: linear-gradient(to bottom, #1E1B2E 0%, rgba(30, 27, 46, 0.95) 15%, rgba(30, 27, 46, 0.8) 100%);
+    -fx-padding: 25 10 25 10;
+    /* Reduced horizontal padding to 10px to match collapsed state offset (10px margin + 12px btn pad = 22px) */
+    -fx-alignment: TOP_LEFT;
+>>>>>>> cd680ce (crud+controle de saisie)
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
     -fx-border-color: transparent rgba(255, 255, 255, 0.05) transparent transparent;
     -fx-border-width: 0 1 0 0;
 }
 
+<<<<<<< HEAD
+=======
+.sidebar.collapsed {
+    -fx-padding: 25 0 25 0;
+    -fx-alignment: TOP_CENTER;
+}
+
+>>>>>>> cd680ce (crud+controle de saisie)
 .sidebar-button {
     -fx-alignment: CENTER_LEFT;
     -fx-background-color: transparent;
     -fx-text-fill: -color-text-secondary;
+<<<<<<< HEAD
     -fx-padding: 10;
+=======
+    -fx-padding: 10 10 10 12;
+    /* consistent left padding for smoothness (12px = centered in 40px box inside 60px sidebar) */
+>>>>>>> cd680ce (crud+controle de saisie)
     -fx-background-radius: 8px;
     -fx-cursor: hand;
     -fx-font-family: "Segoe UI", sans-serif;
     -fx-font-size: 14px;
+<<<<<<< HEAD
+=======
+    -fx-min-height: 45px;
+    /* Prevent shrinking when text is hidden */
+}
+
+.sidebar.collapsed .sidebar-button {
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 0 10 12;
+    /* Visual centering (60px width -> 10px margin + 12px padding + 8px icon half = 30px center) */
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-background-radius: 10px;
+    /* More rounded for icon shape */
+>>>>>>> cd680ce (crud+controle de saisie)
 }
 
 .sidebar-button:hover {
@@ -338,6 +448,7 @@
 }
 
 .sidebar-button-danger {
+<<<<<<< HEAD
     -fx-alignment: CENTER_LEFT;
     -fx-background-color: transparent;
     -fx-text-fill: -color-error;
@@ -347,6 +458,62 @@
 
 .sidebar-button-danger:hover {
     -fx-background-color: rgba(239, 68, 68, 0.1);
+=======
+    -fx-alignment: CENTER;
+    /* Center text and icon inside the button box */
+    -fx-background-color: rgba(239, 68, 68, 0.05);
+    -fx-text-fill: -color-error;
+    -fx-padding: 10;
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-border-color: rgba(239, 68, 68, 0.2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.sidebar.collapsed .sidebar-button-danger {
+    -fx-alignment: CENTER;
+    -fx-padding: 10 0;
+    -fx-min-width: 40px;
+    -fx-max-width: 40px;
+    -fx-pref-width: 40px;
+    -fx-background-radius: 10px;
+}
+
+#sidebarHeader {
+    -fx-padding: 0 0 20 0;
+}
+
+.user-info-box {
+    -fx-padding: 0 0 0 10;
+}
+
+.user-name-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 14px;
+}
+
+.user-role-label {
+    -fx-text-fill: -color-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.menu-label {
+    -fx-text-fill: -color-text-muted;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 10;
+}
+
+.sidebar-button-danger:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.15);
+    -fx-border-color: -color-error;
+>>>>>>> cd680ce (crud+controle de saisie)
 }
 
 .sidebar-icon {
@@ -490,9 +657,12 @@
     -fx-border-radius: 16px;
     -fx-padding: 20;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 2);
+<<<<<<< HEAD
     -fx-min-width: 280px;
     -fx-pref-width: 280px;
     -fx-max-width: 280px;
+=======
+>>>>>>> cd680ce (crud+controle de saisie)
 }
 
 .user-card-hover {
@@ -592,7 +762,11 @@
 .transaction-item {
     -fx-background-color: -color-card-bg;
     -fx-background-radius: 12px;
+<<<<<<< HEAD
     -fx-padding: 20;
+=======
+    -fx-padding: 12;
+>>>>>>> cd680ce (crud+controle de saisie)
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);
     -fx-border-color: -color-card-border;
     -fx-border-width: 1px;
@@ -1141,4 +1315,68 @@
     -fx-background-color: linear-gradient(to right, #F87171, #EF4444);
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
+<<<<<<< HEAD
+=======
+}
+
+/* --- Escrow Dialog Fix --- */
+.escrow-dialog {
+    -fx-background-color: -color-bg;
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 30;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 20, 0, 0, 10);
+}
+
+.text-field-modern {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: -color-text-muted;
+}
+
+.text-field-modern:focused {
+    -fx-border-color: -color-primary;
+    -fx-background-color: -input-bg;
+}
+
+.combo-box-modern {
+    -fx-background-color: -input-bg;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+}
+
+.text-area-modern {
+    -fx-background-color: -input-bg;
+    -fx-text-fill: white;
+    -fx-control-inner-background: -input-bg;
+    -fx-background-radius: 8px;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 8px;
+}
+
+.text-area-modern .content {
+    -fx-background-color: -input-bg;
+}
+
+.button-outlined {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-text-secondary;
+    -fx-border-radius: 8px;
+    -fx-text-fill: -color-text-secondary;
+    -fx-cursor: hand;
+    -fx-padding: 8 16;
+}
+
+.button-outlined:hover {
+    -fx-border-color: -color-text-primary;
+    -fx-text-fill: -color-text-primary;
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+>>>>>>> cd680ce (crud+controle de saisie)
 }

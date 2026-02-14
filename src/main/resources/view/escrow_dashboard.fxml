@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.effect.DropShadow?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.EscrowController"
+      spacing="25" style="-fx-padding: 40; -fx-background-color: transparent;">
+
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="20">
+        <VBox>
+            <Label text="%escrow.title" styleClass="header-text" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+            <Label text="%escrow.subtitle" styleClass="sub-header-text" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        
+        <!-- Trust Score Card -->
+        <HBox alignment="CENTER" spacing="15" style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 10 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);">
+            <VBox alignment="CENTER_LEFT">
+                <Label text="%escrow.trust.score" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
+                <Label fx:id="trustScoreLabel" text="100" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+            </VBox>
+            <StackPane>
+                <Circle radius="22" style="-fx-fill: transparent; -fx-stroke: -color-bg; -fx-stroke-width: 4;"/>
+                <Circle fx:id="trustScoreCircle" radius="22" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 4; -fx-stroke-dash-array: 0 1000;"/>
+                <SVGPath fx:id="trustScoreIcon" content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" scaleX="0.8" scaleY="0.8" style="-fx-fill: -color-primary;"/>
+            </StackPane>
+        </HBox>
+
+        <Button fx:id="createEscrowBtn" text="%escrow.create.button" onAction="#handleCreateEscrow" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand;">
+             <graphic>
+                <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
+             </graphic>
+        </Button>
+    </HBox>
+
+    <!-- Filters / Tabs (Optional for future) -->
+    <HBox spacing="15">
+        <Button fx:id="btnActive" text="%escrow.filter.active" onAction="#handleFilterActive" style="-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;"/>
+        <Button fx:id="btnHistory" text="%escrow.filter.history" onAction="#handleFilterHistory" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
+        <Button fx:id="btnDisputes" text="%escrow.filter.disputes" onAction="#handleFilterDisputes" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
+    </HBox>
+
+    <!-- Escrow List (Styled) -->
+    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+        <VBox fx:id="escrowCardContainer" spacing="15" style="-fx-background-color: transparent;">
+             <!-- Cards will be injected here by Controller -->
+             <Label text="%common.loading" style="-fx-text-fill: -color-text-muted; -fx-padding: 20;"/>
+        </VBox>
+    </ScrollPane>
+
+</VBox>

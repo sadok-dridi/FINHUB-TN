@@ -7,6 +7,10 @@ import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
+<<<<<<< HEAD
+=======
+import tn.finhub.util.LanguageManager;
+>>>>>>> cd680ce (crud+controle de saisie)
 
 public class SplashController {
 
@@ -73,6 +77,11 @@ public class SplashController {
     private void navigateToLogin() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
+<<<<<<< HEAD
+=======
+            // Load with resource bundle for internationalization
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent loginView = loader.load();
 
             // Access the content area from the current scene

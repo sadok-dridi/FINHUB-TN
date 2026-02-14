@@ -45,6 +45,14 @@
             <artifactId>javafx-fxml</artifactId>
             <version>21</version>
         </dependency>
+<<<<<<< HEAD
+=======
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>21</version>
+        </dependency>
+>>>>>>> cd680ce (crud+controle de saisie)
 
         <dependency>
             <groupId>com.sun.mail</groupId>
@@ -83,6 +91,15 @@
             <artifactId>java-dotenv</artifactId>
             <version>5.2.2</version>
         </dependency>
+<<<<<<< HEAD
+=======
+        <!-- Cloudinary -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.36.0</version>
+        </dependency>
+>>>>>>> cd680ce (crud+controle de saisie)
     </dependencies>
 
 

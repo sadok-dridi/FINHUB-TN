@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox spacing="20" style="-fx-padding: 20;" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.AdminKYCController">
+    
+    <Label text="KYC Requests" styleClass="header-text"/>
+    
+    <SplitPane VBox.vgrow="ALWAYS" dividerPositions="0.6">
+        <items>
+            <!-- Left: Table -->
+            <TableView fx:id="requestTable">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colUser" text="User" prefWidth="150"/>
+                    <TableColumn fx:id="colType" text="Type" prefWidth="100"/>
+                    <TableColumn fx:id="colDate" text="Date" prefWidth="150"/>
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                </columns>
+                <columnResizePolicy>
+                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+            
+            <!-- Right: Details -->
+            <VBox fx:id="detailsBox" spacing="15" style="-fx-padding: 15;" visible="false">
+                <Label text="Request Details" styleClass="sub-header-text"/>
+                <Label fx:id="detailUserLabel" style="-fx-font-weight: bold;"/>
+                <Label fx:id="detailTypeLabel"/>
+                
+                <ImageView fx:id="detailImageView" fitWidth="300" fitHeight="200" preserveRatio="true"/>
+                <Button fx:id="btnOpenVideo" text="Open Video in Browser"/>
+                
+                <HBox spacing="10">
+                    <Button fx:id="btnApprove" text="Approve" onAction="#handleApprove" style="-fx-background-color: green; -fx-text-fill: white;"/>
+                    <Button fx:id="btnReject" text="Reject" onAction="#handleReject" style="-fx-background-color: red; -fx-text-fill: white;"/>
+                </HBox>
+            </VBox>
+        </items>
+    </SplitPane>
+</VBox>

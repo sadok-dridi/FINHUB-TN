@@ -22,4 +22,15 @@ public class HashUtils {
             throw new RuntimeException("SHA-256 algorithm not found", e);
         }
     }
+<<<<<<< HEAD
+=======
+
+    public static String generateTransactionHash(int txId, int walletId, String type, java.math.BigDecimal amount,
+            String ref, java.time.LocalDateTime createdAt, String prevHash) {
+        String amountStr = amount.setScale(3, java.math.RoundingMode.HALF_UP).toString();
+        java.time.LocalDateTime truncatedTime = createdAt.truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        String data = prevHash + walletId + type + amountStr + ref + truncatedTime;
+        return sha256(data);
+    }
+>>>>>>> cd680ce (crud+controle de saisie)
 }

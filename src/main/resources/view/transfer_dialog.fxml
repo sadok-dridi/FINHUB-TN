@@ -23,8 +23,13 @@
                      </children>
                  </javafx.scene.layout.StackPane>
                  <VBox>
+<<<<<<< HEAD
                      <Label text="Send Money" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
                      <Label text="Transfer funds instantly to another user." style="-fx-text-fill: #9CA3AF; -fx-font-size: 14px;"/>
+=======
+                     <Label text="%transfer.title" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+                     <Label text="%transfer.subtitle" style="-fx-text-fill: #9CA3AF; -fx-font-size: 14px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                  </VBox>
             </children>
         </HBox>
@@ -34,13 +39,21 @@
         <!-- Form -->
         <VBox spacing="15">
              <VBox spacing="8">
+<<<<<<< HEAD
                  <Label text="Recipient Email" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
+=======
+                 <Label text="%transfer.recipient" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                  <TextField fx:id="recipientField" promptText="Enter recipient email"
                             style="-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 14px;"/>
              </VBox>
 
              <VBox spacing="8">
+<<<<<<< HEAD
                  <Label text="Amount (TND)" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
+=======
+                 <Label text="%transfer.amount" style="-fx-text-fill: #D1D5DB; -fx-font-size: 14px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                  <TextField fx:id="amountField" promptText="0.000" 
                             style="-fx-background-color: #374151; -fx-text-fill: white; -fx-padding: 12; -fx-background-radius: 8; -fx-font-size: 16px; -fx-font-weight: bold;"/>
              </VBox>
@@ -48,10 +61,17 @@
 
         <!-- Actions -->
         <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+<<<<<<< HEAD
              <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"
                      style="-fx-background-color: transparent; -fx-text-fill: #9CA3AF; -fx-border-color: #4B5563; -fx-border-radius: 6; -fx-padding: 10 20; -fx-cursor: hand;"/>
              
              <Button fx:id="sendButton" text="Send Money" onAction="#handleTransfer"
+=======
+             <Button fx:id="cancelButton" text="%common.cancel" onAction="#handleCancel"
+                     style="-fx-background-color: transparent; -fx-text-fill: #9CA3AF; -fx-border-color: #4B5563; -fx-border-radius: 6; -fx-padding: 10 20; -fx-cursor: hand;"/>
+             
+             <Button fx:id="sendButton" text="%transactions.send.button" onAction="#handleTransfer"
+>>>>>>> cd680ce (crud+controle de saisie)
                      style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 10 25; -fx-cursor: hand;">
                  <graphic>
                       <SVGPath content="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" style="-fx-fill: white;" scaleX="0.8" scaleY="0.8"/>

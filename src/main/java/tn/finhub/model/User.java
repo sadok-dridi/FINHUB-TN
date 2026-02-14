@@ -1,6 +1,11 @@
 package tn.finhub.model;
+<<<<<<< HEAD
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+=======
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+>>>>>>> cd680ce (crud+controle de saisie)
 
 public class User {
 
@@ -9,10 +14,19 @@ public class User {
     private String role;
     @JsonProperty("full_name")
     private String fullName;
+<<<<<<< HEAD
 
 
     public User() {
     }
+=======
+    private String phoneNumber;
+    private String profilePhotoUrl;
+
+    public User() {
+    }
+
+>>>>>>> cd680ce (crud+controle de saisie)
     public User(int id, String email, String role, String fullName) {
         this.id = id;
         this.email = email;
@@ -20,6 +34,18 @@ public class User {
         this.fullName = fullName;
     }
 
+<<<<<<< HEAD
+=======
+    public User(int id, String email, String role, String fullName, String phoneNumber, String profilePhotoUrl) {
+        this.id = id;
+        this.email = email;
+        this.role = role;
+        this.fullName = fullName;
+        this.phoneNumber = phoneNumber;
+        this.profilePhotoUrl = profilePhotoUrl;
+    }
+
+>>>>>>> cd680ce (crud+controle de saisie)
     // Getters
     public int getId() {
         return id;
@@ -45,4 +71,44 @@ public class User {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
+<<<<<<< HEAD
+=======
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getProfilePhotoUrl() {
+        return profilePhotoUrl;
+    }
+
+    public void setProfilePhotoUrl(String profilePhotoUrl) {
+        this.profilePhotoUrl = profilePhotoUrl;
+    }
+
+    // New Field for Module 6
+    private int trustScore = 100;
+
+    public int getTrustScore() {
+        return trustScore;
+    }
+
+    public void setTrustScore(int trustScore) {
+        this.trustScore = trustScore;
+    }
+
+    private boolean emailVerified;
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+>>>>>>> cd680ce (crud+controle de saisie)
 }

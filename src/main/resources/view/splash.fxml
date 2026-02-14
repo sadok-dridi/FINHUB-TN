@@ -24,7 +24,11 @@
                 </effect>
             </Label>
         </HBox>
+<<<<<<< HEAD
         <Label fx:id="sloganText" text="Financial Hub of Tunisia" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 18px; -fx-font-weight: bold;"/>
+=======
+        <Label fx:id="sloganText" text="%splash.slogan" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 18px; -fx-font-weight: bold;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
     </VBox>
 
 </StackPane>

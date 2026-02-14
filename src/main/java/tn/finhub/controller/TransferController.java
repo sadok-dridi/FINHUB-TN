@@ -3,7 +3,12 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+<<<<<<< HEAD
 import tn.finhub.service.WalletService;
+=======
+import tn.finhub.model.WalletModel; // Added import
+
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -20,7 +25,11 @@ public class TransferController {
     @FXML
     private javafx.scene.control.Button cancelButton;
 
+<<<<<<< HEAD
     private final WalletService walletService = new WalletService();
+=======
+    private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
+>>>>>>> cd680ce (crud+controle de saisie)
     private Runnable onSuccessCallback;
 
     public void setOnSuccessCallback(Runnable callback) {
@@ -58,6 +67,17 @@ public class TransferController {
             }
 
             int currentUserId = UserSession.getInstance().getUser().getId();
+<<<<<<< HEAD
+=======
+
+            // Check Frozen Status
+            tn.finhub.model.Wallet wallet = walletModel.findByUserId(currentUserId);
+            if (wallet != null && "FROZEN".equals(wallet.getStatus())) {
+                DialogUtil.showError("Security Alert", "Wallet is FROZEN. Transfers are disabled.");
+                return;
+            }
+
+>>>>>>> cd680ce (crud+controle de saisie)
             if (email.equalsIgnoreCase(UserSession.getInstance().getUser().getEmail())) {
                 DialogUtil.showError("Error", "You cannot transfer money to yourself.");
                 return;
@@ -76,7 +96,11 @@ public class TransferController {
                 @Override
                 protected Void call() throws Exception {
                     tn.finhub.model.User user = UserSession.getInstance().getUser();
+<<<<<<< HEAD
                     tn.finhub.service.MailService.sendOtpEmail(user.getEmail(), otp);
+=======
+                    tn.finhub.util.MailClient.sendOtpEmail(user.getEmail(), otp);
+>>>>>>> cd680ce (crud+controle de saisie)
                     return null;
                 }
             };
@@ -85,6 +109,10 @@ public class TransferController {
                 try {
                     javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                             getClass().getResource("/view/otp_dialog.fxml"));
+<<<<<<< HEAD
+=======
+                    loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
                     javafx.scene.Parent root = loader.load();
 
                     tn.finhub.controller.OtpController otpController = loader.getController();
@@ -134,8 +162,14 @@ public class TransferController {
         javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
             @Override
             protected Void call() throws Exception {
+<<<<<<< HEAD
                 int senderWalletId = walletService.getWallet(currentUserId).getId();
                 walletService.transferByEmail(senderWalletId, email, amount);
+=======
+                // Ensure helper method exists in walletModel or use findByUserId
+                int senderWalletId = walletModel.findByUserId(currentUserId).getId();
+                walletModel.transferByEmail(senderWalletId, email, amount);
+>>>>>>> cd680ce (crud+controle de saisie)
                 return null;
             }
         };

@@ -3,7 +3,12 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+<<<<<<< HEAD
 import tn.finhub.service.WalletService;
+=======
+import tn.finhub.model.WalletModel; // Added import
+
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -25,7 +30,11 @@ public class DepositController {
     @FXML
     private javafx.scene.control.Button cancelButton;
 
+<<<<<<< HEAD
     private final WalletService walletService = new WalletService();
+=======
+    private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
+>>>>>>> cd680ce (crud+controle de saisie)
     private Runnable onSuccessCallback;
 
     public void setOnSuccessCallback(Runnable callback) {
@@ -138,7 +147,11 @@ public class DepositController {
             }
 
             // 2. Luhn Algorithm
+<<<<<<< HEAD
             if (!tn.finhub.service.VirtualCardService.checkLuhn(cleanCardNumber)) {
+=======
+            if (!tn.finhub.model.VirtualCardModel.checkLuhn(cleanCardNumber)) {
+>>>>>>> cd680ce (crud+controle de saisie)
                 DialogUtil.showError("Invalid Card", "Card number check failed (Luhn). Please check your card.");
                 return;
             }
@@ -196,18 +209,31 @@ public class DepositController {
                     String targetEmail = currentUser.getEmail();
 
                     // Check if card belongs to another internal user
+<<<<<<< HEAD
                     tn.finhub.service.VirtualCardService cardService = new tn.finhub.service.VirtualCardService();
                     tn.finhub.model.Wallet cardOwnerWallet = cardService.findCardOwner(cleanCardNumber);
 
                     if (cardOwnerWallet != null) {
                         tn.finhub.service.UserService userService = new tn.finhub.service.UserService();
                         tn.finhub.model.User owner = userService.getUserById(cardOwnerWallet.getUserId());
+=======
+                    tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                    tn.finhub.model.Wallet cardOwnerWallet = cardModel.findCardOwner(cleanCardNumber);
+
+                    if (cardOwnerWallet != null) {
+                        tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+                        tn.finhub.model.User owner = userModel.findById(cardOwnerWallet.getUserId());
+>>>>>>> cd680ce (crud+controle de saisie)
                         if (owner != null) {
                             targetEmail = owner.getEmail();
                         }
                     }
 
+<<<<<<< HEAD
                     tn.finhub.service.MailService.sendOtpEmail(targetEmail, otp);
+=======
+                    tn.finhub.util.MailClient.sendOtpEmail(targetEmail, otp);
+>>>>>>> cd680ce (crud+controle de saisie)
                     return null;
                 }
             };
@@ -217,6 +243,10 @@ public class DepositController {
                 try {
                     javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                             getClass().getResource("/view/otp_dialog.fxml"));
+<<<<<<< HEAD
+=======
+                    loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
                     javafx.scene.Parent root = loader.load();
 
                     OtpController otpController = loader.getController();
@@ -278,10 +308,17 @@ public class DepositController {
 
                 // Actual Logic (DB Operations)
                 int userId = UserSession.getInstance().getUser().getId();
+<<<<<<< HEAD
                 int userWalletId = walletService.getWallet(userId).getId();
 
                 tn.finhub.service.VirtualCardService cardService = new tn.finhub.service.VirtualCardService();
                 tn.finhub.model.Wallet cardOwnerWallet = cardService.findCardOwner(cleanCardNumber);
+=======
+                int userWalletId = walletModel.findByUserId(userId).getId();
+
+                tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                tn.finhub.model.Wallet cardOwnerWallet = cardModel.findCardOwner(cleanCardNumber);
+>>>>>>> cd680ce (crud+controle de saisie)
 
                 if (cardOwnerWallet != null) {
                     // 1. Internal Transfer (P2P via Card)
@@ -290,7 +327,11 @@ public class DepositController {
                     }
 
                     // Verify CVV for Internal Cards matches DB
+<<<<<<< HEAD
                     tn.finhub.model.VirtualCard card = cardService.findCard(cleanCardNumber);
+=======
+                    tn.finhub.model.VirtualCard card = cardModel.findCard(cleanCardNumber);
+>>>>>>> cd680ce (crud+controle de saisie)
                     if (!card.getCvv().equals(cvv)) {
                         throw new RuntimeException("Incorrect CVV.");
                     }
@@ -299,15 +340,24 @@ public class DepositController {
                     }
 
                     // Execute Transfer: Card Owner -> Current User
+<<<<<<< HEAD
                     walletService.transfer(cardOwnerWallet.getId(), userWalletId, amount,
+=======
+                    walletModel.transfer(cardOwnerWallet.getId(), userWalletId, amount,
+>>>>>>> cd680ce (crud+controle de saisie)
                             "P2P Transfer via Card **** " + cleanCardNumber.substring(12));
 
                 } else {
                     // 2. External Transfer (Bank -> User) simulated
                     // Card is valid (Luhn checked), so we approve "External Payment"
                     try {
+<<<<<<< HEAD
                         int bankWalletId = walletService.getBankWalletId();
                         walletService.transfer(bankWalletId, userWalletId, amount,
+=======
+                        int bankWalletId = walletModel.getBankWalletId();
+                        walletModel.transfer(bankWalletId, userWalletId, amount,
+>>>>>>> cd680ce (crud+controle de saisie)
                                 "DEPOSIT via Card **** " + cleanCardNumber.substring(12));
                     } catch (RuntimeException re) {
                         throw new RuntimeException("Payment Gateway Error: " + re.getMessage());

@@ -4,11 +4,21 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+<<<<<<< HEAD
 import tn.finhub.model.User;
 import tn.finhub.service.MailService;
 import tn.finhub.service.UserService;
 import tn.finhub.util.ApiClient;
 import tn.finhub.util.SessionManager;
+=======
+// import javafx.scene.Node; // Removed unused import
+import tn.finhub.model.User;
+import tn.finhub.util.MailClient;
+
+import tn.finhub.util.ApiClient;
+import tn.finhub.util.SessionManager;
+import tn.finhub.util.ViewUtils;
+>>>>>>> cd680ce (crud+controle de saisie)
 
 public class AdminUserController {
 
@@ -18,13 +28,21 @@ public class AdminUserController {
     @FXML
     private TextField searchField;
 
+<<<<<<< HEAD
     private UserService userService = new UserService();
+=======
+    private tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+>>>>>>> cd680ce (crud+controle de saisie)
     private ObservableList<User> allUsers;
 
     @FXML
     public void initialize() {
         // Load all users initially
+<<<<<<< HEAD
         allUsers = FXCollections.observableArrayList(userService.getAllUsers());
+=======
+        allUsers = FXCollections.observableArrayList(userModel.findAll());
+>>>>>>> cd680ce (crud+controle de saisie)
         refreshUserCards(allUsers);
 
         // Add search listener
@@ -55,6 +73,7 @@ public class AdminUserController {
         refreshUserCards(filteredList);
     }
 
+<<<<<<< HEAD
     @FXML
     public void handleRefresh() {
         try {
@@ -72,6 +91,8 @@ public class AdminUserController {
         }
     }
 
+=======
+>>>>>>> cd680ce (crud+controle de saisie)
     private void refreshUserCards(ObservableList<User> users) {
         usersContainer.getChildren().clear();
         for (User user : users) {
@@ -83,9 +104,15 @@ public class AdminUserController {
         // Card Container
         javafx.scene.layout.VBox card = new javafx.scene.layout.VBox(10);
         card.getStyleClass().add("user-card");
+<<<<<<< HEAD
         card.setPrefWidth(280);
         card.setMinWidth(280);
         card.setMaxWidth(280);
+=======
+        card.setPrefWidth(240);
+        card.setMinWidth(240);
+        card.setMaxWidth(240);
+>>>>>>> cd680ce (crud+controle de saisie)
 
         // Header: Initial + Name + Role
         javafx.scene.layout.HBox header = new javafx.scene.layout.HBox(10);
@@ -127,6 +154,17 @@ public class AdminUserController {
 
         details.getChildren().addAll(emailLabel, idLabel);
 
+<<<<<<< HEAD
+=======
+        // Only show Trust Score for non-admins
+        if (!"ADMIN".equals(user.getRole())) {
+            javafx.scene.control.Label trustLabel = new javafx.scene.control.Label(
+                    "Trust Score: " + user.getTrustScore());
+            trustLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold; -fx-font-size: 11px;");
+            details.getChildren().add(trustLabel);
+        }
+
+>>>>>>> cd680ce (crud+controle de saisie)
         // Actions
         javafx.scene.layout.HBox actions = new javafx.scene.layout.HBox(10);
         actions.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
@@ -141,6 +179,7 @@ public class AdminUserController {
             actions.getChildren().add(makeAdminBtn);
         }
 
+<<<<<<< HEAD
         if (!isSelf && !isAdmin) {
             Button deleteBtn = new Button("Delete");
             deleteBtn.getStyleClass().add("button-small-danger");
@@ -166,6 +205,30 @@ public class AdminUserController {
 
         card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
         card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+=======
+        // Delete button removed as per requirements
+
+        // Add Hover Effect & Click Action ONLY for non-admins
+        if (!isAdmin) {
+            card.setCursor(javafx.scene.Cursor.HAND);
+            card.setOnMouseClicked(e -> {
+                // Avoid triggering when clicking buttons inside the card
+                if (e.getTarget() instanceof javafx.scene.Node) {
+                    javafx.scene.Node target = (javafx.scene.Node) e.getTarget();
+                    // Traverse up to check if we clicked a button
+                    while (target != null && target != card) {
+                        if (target instanceof Button)
+                            return;
+                        target = target.getParent();
+                    }
+                }
+                handleShowDetails(user, card);
+            });
+
+            card.setOnMouseEntered(e -> card.getStyleClass().add("user-card-hover"));
+            card.setOnMouseExited(e -> card.getStyleClass().remove("user-card-hover"));
+        }
+>>>>>>> cd680ce (crud+controle de saisie)
 
         card.getChildren().addAll(header, new Separator(), details, new javafx.scene.layout.Region(), actions);
         javafx.scene.layout.VBox.setVgrow(details, javafx.scene.layout.Priority.ALWAYS); // Push actions to bottom if
@@ -186,7 +249,11 @@ public class AdminUserController {
             String jsonResponse = ApiClient.inviteAdmin(user.getEmail());
             org.json.JSONObject json = new org.json.JSONObject(jsonResponse);
             String inviteLink = json.getString("invite_link");
+<<<<<<< HEAD
             MailService.sendAdminInviteEmail(user.getEmail(), inviteLink);
+=======
+            MailClient.sendAdminInviteEmail(user.getEmail(), inviteLink);
+>>>>>>> cd680ce (crud+controle de saisie)
 
             tn.finhub.util.DialogUtil.showInfo(
                     "Admin Invitation Sent",
@@ -204,6 +271,28 @@ public class AdminUserController {
         }
     }
 
+<<<<<<< HEAD
+=======
+    @FXML
+    public void handleRefresh() {
+        try {
+            userModel.syncUsersFromServer();
+            loadUsers();
+
+            tn.finhub.util.DialogUtil.showInfo(
+                    "Sync Completed",
+                    "Users successfully refreshed from server.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            tn.finhub.util.DialogUtil.showError(
+                    "Sync Failed",
+                    "Could not refresh users from server.");
+        }
+    }
+
+    // ...
+
+>>>>>>> cd680ce (crud+controle de saisie)
     private void handleDelete(User user) {
         boolean confirmed = tn.finhub.util.DialogUtil.showConfirmation("Delete User",
                 "Are you sure you want to delete " + user.getFullName() + "?");
@@ -212,7 +301,11 @@ public class AdminUserController {
             return;
 
         try {
+<<<<<<< HEAD
             userService.deleteUser(user.getId());
+=======
+            userModel.deleteUser(user.getId());
+>>>>>>> cd680ce (crud+controle de saisie)
             loadUsers();
         } catch (Exception e) {
             e.printStackTrace();
@@ -222,6 +315,7 @@ public class AdminUserController {
 
     // Helper to reload data
     public void loadUsers() {
+<<<<<<< HEAD
         allUsers = FXCollections.observableArrayList(userService.getAllUsers());
         filterUsers(searchField.getText());
     }
@@ -258,11 +352,81 @@ public class AdminUserController {
                     .lookup("#contentArea");
             contentArea.getChildren().clear();
             contentArea.getChildren().add(view);
+=======
+        allUsers = FXCollections.observableArrayList(userModel.findAll());
+        filterUsers(searchField.getText());
+    }
+
+    private void handleShowDetails(User user, javafx.scene.Node sourceNode) {
+        try {
+            javafx.scene.Scene scene = sourceNode.getScene();
+            if (scene == null)
+                return;
+
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) scene
+                    .lookup("#adminContentArea");
+            if (contentArea == null) {
+                tn.finhub.util.DialogUtil.showError("System Error", "Navigation component missing.");
+                return;
+            }
+
+            // Define the loading logic as a Runnable to reuse it
+            Runnable loadView = () -> {
+                try {
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                            getClass().getResource("/view/admin_user_details.fxml"));
+                    loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+                    javafx.scene.Parent view = loader.load();
+
+                    AdminUserDetailsController controller = loader.getController();
+                    controller.setUser(user);
+
+                    // Ensure sidebar remains visible (defensive coding based on previous issues)
+                    javafx.scene.Node sidebar = scene.lookup("#mainSidebar");
+                    if (sidebar != null) {
+                        sidebar.setVisible(true);
+                        sidebar.setManaged(true);
+                    }
+
+                    // Prepare new view for fade-in
+                    view.setOpacity(0);
+                    contentArea.getChildren().setAll(view);
+
+                    // Fade In
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(300), view);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    javafx.application.Platform.runLater(() -> tn.finhub.util.DialogUtil.showError("Navigation Error",
+                            "Could not load user details."));
+                }
+            };
+
+            // Calculate Fade Out for current content if any
+            if (!contentArea.getChildren().isEmpty()) {
+                javafx.scene.Node currentView = contentArea.getChildren().get(0);
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(300), currentView);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> loadView.run());
+                fadeOut.play();
+            } else {
+                // No current content, just load immediately
+                loadView.run();
+            }
+
+>>>>>>> cd680ce (crud+controle de saisie)
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+<<<<<<< HEAD
     @FXML
     public void handleGoToTransactions() {
         try {
@@ -277,4 +441,7 @@ public class AdminUserController {
             e.printStackTrace();
         }
     }
+=======
+    // Navigation Handlers removed - these belong in AdminDashboardController only
+>>>>>>> cd680ce (crud+controle de saisie)
 }

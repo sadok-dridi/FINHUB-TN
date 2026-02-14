@@ -7,7 +7,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.beans.property.SimpleStringProperty;
 import tn.finhub.model.LedgerAuditLog;
+<<<<<<< HEAD
 import tn.finhub.service.WalletService;
+=======
+
+import tn.finhub.model.WalletModel;
+>>>>>>> cd680ce (crud+controle de saisie)
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -22,7 +27,11 @@ public class AuditLogController {
     @FXML
     private TableColumn<LedgerAuditLog, String> messageCol;
 
+<<<<<<< HEAD
     private WalletService walletService = new WalletService();
+=======
+    private final WalletModel walletModel = new WalletModel();
+>>>>>>> cd680ce (crud+controle de saisie)
     private Stage stage;
 
     public void setStage(Stage stage) {
@@ -30,7 +39,11 @@ public class AuditLogController {
     }
 
     public void loadLogs(int walletId) {
+<<<<<<< HEAD
         List<LedgerAuditLog> logs = walletService.getAuditLogs(walletId);
+=======
+        List<LedgerAuditLog> logs = walletModel.getAuditLogs(walletId);
+>>>>>>> cd680ce (crud+controle de saisie)
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 

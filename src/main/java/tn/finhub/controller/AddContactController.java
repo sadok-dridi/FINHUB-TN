@@ -3,9 +3,15 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+<<<<<<< HEAD
 import tn.finhub.dao.SavedContactDAO;
 import tn.finhub.dao.UserDAO;
 import tn.finhub.dao.impl.UserDAOImpl;
+=======
+import tn.finhub.model.SavedContactModel;
+import tn.finhub.model.UserModel;
+import tn.finhub.model.WalletModel;
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.model.SavedContact;
 import tn.finhub.model.User;
 import tn.finhub.util.DialogUtil;
@@ -16,8 +22,14 @@ public class AddContactController {
     @FXML
     private TextField emailField;
 
+<<<<<<< HEAD
     private final SavedContactDAO contactDAO = new SavedContactDAO();
     private final UserDAO userDAO = new UserDAOImpl();
+=======
+    private final SavedContactModel contactModel = new SavedContactModel();
+    private final UserModel userModel = new UserModel();
+    private final WalletModel walletModel = new WalletModel();
+>>>>>>> cd680ce (crud+controle de saisie)
     private Runnable onContactAdded;
 
     public void setOnContactAdded(Runnable onContactAdded) {
@@ -47,22 +59,38 @@ public class AddContactController {
             return;
         }
 
+<<<<<<< HEAD
         if (contactDAO.exists(userId, email)) {
+=======
+        if (contactModel.exists(userId, email)) {
+>>>>>>> cd680ce (crud+controle de saisie)
             DialogUtil.showError("Error", "Contact with this email already exists.");
             return;
         }
 
         // Fetch user name
+<<<<<<< HEAD
         User user = userDAO.findByEmail(email);
+=======
+        User user = userModel.findByEmail(email);
+>>>>>>> cd680ce (crud+controle de saisie)
 
         if (user == null) {
             try {
                 if (emailField.getScene() != null) {
                     emailField.getScene().setCursor(javafx.scene.Cursor.WAIT);
                 }
+<<<<<<< HEAD
                 tn.finhub.service.UserService userService = new tn.finhub.service.UserService();
                 userService.syncUsersFromServer(); // Fetches all users and updates local DB
                 user = userDAO.findByEmail(email); // Retry lookup
+=======
+                if (emailField.getScene() != null) {
+                    emailField.getScene().setCursor(javafx.scene.Cursor.WAIT);
+                }
+                userModel.syncUsersFromServer(); // Fetches all users and updates local DB
+                user = userModel.findByEmail(email); // Retry lookup
+>>>>>>> cd680ce (crud+controle de saisie)
             } catch (Exception e) {
                 e.printStackTrace();
                 DialogUtil.showError("Sync Error", "Could not verify user with server: " + e.getMessage());
@@ -83,15 +111,24 @@ public class AddContactController {
         }
 
         // Check if user has a wallet
+<<<<<<< HEAD
         tn.finhub.service.WalletService walletService = new tn.finhub.service.WalletService();
         if (!walletService.hasWallet(user.getId())) {
+=======
+        // Check if user has a wallet
+        if (!walletModel.hasWallet(user.getId())) {
+>>>>>>> cd680ce (crud+controle de saisie)
             DialogUtil.showError("Error", "User exists but has no active wallet.");
             return;
         }
 
         SavedContact contact = new SavedContact(userId, email, user.getFullName());
         try {
+<<<<<<< HEAD
             contactDAO.addContact(contact);
+=======
+            contactModel.addContact(contact);
+>>>>>>> cd680ce (crud+controle de saisie)
             if (onContactAdded != null) {
                 onContactAdded.run();
             }

@@ -9,7 +9,10 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.KnowledgeBase;
+<<<<<<< HEAD
 import tn.finhub.service.SupportService;
+=======
+>>>>>>> cd680ce (crud+controle de saisie)
 
 import java.util.List;
 
@@ -20,7 +23,11 @@ public class SupportKbController {
     @FXML
     private VBox kbContainer;
 
+<<<<<<< HEAD
     private final SupportService supportService = new SupportService();
+=======
+    private final tn.finhub.model.KnowledgeBaseModel kbModel = new tn.finhub.model.KnowledgeBaseModel();
+>>>>>>> cd680ce (crud+controle de saisie)
 
     @FXML
     public void initialize() {
@@ -33,13 +40,21 @@ public class SupportKbController {
         if (query.isEmpty()) {
             loadAllArticles();
         } else {
+<<<<<<< HEAD
             List<KnowledgeBase> results = supportService.searchHelp(query);
+=======
+            List<KnowledgeBase> results = kbModel.searchArticles(query);
+>>>>>>> cd680ce (crud+controle de saisie)
             displayArticles(results);
         }
     }
 
     private void loadAllArticles() {
+<<<<<<< HEAD
         List<KnowledgeBase> articles = supportService.getAllHelpArticles();
+=======
+        List<KnowledgeBase> articles = kbModel.getAllArticles();
+>>>>>>> cd680ce (crud+controle de saisie)
         displayArticles(articles);
     }
 

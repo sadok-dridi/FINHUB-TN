@@ -8,7 +8,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import tn.finhub.model.SupportTicket;
+<<<<<<< HEAD
 import tn.finhub.service.SupportService;
+=======
+
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
@@ -20,7 +24,18 @@ public class SupportTicketsController {
     @FXML
     private VBox ticketsContainer;
 
+<<<<<<< HEAD
     private final SupportService supportService = new SupportService();
+=======
+    private final tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
+
+    // STALE-WHILE-REVALIDATE CACHE
+    private static List<SupportTicket> cachedTickets = null;
+
+    public static void setCachedTickets(List<SupportTicket> tickets) {
+        cachedTickets = tickets;
+    }
+>>>>>>> cd680ce (crud+controle de saisie)
 
     @FXML
     public void initialize() {
@@ -29,9 +44,42 @@ public class SupportTicketsController {
 
     @FXML
     private void refreshTickets() {
+<<<<<<< HEAD
         ticketsContainer.getChildren().clear();
         int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
         List<SupportTicket> tickets = supportService.getUserTickets(userId);
+=======
+        int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
+
+        // 0. Optimistic UI Update
+        if (cachedTickets != null) {
+            updateUI(cachedTickets);
+        }
+
+        // Background Task
+        javafx.concurrent.Task<List<SupportTicket>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<SupportTicket> call() throws Exception {
+                return supportModel.getTicketsByUserId(userId);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<SupportTicket> tickets = task.getValue();
+            cachedTickets = tickets;
+            updateUI(tickets);
+        });
+
+        task.setOnFailed(e -> {
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateUI(List<SupportTicket> tickets) {
+        ticketsContainer.getChildren().clear();
+>>>>>>> cd680ce (crud+controle de saisie)
 
         if (tickets.isEmpty()) {
             Label emptyLabel = new Label("No tickets found. Need help? Create a new ticket.");

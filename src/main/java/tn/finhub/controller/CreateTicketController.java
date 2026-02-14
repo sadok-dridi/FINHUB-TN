@@ -5,7 +5,11 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+<<<<<<< HEAD
 import tn.finhub.service.SupportService;
+=======
+
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.util.UserSession;
 import tn.finhub.util.DialogUtil;
 
@@ -18,7 +22,11 @@ public class CreateTicketController {
     @FXML
     private TextArea messageArea;
 
+<<<<<<< HEAD
     private final SupportService supportService = new SupportService();
+=======
+    private final tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
+>>>>>>> cd680ce (crud+controle de saisie)
 
     @FXML
     public void initialize() {
@@ -40,7 +48,11 @@ public class CreateTicketController {
         int userId = UserSession.getInstance().getUser() != null ? UserSession.getInstance().getUser().getId() : 0;
 
         try {
+<<<<<<< HEAD
             supportService.createTicket(userId, subject, category, message);
+=======
+            supportModel.createTicketWithInitialMessage(userId, subject, category, message);
+>>>>>>> cd680ce (crud+controle de saisie)
             DialogUtil.setLastDialogResult(true); // Signal success
             closeDialog();
         } catch (Exception e) {

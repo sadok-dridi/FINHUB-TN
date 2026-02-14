@@ -8,6 +8,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import tn.finhub.controller.CustomDialogController;
+<<<<<<< HEAD
+=======
+import tn.finhub.util.LanguageManager;
+>>>>>>> cd680ce (crud+controle de saisie)
 
 import java.io.IOException;
 
@@ -23,6 +27,10 @@ public class DialogUtil {
         lastResult = false;
         try {
             FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource(fxmlPath));
+<<<<<<< HEAD
+=======
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent root = loader.load();
 
             Stage dialogStage = new Stage();
@@ -61,6 +69,10 @@ public class DialogUtil {
     private static boolean showDialog(String title, String message, String type) {
         try {
             FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource("/view/CustomDialog.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent root = loader.load();
             CustomDialogController controller = loader.getController();
 
@@ -97,6 +109,10 @@ public class DialogUtil {
     public static String showPasswordInput(String title, String message) {
         try {
             FXMLLoader loader = new FXMLLoader(DialogUtil.class.getResource("/view/CustomDialog.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent root = loader.load();
             CustomDialogController controller = loader.getController();
 

@@ -8,6 +8,7 @@
             fx:controller="tn.finhub.controller.AdminUserTransactionsController"
             style="-fx-background-color: transparent;">
 
+<<<<<<< HEAD
     <!-- Sidebar -->
     <left>
         <VBox spacing="10" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 0); -fx-border-color: transparent -color-card-border transparent transparent; -fx-border-width: 0 1 0 0;" prefWidth="250">
@@ -33,19 +34,32 @@
             <!-- Logout omitted for brevity in child view -->
         </VBox>
     </left>
+=======
+
+>>>>>>> cd680ce (crud+controle de saisie)
 
     <center>
         <VBox style="-fx-padding: 30 30 0 30; -fx-background-color: transparent;" spacing="20">
             
             <!-- Back & Header -->
             <HBox spacing="10" alignment="CENTER_LEFT">
+<<<<<<< HEAD
                  <Button text="← Back" onAction="#handleBack" styleClass="button-text" style="-fx-text-fill: -color-text-secondary;"/>
                  <Label text="Transaction Ledger" styleClass="header-text"/>
+=======
+                 <Button text="Back" onAction="#handleBack" styleClass="button-back">
+                    <graphic>
+                        <javafx.scene.shape.SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="-fx-fill: -color-text-secondary;"/>
+                    </graphic>
+                 </Button>
+                 <Label text="%admin.transactions.ledger" styleClass="header-text"/>
+>>>>>>> cd680ce (crud+controle de saisie)
             </HBox>
 
             <!-- User Info Summary -->
              <HBox spacing="20" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
                 <VBox spacing="5">
+<<<<<<< HEAD
                     <Label text="User" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
                     <Label fx:id="nameLabel" text="Loading..." style="-fx-font-weight: bold;"/>
                     <Label fx:id="emailLabel" text="Loading..." style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
@@ -53,11 +67,24 @@
                 <Separator orientation="VERTICAL"/>
                 <VBox spacing="5">
                     <Label text="Balance" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+=======
+                    <Label text="%common.user" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+                    <Label fx:id="nameLabel" text="%common.loading" style="-fx-font-weight: bold;"/>
+                    <Label fx:id="emailLabel" text="%common.loading" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+                </VBox>
+                <Separator orientation="VERTICAL"/>
+                <VBox spacing="5">
+                    <Label text="%wallet.balance" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                     <Label fx:id="balanceLabel" text="0.00" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: -color-primary;"/>
                 </VBox>
                 <Separator orientation="VERTICAL"/>
                 <VBox spacing="5">
+<<<<<<< HEAD
                     <Label text="Status" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+=======
+                    <Label text="%common.status" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                     <Label fx:id="walletStatusLabel" text="Active" style="-fx-font-weight: bold;"/>
                 </VBox>
              </HBox>
@@ -65,15 +92,26 @@
             <!-- Alert Box -->
             <VBox fx:id="ledgerAlertBox" managed="false" visible="false" style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-border-color: #EF4444; -fx-border-radius: 8px; -fx-padding: 15;">
                 <HBox spacing="10" alignment="CENTER_LEFT">
+<<<<<<< HEAD
                      <Label text="⚠ SECURITY ALERT:" style="-fx-text-fill: #EF4444; -fx-font-weight: bold;"/>
                      <Label fx:id="ledgerAlertMessage" text="Details..." style="-fx-text-fill: #EF4444;"/>
                 </HBox>
                 <Label text="A transaction may have been tampered with. The ledger is broken. Locate the violation (red) below and correct it." style="-fx-text-fill: #EF4444; -fx-font-size: 12px;" wrapText="true"/>
+=======
+                     <Label text="%common.security.alert" style="-fx-text-fill: #EF4444; -fx-font-weight: bold;"/>
+                     <Label fx:id="ledgerAlertMessage" text="Details..." style="-fx-text-fill: #EF4444;"/>
+                </HBox>
+                <Label text="%admin.transactions.tamper.alert" style="-fx-text-fill: #EF4444; -fx-font-size: 12px;" wrapText="true"/>
+>>>>>>> cd680ce (crud+controle de saisie)
             </VBox>
 
             <!-- Transactions List -->
             <VBox spacing="10" VBox.vgrow="ALWAYS">
+<<<<<<< HEAD
                 <Label text="History" style="-fx-font-weight: bold; -fx-text-fill: -color-text-secondary;"/>
+=======
+                <Label text="%escrow.filter.history" style="-fx-font-weight: bold; -fx-text-fill: -color-text-secondary;"/>
+>>>>>>> cd680ce (crud+controle de saisie)
                 <ListView fx:id="transactionsListView" styleClass="transaction-list" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;"/>
             </VBox>
             

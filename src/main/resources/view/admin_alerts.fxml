@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.finhub.controller.AdminAlertsController"
+            style="-fx-background-color: transparent;">
+
+
+
+
+    <center>
+        <VBox style="-fx-padding: 30; -fx-background-color: transparent;" spacing="20">
+            <VBox spacing="5">
+                <Label text="%admin.alerts.broadcast" styleClass="header-text"/>
+                <Label text="%admin.alerts.subtitle" styleClass="sub-header-text"/>
+            </VBox>
+            
+            <VBox style="-fx-background-color: -color-card-bg; -fx-padding: 30; -fx-background-radius: 12; -fx-max-width: 600;" spacing="15">
+                
+                <Label text="%admin.alerts.severity" style="-fx-text-fill: -color-text-secondary;"/>
+                <ComboBox fx:id="severityBox" prefWidth="200" styleClass="combo-box"/>
+                
+                <Label text="%admin.alerts.source" style="-fx-text-fill: -color-text-secondary;"/>
+                <TextField fx:id="sourceField" styleClass="text-field"/>
+                
+                <Label text="%admin.alerts.message" style="-fx-text-fill: -color-text-secondary;"/>
+                <TextArea fx:id="messageArea" prefRowCount="4" wrapText="true" styleClass="text-area"/>
+                
+                <Region prefHeight="10"/>
+                
+                <Button text="%admin.alerts.send" onAction="#handleBroadcast" styleClass="button-primary" maxWidth="Infinity"/>
+                
+            </VBox>
+            
+        </VBox>
+    </center>
+
+</BorderPane>

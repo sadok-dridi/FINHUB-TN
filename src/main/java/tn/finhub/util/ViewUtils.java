@@ -28,15 +28,27 @@ public class ViewUtils {
      * Navigates to a new view with a fade-out/fade-in transition.
      * Uses the provided container.
      */
+<<<<<<< HEAD
     public static void loadContent(Pane targetContainer, String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource(fxmlPath));
+=======
+    public static FXMLLoader loadContent(Pane targetContainer, String fxmlPath) {
+        try {
+            FXMLLoader loader = new FXMLLoader(ViewUtils.class.getResource(fxmlPath));
+            // Load with resource bundle for internationalization
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent newView = loader.load();
 
             if (!targetContainer.getChildren().isEmpty()) {
                 Node currentView = targetContainer.getChildren().get(0);
 
+<<<<<<< HEAD
                 FadeTransition fadeOut = new FadeTransition(Duration.millis(300), currentView);
+=======
+                FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentView);
+>>>>>>> cd680ce (crud+controle de saisie)
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> {
@@ -49,15 +61,28 @@ public class ViewUtils {
                 fadeIn(newView);
             }
 
+<<<<<<< HEAD
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Error loading FXML: " + fxmlPath);
+=======
+            return loader;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("Error loading FXML: " + fxmlPath);
+            return null;
+>>>>>>> cd680ce (crud+controle de saisie)
         }
     }
 
     private static void fadeIn(Node node) {
         node.setOpacity(0);
+<<<<<<< HEAD
         FadeTransition fadeIn = new FadeTransition(Duration.millis(300), node);
+=======
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), node);
+>>>>>>> cd680ce (crud+controle de saisie)
         fadeIn.setFromValue(0.0);
         fadeIn.setToValue(1.0);
         fadeIn.play();

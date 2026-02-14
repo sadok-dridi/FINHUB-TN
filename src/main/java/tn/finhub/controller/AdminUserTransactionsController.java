@@ -5,10 +5,18 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+<<<<<<< HEAD
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
 import tn.finhub.service.WalletService;
+=======
+import tn.finhub.model.LedgerFlag;
+import tn.finhub.model.User;
+import tn.finhub.model.Wallet;
+import tn.finhub.model.WalletTransaction;
+import tn.finhub.model.WalletModel;
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.util.DialogUtil;
 
 import java.time.format.DateTimeFormatter;
@@ -31,15 +39,21 @@ public class AdminUserTransactionsController {
     private Label ledgerAlertMessage;
 
     private User user;
+<<<<<<< HEAD
     private Wallet wallet;
     private WalletService walletService = new WalletService();
     private ObservableList<WalletTransaction> transactions;
+=======
+
+    private WalletModel walletModel = new WalletModel();
+>>>>>>> cd680ce (crud+controle de saisie)
 
     public void setUser(User user) {
         this.user = user;
         nameLabel.setText(user.getFullName());
         emailLabel.setText(user.getEmail());
 
+<<<<<<< HEAD
         if (walletService.hasWallet(user.getId())) {
             this.wallet = walletService.getWallet(user.getId());
             updateWalletInfo();
@@ -57,16 +71,89 @@ public class AdminUserTransactionsController {
 
         String status = wallet.getStatus();
         walletStatusLabel.setText(status);
+=======
+        // Set Loading State
+        balanceLabel.setText("Loading...");
+        walletStatusLabel.setText("...");
+        ledgerAlertBox.setVisible(false);
+        ledgerAlertBox.setManaged(false);
+
+        Label loadingLabel = new Label("Loading transactions...");
+        loadingLabel.setStyle("-fx-text-fill: white;");
+        transactionsListView.setPlaceholder(loadingLabel);
+        transactionsListView.setItems(FXCollections.observableArrayList()); // Clear old data
+
+        // Background Task
+        javafx.concurrent.Task<WalletFetchResult> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected WalletFetchResult call() throws Exception {
+                Wallet w = walletModel.findByUserId(user.getId());
+                if (w == null)
+                    return null;
+
+                // Re-fetch to ensure fresh data (as per original logic)
+                w = walletModel.findById(w.getId());
+
+                // Fetch transactions
+                java.util.List<WalletTransaction> txHistory = walletModel.getTransactionHistory(w.getId());
+
+                // Fetch tampered ID
+                int tamperedId = walletModel.getTamperedTransactionId(w.getId());
+
+                // Fetch latest flag if frozen
+                LedgerFlag flag = null;
+                if ("FROZEN".equals(w.getStatus())) {
+                    flag = walletModel.getLatestFlag(w.getId());
+                }
+
+                return new WalletFetchResult(w, txHistory, tamperedId, flag);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            WalletFetchResult result = task.getValue();
+            if (result == null) {
+                balanceLabel.setText("No Wallet");
+                walletStatusLabel.setText("N/A");
+                transactionsListView.setPlaceholder(new Label("No wallet found for this user."));
+            } else {
+                updateUIWithData(result);
+            }
+        });
+
+        task.setOnFailed(e -> {
+            balanceLabel.setText("Error");
+            walletStatusLabel.setText("Error");
+            transactionsListView.setPlaceholder(new Label("Failed to load data."));
+            e.getSource().getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateUIWithData(WalletFetchResult result) {
+        // Update Wallet Info
+        balanceLabel.setText(String.format("%.3f TND", result.wallet.getBalance()));
+        String status = result.wallet.getStatus();
+        walletStatusLabel.setText(status);
+
+>>>>>>> cd680ce (crud+controle de saisie)
         if ("FROZEN".equals(status)) {
             walletStatusLabel.setStyle("-fx-text-fill: #EF4444; -fx-font-weight: bold;");
             ledgerAlertBox.setVisible(true);
             ledgerAlertBox.setManaged(true);
 
+<<<<<<< HEAD
             // Check flags
             var flag = walletService.getLatestFlag(wallet.getId());
             if (flag != null) {
                 ledgerAlertMessage.setText(flag.getReason() + " (at "
                         + flag.getFlaggedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")");
+=======
+            if (result.flag != null) {
+                ledgerAlertMessage.setText(result.flag.getReason() + " (at "
+                        + result.flag.getFlaggedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")");
+>>>>>>> cd680ce (crud+controle de saisie)
             } else {
                 ledgerAlertMessage.setText("Wallet is frozen.");
             }
@@ -75,6 +162,7 @@ public class AdminUserTransactionsController {
             ledgerAlertBox.setVisible(false);
             ledgerAlertBox.setManaged(false);
         }
+<<<<<<< HEAD
     }
 
     private void loadTransactions() {
@@ -84,6 +172,12 @@ public class AdminUserTransactionsController {
         int tamperedId = walletService.getTamperedTransactionId(wallet.getId());
 
         transactionsListView.setItems(transactions);
+=======
+
+        // Update Transactions
+        ObservableList<WalletTransaction> items = FXCollections.observableArrayList(result.transactions);
+        transactionsListView.setItems(items);
+>>>>>>> cd680ce (crud+controle de saisie)
         transactionsListView.setCellFactory(param -> new ListCell<WalletTransaction>() {
             @Override
             protected void updateItem(WalletTransaction tx, boolean empty) {
@@ -93,12 +187,39 @@ public class AdminUserTransactionsController {
                     setText(null);
                     setStyle("-fx-background-color: transparent;");
                 } else {
+<<<<<<< HEAD
                     HBox card = createTransactionCard(tx, tx.getId() == tamperedId);
+=======
+                    HBox card = createTransactionCard(tx, tx.getId() == result.tamperedId);
+>>>>>>> cd680ce (crud+controle de saisie)
                     setGraphic(card);
                     setStyle("-fx-background-color: transparent; -fx-padding: 5;");
                 }
             }
         });
+<<<<<<< HEAD
+=======
+
+        if (items.isEmpty()) {
+            transactionsListView.setPlaceholder(new Label("No transactions found."));
+        }
+    }
+
+    // DTO for result
+    private static class WalletFetchResult {
+        Wallet wallet;
+        java.util.List<WalletTransaction> transactions;
+        int tamperedId;
+        LedgerFlag flag;
+
+        public WalletFetchResult(Wallet wallet, java.util.List<WalletTransaction> transactions, int tamperedId,
+                LedgerFlag flag) {
+            this.wallet = wallet;
+            this.transactions = transactions;
+            this.tamperedId = tamperedId;
+            this.flag = flag;
+        }
+>>>>>>> cd680ce (crud+controle de saisie)
     }
 
     private HBox createTransactionCard(WalletTransaction tx, boolean isTampered) {
@@ -182,6 +303,10 @@ public class AdminUserTransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/admin_repair_dialog.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             javafx.scene.Parent page = loader.load();
 
             javafx.stage.Stage dialogStage = new javafx.stage.Stage();
@@ -206,8 +331,12 @@ public class AdminUserTransactionsController {
             dialogStage.showAndWait();
 
             if (controller.isSaved()) {
+<<<<<<< HEAD
                 updateWalletInfo();
                 loadTransactions();
+=======
+                setUser(this.user); // Refresh
+>>>>>>> cd680ce (crud+controle de saisie)
             }
 
         } catch (java.io.IOException e) {
@@ -221,11 +350,41 @@ public class AdminUserTransactionsController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/admin_transactions.fxml"));
+<<<<<<< HEAD
             javafx.scene.Parent view = loader.load();
             javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) transactionsListView.getScene()
                     .lookup("#contentArea");
             contentArea.getChildren().clear();
             contentArea.getChildren().add(view);
+=======
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+            javafx.scene.Parent view = loader.load();
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) transactionsListView.getScene()
+                    .lookup("#adminContentArea");
+
+            if (contentArea != null) {
+                // Fade Out Current
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(200), contentArea);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    // Switch View
+                    contentArea.getChildren().clear();
+                    contentArea.getChildren().add(view);
+
+                    // Fade In New
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(200), contentArea);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                });
+                fadeOut.play();
+            } else {
+                System.err.println("Critical Error: #adminContentArea not found");
+            }
+>>>>>>> cd680ce (crud+controle de saisie)
         } catch (Exception e) {
             e.printStackTrace();
         }

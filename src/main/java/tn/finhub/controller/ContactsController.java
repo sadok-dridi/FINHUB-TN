@@ -12,11 +12,19 @@ import javafx.scene.shape.SVGPath;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+<<<<<<< HEAD
 import tn.finhub.dao.SavedContactDAO;
+=======
+import tn.finhub.model.SavedContactModel;
+>>>>>>> cd680ce (crud+controle de saisie)
 import tn.finhub.model.SavedContact;
 import tn.finhub.model.User;
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
+<<<<<<< HEAD
+=======
+import tn.finhub.util.LanguageManager;
+>>>>>>> cd680ce (crud+controle de saisie)
 
 import java.io.IOException;
 import java.util.List;
@@ -26,7 +34,11 @@ public class ContactsController {
     @FXML
     private VBox contactsContainer;
 
+<<<<<<< HEAD
     private final SavedContactDAO contactDAO = new SavedContactDAO();
+=======
+    private final SavedContactModel contactModel = new SavedContactModel();
+>>>>>>> cd680ce (crud+controle de saisie)
 
     @FXML
     public void initialize() {
@@ -38,7 +50,11 @@ public class ContactsController {
         if (user == null)
             return;
 
+<<<<<<< HEAD
         List<SavedContact> contacts = contactDAO.getContactsByUserId(user.getId());
+=======
+        List<SavedContact> contacts = contactModel.getContactsByUserId(user.getId());
+>>>>>>> cd680ce (crud+controle de saisie)
         contactsContainer.getChildren().clear();
 
         if (contacts.isEmpty()) {
@@ -98,7 +114,11 @@ public class ContactsController {
 
     private void handleDelete(SavedContact contact) {
         // Confirm delete? For now direct delete.
+<<<<<<< HEAD
         contactDAO.deleteContact(contact.getId());
+=======
+        contactModel.deleteContact(contact.getId());
+>>>>>>> cd680ce (crud+controle de saisie)
         loadContacts();
     }
 
@@ -106,6 +126,10 @@ public class ContactsController {
     private void handleAddContact() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/add_contact_dialog.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent root = loader.load();
 
             // We need a controller for the dialog to handle "Save".

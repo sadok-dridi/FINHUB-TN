@@ -6,6 +6,7 @@
       fx:controller="tn.finhub.controller.AuditLogController"
       style="-fx-padding: 20; -fx-background-color: #F3F4F6; -fx-background-radius: 10; -fx-border-color: #E5E7EB; -fx-border-width: 1;">
     
+<<<<<<< HEAD
     <Label text="Verification History" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
     
     <TableView fx:id="logTable" prefHeight="400" prefWidth="600" style="-fx-background-radius: 8; -fx-border-radius: 8;">
@@ -13,6 +14,15 @@
             <TableColumn fx:id="dateCol" text="Date" prefWidth="150"/>
             <TableColumn fx:id="statusCol" text="Status" prefWidth="80"/>
             <TableColumn fx:id="messageCol" text="Detail" prefWidth="350"/>
+=======
+    <Label text="%audit.log.title" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
+    
+    <TableView fx:id="logTable" prefHeight="400" prefWidth="600" style="-fx-background-radius: 8; -fx-border-radius: 8;">
+        <columns>
+            <TableColumn fx:id="dateCol" text="%common.date" prefWidth="150"/>
+            <TableColumn fx:id="statusCol" text="%common.status" prefWidth="80"/>
+            <TableColumn fx:id="messageCol" text="%common.detail" prefWidth="350"/>
+>>>>>>> cd680ce (crud+controle de saisie)
         </columns>
         <columnResizePolicy>
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
@@ -20,7 +30,11 @@
     </TableView>
 
     <HBox alignment="CENTER_RIGHT">
+<<<<<<< HEAD
         <Button text="Close" onAction="#handleClose" 
+=======
+        <Button text="%common.close" onAction="#handleClose" 
+>>>>>>> cd680ce (crud+controle de saisie)
                 style="-fx-background-color: white; -fx-text-fill: #374151; -fx-border-color: #D1D5DB; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand; -fx-padding: 5 15;"/>
     </HBox>
 </VBox>

@@ -8,7 +8,10 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+<<<<<<< HEAD
 import tn.finhub.service.ChatBotService;
+=======
+>>>>>>> cd680ce (crud+controle de saisie)
 
 public class SupportChatController {
 
@@ -19,7 +22,11 @@ public class SupportChatController {
     @FXML
     private TextField inputField;
 
+<<<<<<< HEAD
     private final ChatBotService chatService = new ChatBotService();
+=======
+    private final tn.finhub.model.ChatAssistantModel chatModel = new tn.finhub.model.ChatAssistantModel();
+>>>>>>> cd680ce (crud+controle de saisie)
 
     @FXML
     public void initialize() {
@@ -46,7 +53,11 @@ public class SupportChatController {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+<<<<<<< HEAD
             String response = chatService.getResponse(input);
+=======
+            String response = chatModel.getResponse(input);
+>>>>>>> cd680ce (crud+controle de saisie)
             Platform.runLater(() -> addMessage(response, false));
         }).start();
     }

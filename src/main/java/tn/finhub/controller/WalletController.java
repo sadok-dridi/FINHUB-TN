@@ -8,8 +8,12 @@ import javafx.scene.control.Button;
 import tn.finhub.model.VirtualCard;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletTransaction;
+<<<<<<< HEAD
 import tn.finhub.service.VirtualCardService;
 import tn.finhub.service.WalletService;
+=======
+import tn.finhub.model.WalletModel;
+>>>>>>> cd680ce (crud+controle de saisie)
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -37,10 +41,22 @@ public class WalletController {
     @FXML
     private Button topUpButton;
 
+<<<<<<< HEAD
     private final WalletService walletService = new WalletService();
     private final VirtualCardService virtualCardService = new VirtualCardService();
     private final tn.finhub.dao.MarketDAO marketDAO = new tn.finhub.dao.MarketDAO();
     private final tn.finhub.service.MarketDataService marketDataService = new tn.finhub.service.MarketDataService();
+=======
+    @FXML
+    private Button transferButton;
+
+    private final WalletModel walletModel = new WalletModel(); // Changed to WalletModel
+    private final tn.finhub.model.VirtualCardModel virtualCardModel = new tn.finhub.model.VirtualCardModel();
+    // private final tn.finhub.dao.MarketDAO marketDAO = new
+    // tn.finhub.dao.MarketDAO(); // REMOVED (Use MarketModel)
+    private final tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
+    private final tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel(); // Added UserModel
+>>>>>>> cd680ce (crud+controle de saisie)
     private Wallet currentWallet;
 
     @FXML
@@ -51,6 +67,10 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/deposit_dialog.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             javafx.scene.Parent root = loader.load();
 
             DepositController controller = loader.getController();
@@ -99,6 +119,10 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/transfer_dialog.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             javafx.scene.Parent root = loader.load();
 
             TransferController controller = loader.getController();
@@ -141,8 +165,16 @@ public class WalletController {
             if ("FROZEN".equals(currentWallet.getStatus()))
                 return; // Security check
 
+<<<<<<< HEAD
             virtualCardService.createCardForWallet(currentWallet.getId());
             refreshVirtualCards(currentWallet.getId());
+=======
+            // Run in background to avoid freezing UI during card generation
+            new Thread(() -> {
+                virtualCardModel.createCardForWallet(currentWallet.getId());
+                javafx.application.Platform.runLater(this::loadWalletData);
+            }).start();
+>>>>>>> cd680ce (crud+controle de saisie)
         }
     }
 
@@ -152,17 +184,46 @@ public class WalletController {
         startAutoRefresh();
     }
 
+<<<<<<< HEAD
     private void startAutoRefresh() {
         javafx.animation.Timeline timeline = new javafx.animation.Timeline(
                 new javafx.animation.KeyFrame(javafx.util.Duration.seconds(31), e -> loadWalletData()));
         timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
         timeline.play();
+=======
+    private javafx.animation.Timeline refreshTimeline;
+
+    private void startAutoRefresh() {
+        if (refreshTimeline != null) {
+            refreshTimeline.stop();
+        }
+
+        refreshTimeline = new javafx.animation.Timeline(
+                new javafx.animation.KeyFrame(javafx.util.Duration.seconds(31), e -> {
+                    // Stop if view is no longer in scene (User navigated away or logged out)
+                    if (escrowBalanceLabel.getScene() == null) {
+                        refreshTimeline.stop();
+                        return;
+                    }
+                    loadWalletData();
+                }));
+        refreshTimeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
+        refreshTimeline.play();
+    }
+
+    // STALE-WHILE-REVALIDATE CACHE
+    private static WalletDataPacket cachedData = null;
+
+    public static void setCachedData(WalletDataPacket data) {
+        cachedData = data;
+>>>>>>> cd680ce (crud+controle de saisie)
     }
 
     private void loadWalletData() {
         tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
         if (user == null)
             return;
+<<<<<<< HEAD
         int userId = user.getId();
 
         // Ensure wallet exists ONLY for regular users
@@ -214,13 +275,206 @@ public class WalletController {
             int limit = Math.min(transactions.size(), 4);
             for (int i = 0; i < limit; i++) {
                 transactionContainer.getChildren().add(createTransactionCard(transactions.get(i), badTxId));
+=======
+
+        // FIX: Prevent Admin from creating a wallet automatically
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            System.out.println("Admin detected in WalletController. Aborting wallet logic.");
+            return;
+        }
+
+        int userId = user.getId();
+
+        // 0. Optimistic UI Update (Stale Data)
+        if (cachedData != null && cachedData.wallet.getUserId() == userId) {
+            updateUI(cachedData);
+        }
+
+        // Background Task for Data Fetching
+        javafx.concurrent.Task<WalletDataPacket> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected WalletDataPacket call() throws Exception {
+                // ... (Logic unchanged) ...
+                // 1. Create Wallet Check
+                walletModel.createWalletIfNotExists(userId);
+
+                // 2. Fetch Wallet
+                Wallet wallet = walletModel.findByUserId(userId);
+                if (wallet == null)
+                    return null;
+
+                // 3. Check Flags
+                boolean isFrozen = "FROZEN".equals(wallet.getStatus());
+                int badTxId = -1;
+                if (isFrozen) {
+                    badTxId = walletModel.getTamperedTransactionId(wallet.getId());
+                }
+
+                // 4. Fetch Cards
+                List<VirtualCard> cards = virtualCardModel.getCardsByWallet(wallet.getId());
+
+                // 5. Fetch Transactions
+                List<WalletTransaction> transactions = walletModel.getTransactionHistory(wallet.getId());
+
+                // 6. Portfolio Summary
+                java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal currentValue = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.valueOf(-9999);
+                String bestAsset = "None";
+                int assetCount = 0;
+
+                java.util.List<tn.finhub.model.PortfolioItem> items = marketModel.getPortfolio(userId);
+                java.math.BigDecimal exchangeRate = marketModel.getUsdToTndRate();
+
+                for (tn.finhub.model.PortfolioItem item : items) {
+                    if (item.getQuantity().compareTo(java.math.BigDecimal.ZERO) > 0) {
+                        assetCount++;
+                        java.math.BigDecimal investedUSD = item.getAverageCost().multiply(item.getQuantity());
+                        totalInvested = totalInvested.add(investedUSD.multiply(exchangeRate));
+
+                        tn.finhub.model.MarketPrice price = marketModel.getPrice(item.getSymbol());
+                        if (price != null) {
+                            java.math.BigDecimal valUSD = price.getPrice().multiply(item.getQuantity());
+                            currentValue = currentValue.add(valUSD.multiply(exchangeRate));
+
+                            if (item.getAverageCost().doubleValue() > 0) {
+                                java.math.BigDecimal itemPnlPct = (price.getPrice().subtract(item.getAverageCost()))
+                                        .divide(item.getAverageCost(), 4, java.math.RoundingMode.HALF_UP)
+                                        .multiply(java.math.BigDecimal.valueOf(100));
+
+                                if (itemPnlPct.compareTo(maxPnlPercent) > 0) {
+                                    maxPnlPercent = itemPnlPct;
+                                    bestAsset = item.getSymbol();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 7. Fetch Profile Photos for Recent Transactions (Limit 4)
+                int limit = Math.min(transactions.size(), 4);
+                java.util.Set<String> namesToFetch = new java.util.HashSet<>();
+                for (int i = 0; i < limit; i++) {
+                    WalletTransaction tx = transactions.get(i);
+                    String ref = tx.getReference();
+                    if (ref != null) {
+                        String cleanRef = ref.replace("Transfer to ", "")
+                                .replace("Transfer from ", "")
+                                .trim();
+                        // Ignore obvious system messages
+                        if (!cleanRef.toUpperCase().startsWith("MARKET ") &&
+                                !cleanRef.toUpperCase().startsWith("DEPOSIT") &&
+                                !cleanRef.equals("Initial Bank Balance")) {
+                            namesToFetch.add(cleanRef);
+                        }
+                    }
+                }
+                // Case-Insensitive map for robust lookup
+                java.util.Map<String, String> profilePhotos = new java.util.TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+                profilePhotos.putAll(userModel.findProfilePhotosByNames(namesToFetch));
+
+                return new WalletDataPacket(wallet, cards, transactions, badTxId, currentValue, totalInvested,
+                        bestAsset, maxPnlPercent, assetCount, profilePhotos);
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            WalletDataPacket data = task.getValue();
+            if (data == null || data.wallet == null)
+                return;
+
+            // Update Cache & UI
+            cachedData = data;
+            updateUI(data);
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            System.err.println("Error loading wallet data: " + ex.getMessage());
+            ex.printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private void updateUI(WalletDataPacket data) {
+        this.currentWallet = data.wallet;
+
+        // Update UI
+        if (escrowBalanceLabel != null)
+            escrowBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getEscrowBalance());
+
+        if (availableBalanceLabel != null)
+            availableBalanceLabel.setText(currentWallet.getCurrency() + " " + currentWallet.getBalance());
+
+        boolean isFrozen = "FROZEN".equals(currentWallet.getStatus());
+
+        if (frozenAlertBox != null) {
+            frozenAlertBox.setVisible(isFrozen);
+            frozenAlertBox.setManaged(isFrozen);
+        }
+
+        if (topUpButton != null)
+            topUpButton.setDisable(isFrozen);
+        if (transferButton != null)
+            transferButton.setDisable(isFrozen);
+        if (generateCardButton != null)
+            generateCardButton.setDisable(isFrozen);
+
+        // Refresh Cards & Portfolio UI
+        refreshVirtualCards(data);
+
+        // Refresh Transactions
+        if (transactionContainer != null) {
+            transactionContainer.getChildren().clear();
+            int limit = Math.min(data.transactions.size(), 4);
+            for (int i = 0; i < limit; i++) {
+                transactionContainer.getChildren()
+                        .add(createTransactionCard(data.transactions.get(i), data.badTxId, data.profilePhotos));
+>>>>>>> cd680ce (crud+controle de saisie)
             }
         }
     }
 
+<<<<<<< HEAD
     private void refreshVirtualCards(int walletId) {
         cardsContainer.getChildren().clear();
         List<VirtualCard> cards = virtualCardService.getCardsByWallet(walletId);
+=======
+    // Helper Record for Data Transfer
+    public static class WalletDataPacket {
+        Wallet wallet;
+        List<VirtualCard> cards;
+        List<WalletTransaction> transactions;
+        int badTxId;
+        java.math.BigDecimal portfolioValue;
+        java.math.BigDecimal totalInvested;
+        String bestAsset;
+        java.math.BigDecimal maxPnlPercent;
+        int assetCount;
+        java.util.Map<String, String> profilePhotos;
+
+        public WalletDataPacket(Wallet w, List<VirtualCard> c, List<WalletTransaction> t, int badId,
+                java.math.BigDecimal val, java.math.BigDecimal inv, String best, java.math.BigDecimal maxPnl,
+                int count, java.util.Map<String, String> photos) {
+            this.wallet = w;
+            this.cards = c;
+            this.transactions = t;
+            this.badTxId = badId;
+            this.portfolioValue = val;
+            this.totalInvested = inv;
+            this.bestAsset = best;
+            this.maxPnlPercent = maxPnl;
+            this.assetCount = count;
+            this.profilePhotos = photos;
+        }
+    }
+
+    private void refreshVirtualCards(WalletDataPacket data) {
+        cardsContainer.getChildren().clear();
+        int walletId = data.wallet.getId();
+        List<VirtualCard> cards = data.cards;
+>>>>>>> cd680ce (crud+controle de saisie)
 
         // Left Wrapper (Aligns with Available Balance Card)
         javafx.scene.layout.HBox leftWrapper = new javafx.scene.layout.HBox(15);
@@ -238,12 +492,39 @@ public class WalletController {
         javafx.scene.layout.HBox.setHgrow(rightWrapper, javafx.scene.layout.Priority.ALWAYS);
         rightWrapper.setMinWidth(0);
         rightWrapper.setPrefWidth(0); // Force equal distribution start point
+<<<<<<< HEAD
         rightWrapper.setAlignment(javafx.geometry.Pos.TOP_LEFT); // Default VBox fill behavior works best without
                                                                  // centering alignment on the box itself if we want
                                                                  // fill. But child is max_value.
 
         if (walletId > 0) {
             rightWrapper.getChildren().add(createPortfolioPerformanceNode(walletId));
+=======
+        rightWrapper.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+
+        if (walletId > 0) {
+            // Note: This still triggers marketModel calls inside.
+            // Optimally, we should fetch portfolio stats in loadWalletData too.
+            // For now, leaving this as is to avoid too big refactor, but wrapped in
+            // Platform.runLater by caller.
+            // HOWEVER, createPortfolioPerformanceNode does DB calls?
+            // Let's check createPortfolioPerformanceNode. If it does DB calls, we need to
+            // defer it or pre-fetch.
+            // It calls marketModel.getPortfolio(userId). This IS a DB call.
+            // We should ideally pass portfolio data to this method too.
+            // For this iteration, let's wrap the creation in a background thread if
+            // possible,
+            // OR accept that this part might still be slight blocking, but let's look at
+            // createPortfolioPerformanceNode
+
+            // To be safe and quick: Let's spawn a thread FOR the portfolio node creation if
+            // it's heavy
+            // But we can't add to scene from BG thread.
+            // Better strategy: createPortfolioPerformanceNode should handle its own async
+            // loading internally!
+            javafx.scene.Node portfolioNode = createPortfolioPerformanceNode(data);
+            rightWrapper.getChildren().add(portfolioNode);
+>>>>>>> cd680ce (crud+controle de saisie)
         }
 
         cardsContainer.getChildren().addAll(leftWrapper, rightWrapper);
@@ -418,7 +699,12 @@ public class WalletController {
         return sb.toString();
     }
 
+<<<<<<< HEAD
     private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId) {
+=======
+    private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId,
+            java.util.Map<String, String> profilePhotos) {
+>>>>>>> cd680ce (crud+controle de saisie)
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -439,22 +725,72 @@ public class WalletController {
                 : (isNegative ? "transaction-icon-negative" : "transaction-icon");
 
         // --- Icon ---
+<<<<<<< HEAD
+=======
+        // --- Icon or Profile Photo ---
+>>>>>>> cd680ce (crud+controle de saisie)
         javafx.scene.layout.StackPane iconBg = new javafx.scene.layout.StackPane();
         iconBg.getStyleClass().add("transaction-icon-bg");
         iconBg.setPrefSize(40, 40);
         iconBg.setMinSize(40, 40);
         iconBg.setMaxSize(40, 40);
 
+<<<<<<< HEAD
         javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
         icon.setContent(getIconPath(tx.getType()));
         icon.getStyleClass().addAll("transaction-icon", iconClass); // Base class + color modifier
         iconBg.getChildren().add(icon);
+=======
+        // Prepare text for lookup
+        String displayRef = tx.getReference();
+        if (displayRef != null) {
+            displayRef = displayRef.replace("Transfer to ", "")
+                    .replace("Transfer from ", "");
+            displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "");
+
+            if (displayRef.startsWith("DEPOSIT via")) {
+                displayRef = "Deposit";
+            }
+        } else {
+            displayRef = "Unknown";
+        }
+
+        boolean photoLoaded = false;
+        if (profilePhotos != null) {
+            String lookupName = displayRef.trim();
+            if (!lookupName.isEmpty() && profilePhotos.containsKey(lookupName)) {
+                String url = profilePhotos.get(lookupName);
+                if (url != null && !url.isEmpty()) {
+                    try {
+                        // Use centralized UI Helper
+                        javafx.scene.layout.StackPane customIcon = tn.finhub.util.UIUtils.createCircularImage(url, 40);
+                        iconBg.getChildren().clear(); // Remove default
+                        iconBg.getChildren().add(customIcon);
+                        // Hide original background if needed, or overlay it.
+                        // The customIcon has its own background/border.
+                        iconBg.setStyle("-fx-background-color: transparent;");
+                        photoLoaded = true;
+                    } catch (Exception e) {
+                        // Fallback
+                    }
+                }
+            }
+        }
+
+        if (!photoLoaded) {
+            javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+            icon.setContent(getIconPath(tx.getType()));
+            icon.getStyleClass().addAll("transaction-icon", iconClass); // Base class + color modifier
+            iconBg.getChildren().add(icon);
+        }
+>>>>>>> cd680ce (crud+controle de saisie)
 
         // --- Left Details (Reference + "Money Send") ---
         VBox leftDetails = new VBox(3);
         leftDetails.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         // Text Cleaning
+<<<<<<< HEAD
         String displayRef = tx.getReference();
         if (displayRef != null) {
             // Remove "Transfer to/from " prefixes
@@ -464,6 +800,19 @@ public class WalletController {
             // Remove " to <id>" or " from <id>" at end of string
             // Regex: match space + (from|to) + space + digits + end of line
             displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", "");
+=======
+        // String displayRef = tx.getReference(); // Removed duplicate declaration
+        if (displayRef != null) {
+            // Remove "Transfer to/from " prefixes
+            // Logic moved up to support Photo Lookup
+            // displayRef = displayRef.replace("Transfer to ", "")
+            // .replace("Transfer from ", "");
+
+            // Remove " to <id>" or " from <id>" at end of string
+            // Regex: match space + (from|to) + space + digits + end of line
+            // displayRef = displayRef.replaceAll("(?i)\\s+(from|to)\\s+\\d+$", ""); //
+            // Already done above for logic
+>>>>>>> cd680ce (crud+controle de saisie)
 
             if (displayRef.startsWith("DEPOSIT via")) {
                 displayRef = "Deposit";
@@ -546,6 +895,10 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/transaction_details.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             javafx.scene.Parent root = loader.load();
 
             TransactionDetailsController controller = loader.getController();
@@ -600,7 +953,11 @@ public class WalletController {
         };
     }
 
+<<<<<<< HEAD
     private javafx.scene.Node createPortfolioPerformanceNode(int walletId) {
+=======
+    private javafx.scene.Node createPortfolioPerformanceNode(WalletDataPacket data) {
+>>>>>>> cd680ce (crud+controle de saisie)
         VBox node = new VBox(15);
         node.setPrefHeight(220);
         node.setMinHeight(220);
@@ -625,6 +982,7 @@ public class WalletController {
 
         header.getChildren().addAll(title, spacer, badge);
 
+<<<<<<< HEAD
         // Calculate PnL
         tn.finhub.model.User user = tn.finhub.util.UserSession.getInstance().getUser();
         int userId = user != null ? user.getId() : 0;
@@ -668,6 +1026,11 @@ public class WalletController {
                 }
             }
         }
+=======
+        // Use Pre-calculated data
+        java.math.BigDecimal currentValue = data.portfolioValue;
+        java.math.BigDecimal totalInvested = data.totalInvested;
+>>>>>>> cd680ce (crud+controle de saisie)
 
         java.math.BigDecimal pnl = currentValue.subtract(totalInvested);
         double pnlValue = pnl.doubleValue();
@@ -681,6 +1044,7 @@ public class WalletController {
         String sign = isProfit ? "+" : "";
 
         // --- Main Content Row (Horizontal Split) ---
+<<<<<<< HEAD
         HBox contentRow = new HBox(20);
         contentRow.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT); // Align to bottom baseline
         VBox.setVgrow(contentRow, javafx.scene.layout.Priority.ALWAYS); // Fill height
@@ -719,10 +1083,41 @@ public class WalletController {
 
         // PnL Badge (Row)
         HBox pnlBadge = new HBox(10);
+=======
+        HBox contentRow = new HBox(10);
+        contentRow.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);
+        VBox.setVgrow(contentRow, javafx.scene.layout.Priority.ALWAYS);
+
+        // 1. Left Side: Total Value
+        VBox leftSide = new VBox(2);
+        leftSide.setAlignment(javafx.geometry.Pos.BOTTOM_LEFT);
+        HBox.setHgrow(leftSide, javafx.scene.layout.Priority.ALWAYS); // Left side takes all extra space
+
+        String valText = "TND " + String.format("%.2f", currentValue.doubleValue());
+        Label valLabel = new Label(valText);
+        valLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
+        valLabel.setWrapText(false);
+        valLabel.setMinWidth(0); // Allow shrinking
+
+        Label subLabel = new Label("Total Asset Value");
+        subLabel.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 12px;");
+        subLabel.setMinWidth(0);
+
+        leftSide.getChildren().addAll(valLabel, subLabel);
+
+        // 2. Right Side: PnL & Invested
+        VBox rightSide = new VBox(5);
+        rightSide.setAlignment(javafx.geometry.Pos.BOTTOM_RIGHT);
+        rightSide.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+
+        // PnL Badge
+        HBox pnlBadge = new HBox(8);
+>>>>>>> cd680ce (crud+controle de saisie)
         pnlBadge.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
 
         String pnlText = sign + "TND " + pnlStr;
         Label pnlAmtLabel = new Label(pnlText);
+<<<<<<< HEAD
 
         // PnL Resize Logic
         int pnlSize = 14;
@@ -730,15 +1125,25 @@ public class WalletController {
             pnlSize = 11;
 
         pnlAmtLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: " + pnlSize + "px; -fx-font-weight: bold;");
+=======
+        pnlAmtLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold; -fx-font-size: 13px;");
+        pnlAmtLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+>>>>>>> cd680ce (crud+controle de saisie)
 
         Label pnlPctLabel = new Label(sign + pctStr);
         pnlPctLabel.setStyle("-fx-text-fill: " + color + "; -fx-background-color: "
                 + (isProfit ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)")
+<<<<<<< HEAD
                 + "; -fx-padding: 3 8; -fx-background-radius: 6; -fx-font-size: 12px; -fx-font-weight: bold;");
+=======
+                + "; -fx-padding: 2 6; -fx-background-radius: 6; -fx-font-size: 11px; -fx-font-weight: bold;");
+        pnlPctLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+>>>>>>> cd680ce (crud+controle de saisie)
 
         pnlBadge.getChildren().addAll(pnlAmtLabel, pnlPctLabel);
 
         // Invested Label
+<<<<<<< HEAD
         Label investedLabel = new Label("Est. Cost: TND " + String.format("%.2f", totalInvested.doubleValue()));
         investedLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 11px;");
 
@@ -750,6 +1155,44 @@ public class WalletController {
         javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
         sep.setStyle("-fx-opacity: 0.1; -fx-background-color: white;");
 
+=======
+        Label investedLabel = new Label("Est. Cost: TND " + String.format("%.0f", totalInvested.doubleValue()));
+        investedLabel.setStyle("-fx-text-fill: #6B7280; -fx-font-size: 10px;");
+        investedLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        investedLabel.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        rightSide.getChildren().addAll(pnlBadge, investedLabel);
+
+        contentRow.getChildren().addAll(leftSide, rightSide);
+
+        // Robust Font Scaling
+        contentRow.widthProperty().addListener((obs, oldW, newW) -> {
+            if (newW.doubleValue() > 0) {
+                double totalWidth = newW.doubleValue();
+                double rightWidth = rightSide.getWidth(); // Might be 0 initially
+                if (rightWidth <= 0)
+                    rightWidth = 100; // Estimate if not ready
+
+                double availableForText = totalWidth - rightWidth - 20; // Padding/Spacing
+                if (availableForText < 50)
+                    availableForText = 50;
+
+                // Font size calculation: fit text into available width
+                // Approx 0.6 * fontSize * chars = width
+                // fontSize = width / (0.6 * chars)
+                double estimatedFontSize = availableForText / (valText.length() * 0.65);
+
+                // Clamp constants
+                estimatedFontSize = Math.min(32, Math.max(12, estimatedFontSize));
+
+                valLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: "
+                        + String.format("%.1f", estimatedFontSize) + "px;");
+            }
+        });
+
+        // --- Footer Row (New Details) ---
+        javafx.scene.control.Separator sep = new javafx.scene.control.Separator();
+>>>>>>> cd680ce (crud+controle de saisie)
         HBox footerRow = new HBox(20);
         footerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
@@ -759,7 +1202,11 @@ public class WalletController {
         javafx.scene.shape.SVGPath assetIcon = new javafx.scene.shape.SVGPath();
         assetIcon.setContent("M4 6h16v2H4zm2 4h12v2H6zm2 4h8v2H8z"); // Simple stack icon
         assetIcon.setStyle("-fx-fill: #9CA3AF;");
+<<<<<<< HEAD
         Label assetLbl = new Label(assetCount + " Assets");
+=======
+        Label assetLbl = new Label(data.assetCount + " Assets");
+>>>>>>> cd680ce (crud+controle de saisie)
         assetLbl.setStyle("-fx-text-fill: #D1D5DB; -fx-font-size: 11px; -fx-font-weight: bold;");
         assetDetail.getChildren().addAll(assetIcon, assetLbl);
 
@@ -771,9 +1218,15 @@ public class WalletController {
                 "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z");
         starIcon.setStyle("-fx-fill: #F59E0B;"); // Gold/Orange star
 
+<<<<<<< HEAD
         String perfText = "Top: " + (bestAsset.equals("None") ? bestAsset : bestAsset.toUpperCase());
         if (!"None".equals(bestAsset)) {
             perfText += String.format(" (%+.2f%%)", maxPnlPercent.doubleValue());
+=======
+        String perfText = "Top: " + (data.bestAsset.equals("None") ? data.bestAsset : data.bestAsset.toUpperCase());
+        if (!"None".equals(data.bestAsset)) {
+            perfText += String.format(" (%+.2f%%)", data.maxPnlPercent.doubleValue());
+>>>>>>> cd680ce (crud+controle de saisie)
         }
         Label perfLbl = new Label(perfText);
         perfLbl.setStyle("-fx-text-fill: #D1D5DB; -fx-font-size: 11px; -fx-font-weight: bold;");
@@ -794,6 +1247,10 @@ public class WalletController {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
                     getClass().getResource("/view/financial_twin.fxml"));
+<<<<<<< HEAD
+=======
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             javafx.scene.Parent view = loader.load();
 
             javafx.scene.Scene scene = cardsContainer.getScene();

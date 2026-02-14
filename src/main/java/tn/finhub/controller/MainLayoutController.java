@@ -7,6 +7,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+<<<<<<< HEAD
+=======
+import tn.finhub.util.LanguageManager;
+>>>>>>> cd680ce (crud+controle de saisie)
 import java.io.IOException;
 
 public class MainLayoutController {
@@ -172,6 +176,11 @@ public class MainLayoutController {
     public void setView(String fxmlPath) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+<<<<<<< HEAD
+=======
+            // Load with current resource bundle for internationalization
+            loader.setResources(LanguageManager.getInstance().getResourceBundle());
+>>>>>>> cd680ce (crud+controle de saisie)
             Parent newView = loader.load();
 
             if (!contentArea.getChildren().isEmpty()) {
