@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="tn.finhub.controller.LoginController"
+           style="-fx-background-color: transparent;">
+
+    <VBox alignment="CENTER" spacing="20" maxWidth="400" maxHeight="500" styleClass="card">
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+
+        <Label text="%login.title" styleClass="header-text"/>
+        <Label text="%login.subtitle" styleClass="sub-header-text"/>
+        
+        <Region prefHeight="20"/>
+
+        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
+            <Label text="%login.email" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <TextField fx:id="emailField" promptText="%login.email.prompt" styleClass="text-field"/>
+        </VBox>
+
+        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
+            <Label text="%login.password" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <PasswordField fx:id="passwordField" promptText="%login.password.prompt" styleClass="text-field"/>
+        </VBox>
+        
+        <Region prefHeight="10"/>
+
+        <Button text="%login.button" onAction="#handleLogin" maxWidth="Infinity" styleClass="button-primary"/>
+
+        <HBox alignment="CENTER" spacing="5">
+            <Label text="%login.no.account" style="-fx-text-fill: -color-text-secondary;"/>
+            <Hyperlink text="%login.create.account" onAction="#goToSignup" styleClass="hyperlink"/>
+        </HBox>
+        
+        <Hyperlink text="%login.forgot.password" onAction="#goToForgotPassword" styleClass="hyperlink" style="-fx-font-size: 12px;"/>
+
+        <Label fx:id="messageLabel" textFill="#ef4444"/>
+
+    </VBox>
+
+</StackPane>
+

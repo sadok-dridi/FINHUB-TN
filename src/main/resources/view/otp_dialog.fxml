@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+
+<VBox alignment="CENTER" spacing="20.0" 
+      style="-fx-background-color: -color-card-bg; -fx-background-radius: 16; -fx-border-color: -color-card-border; -fx-border-radius: 16; -fx-border-width: 1; -fx-padding: 30;" 
+      stylesheets="@../style/theme.css" 
+      xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="tn.finhub.controller.OtpController">
+
+   <!-- Icon -->
+   <StackPane style="-fx-background-color: rgba(139, 92, 246, 0.1); -fx-background-radius: 50%; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;">
+      <SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" 
+               style="-fx-fill: -color-primary;" scaleX="1.2" scaleY="1.2"/>
+   </StackPane>
+
+   <VBox alignment="CENTER" spacing="5.0">
+      <Label text="%otp.title" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+      <Label text="%otp.instruction" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 13px;" wrapText="true" textAlignment="CENTER"/>
+      <Label fx:id="timerLabel" text="01:00" style="-fx-text-fill: -color-primary; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+   </VBox>
+
+   <TextField fx:id="otpField" promptText="000000" alignment="CENTER" 
+              style="-fx-font-size: 24px; -fx-font-family: 'Consolas', monospace; -fx-font-weight: bold; -fx-letter-spacing: 5; -fx-background-color: -input-bg; -fx-text-fill: white; -fx-border-color: -color-primary; -fx-border-radius: 8; -fx-background-radius: 8; -fx-max-width: 200;"/>
+
+   <Label fx:id="errorLabel" text="Invalid code. Please try again." visible="false" managed="false" 
+          style="-fx-text-fill: -color-error; -fx-font-size: 12px;"/>
+
+   <HBox alignment="CENTER" spacing="15.0">
+      <Button text="%common.cancel" onAction="#handleCancel" 
+              style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-cursor: hand; -fx-font-size: 14px;"/>
+      <Button fx:id="verifyButton" text="%otp.verify" onAction="#handleVerify" 
+              styleClass="button-primary"/>
+   </HBox>
+
+</VBox>

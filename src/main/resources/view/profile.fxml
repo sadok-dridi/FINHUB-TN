@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.UserProfileController">
+    <content>
+        <VBox spacing="20" style="-fx-padding: 30; -fx-background-color: transparent;">
+            
+            <Label text="%profile.title" styleClass="header-text"/>
+            
+            <!-- Personal Info Section -->
+            <VBox styleClass="card" spacing="15">
+                <HBox alignment="CENTER_LEFT" spacing="20">
+                    <!-- Profile Photo Area -->
+                    <VBox alignment="CENTER" spacing="10">
+                        <StackPane>
+                            <!-- Default User Icon Background -->
+                            <javafx.scene.shape.Circle radius="50" fill="#2D2A40" stroke="#3F3C55" strokeWidth="1"/>
+                            <javafx.scene.shape.SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" scaleX="2" scaleY="2" fill="#6B7280"/>
+                            
+                            <!-- Actual Image (Visible if set) -->
+                            <ImageView fx:id="profileImageView" fitWidth="100" fitHeight="100" preserveRatio="false">
+                                <clip>
+                                    <javafx.scene.shape.Circle centerX="50" centerY="50" radius="50"/>
+                                </clip>
+                            </ImageView>
+                        </StackPane>
+                        
+                        <HBox spacing="15" alignment="CENTER">
+                            <Button onAction="#handleUploadPhoto" styleClass="button-icon" style="-fx-text-fill: -color-text-secondary;">
+                                <tooltip>
+                                    <Tooltip text="Upload Photo"/>
+                                </tooltip>
+                                <graphic>
+                                    <javafx.scene.shape.SVGPath content="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" scaleX="1.0" scaleY="1.0" style="-fx-fill: -color-text-secondary;"/>
+                                </graphic>
+                            </Button>
+                             <Button onAction="#handleDeletePhoto" styleClass="button-icon" style="-fx-text-fill: -color-error;">
+                                <tooltip>
+                                    <Tooltip text="Remove Photo"/>
+                                </tooltip>
+                                <graphic>
+                                    <javafx.scene.shape.SVGPath content="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" scaleX="1.0" scaleY="1.0" style="-fx-fill: -color-error;"/>
+                                </graphic>
+                            </Button>
+                        </HBox>
+                    </VBox>
+
+                    <!-- Info Fields -->
+                    <VBox spacing="20" HBox.hgrow="ALWAYS">
+                        <Label text="%profile.personal.info" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                         <GridPane hgap="40" vgap="25">
+                            <columnConstraints>
+                                <ColumnConstraints minWidth="100" prefWidth="150"/>
+                                <ColumnConstraints hgrow="ALWAYS"/>
+                            </columnConstraints>
+                            
+                            <Label text="%profile.full.name" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                            <Label fx:id="nameLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                            
+                            <Label text="%profile.email" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                            <Label fx:id="emailLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                            
+                            <Label text="%profile.role" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                            <Label fx:id="roleLabel" text="%common.loading" style="-fx-text-fill: -color-primary; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                             <Label text="Phone Number" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                             <StackPane alignment="CENTER_LEFT" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                                 <!-- View Mode -->
+                                 <HBox fx:id="phoneViewBox" spacing="10" alignment="CENTER_LEFT">
+                                     <Label fx:id="phoneDisplayLabel" text="No phone number set" style="-fx-text-fill: -color-text-primary; -fx-font-size: 14px;"/>
+                                     <Button onAction="#handleEditPhone" styleClass="button-icon" style="-fx-background-radius: 50%; -fx-min-width: 30px; -fx-min-height: 30px; -fx-padding: 5;">
+                                         <tooltip>
+                                             <Tooltip text="Edit Phone Number"/>
+                                         </tooltip>
+                                         <graphic>
+                                             <javafx.scene.shape.SVGPath content="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#9CA3AF" scaleX="0.8" scaleY="0.8"/>
+                                         </graphic>
+                                     </Button>
+                                 </HBox>
+
+                                 <!-- Edit Mode -->
+                                 <HBox fx:id="phoneEditBox" spacing="10" alignment="CENTER_LEFT" visible="false">
+                                     <TextField fx:id="phoneField" promptText="+216 00 000 000" styleClass="text-field" HBox.hgrow="ALWAYS"/>
+                                     
+                                     <Button onAction="#handleSavePhone" styleClass="button-icon" style="-fx-background-radius: 50%; -fx-min-width: 35px; -fx-min-height: 35px;">
+                                        <tooltip>
+                                             <Tooltip text="Save Phone Number"/>
+                                         </tooltip>
+                                         <graphic>
+                                             <javafx.scene.shape.SVGPath content="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" style="-fx-fill: -color-success;" scaleX="1.2" scaleY="1.2"/>
+                                         </graphic>
+                                     </Button>
+    
+                                     <Button styleClass="button-icon" onAction="#handleDeletePhone" style="-fx-background-radius: 50%; -fx-min-width: 35px; -fx-min-height: 35px;">
+                                         <tooltip>
+                                             <Tooltip text="Delete Phone Number"/>
+                                         </tooltip>
+                                         <graphic>
+                                             <javafx.scene.shape.SVGPath content="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" style="-fx-fill: -color-error;" scaleX="1.0" scaleY="1.0"/>
+                                         </graphic>
+                                     </Button>
+                                 </HBox>
+                             </StackPane>
+                        </GridPane>
+                    </VBox>
+                    
+                    <!-- KYC Status -->
+                    <VBox alignment="CENTER" spacing="5" minWidth="200" maxWidth="220">
+                        <Button fx:id="kycButton" text=" Verify Identity (KYC)" onAction="#handleVerifyIdentity" styleClass="button-primary" maxWidth="Infinity" wrapText="true" textAlignment="CENTER" contentDisplay="TOP">
+                            <graphic>
+                                <javafx.scene.shape.SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="white" scaleX="0.9" scaleY="0.9"/>
+                            </graphic>
+                        </Button>
+                        <Label fx:id="kycStatusLabel" text="" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 11px; -fx-text-alignment: center;" visible="false" wrapText="true" maxWidth="200" textAlignment="CENTER"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+
+            <!-- Financial Profile Section -->
+            <VBox styleClass="card" spacing="15">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="%profile.financial.profile" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <Label text="%profile.financial.subtitle" styleClass="sub-header-text"/>
+                
+                <GridPane hgap="20" vgap="15">
+                     <columnConstraints>
+                        <ColumnConstraints minWidth="100" prefWidth="150"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="%profile.monthly.income" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="incomeField" styleClass="text-field" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                    <Label text="%profile.monthly.expenses" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="expensesField" styleClass="text-field" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                    <Label text="%profile.savings.goal" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <TextField fx:id="savingsField" styleClass="text-field" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                    <Label text="%profile.risk.tolerance" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="riskBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+
+                </GridPane>
+
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                    <Label fx:id="statusLabel" textFill="#10B981" visible="false"/>
+                    <Button text="%profile.update.button" onAction="#handleUpdateProfile" styleClass="button-primary"/>
+                </HBox>
+            </VBox>
+
+            <!-- Application Settings Section -->
+            <VBox styleClass="card" spacing="15">
+                <HBox alignment="CENTER_LEFT">
+                    <Label text="%profile.settings" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <Label text="%profile.settings.subtitle" styleClass="sub-header-text"/>
+
+                <GridPane hgap="20" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="100" prefWidth="150"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="%profile.language" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="languageBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+
+
+                    <Label text="%profile.api.key" style="-fx-text-fill: -color-text-secondary;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <TextField fx:id="apiKeyField" promptText="%profile.api.key.prompt" styleClass="text-field" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                </GridPane>
+                
+                <HBox alignment="CENTER_RIGHT" spacing="10">
+                   <Button text="%profile.save.settings" onAction="#handleSaveSettings" styleClass="button-primary"/>
+                </HBox>
+            </VBox>
+            
+        </VBox>
+    </content>
+</ScrollPane>

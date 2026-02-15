@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="tn.finhub.controller.SignupController"
+           style="-fx-background-color: transparent;">
+
+    <VBox alignment="CENTER" spacing="20" maxWidth="400" maxHeight="600" styleClass="card">
+        <padding>
+            <Insets top="40" right="40" bottom="40" left="40"/>
+        </padding>
+
+        <Label text="%signup.title" styleClass="header-text"/>
+        <Label text="%signup.subtitle" styleClass="sub-header-text"/>
+        
+        <Region prefHeight="10"/>
+
+        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
+            <Label text="%signup.full.name" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <TextField fx:id="nameField" promptText="%signup.full.name.prompt" styleClass="text-field"/>
+        </VBox>
+
+        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
+            <Label text="%signup.email" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <TextField fx:id="emailField" promptText="%signup.email.prompt" styleClass="text-field"/>
+        </VBox>
+
+
+
+        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
+            <Label text="%signup.password" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
+            <PasswordField fx:id="passwordField" promptText="%signup.password.prompt" styleClass="text-field"/>
+        </VBox>
+        
+        <Region prefHeight="10"/>
+
+        <Button text="%signup.button" onAction="#handleSignup" maxWidth="Infinity" styleClass="button-primary"/>
+
+        <HBox alignment="CENTER" spacing="5">
+            <Label text="%signup.have.account" style="-fx-text-fill: -color-text-secondary;"/>
+            <Hyperlink text="%signup.sign.in" onAction="#goToLogin" styleClass="hyperlink"/>
+        </HBox>
+
+        <Label fx:id="messageLabel" textFill="#ef4444"/>
+
+    </VBox>
+
+</StackPane>
+
