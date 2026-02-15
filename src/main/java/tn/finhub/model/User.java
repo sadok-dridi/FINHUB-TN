@@ -11,6 +11,7 @@ public class User {
     private String fullName;
     private String phoneNumber;
     private String profilePhotoUrl;
+    private String contactAlias; // For contact management
 
     public User() {
     }
@@ -71,6 +72,14 @@ public class User {
 
     public void setProfilePhotoUrl(String profilePhotoUrl) {
         this.profilePhotoUrl = profilePhotoUrl;
+    }
+
+    public String getContactAlias() {
+        return contactAlias;
+    }
+
+    public void setContactAlias(String contactAlias) {
+        this.contactAlias = contactAlias;
     }
 
     // New Field for Module 6

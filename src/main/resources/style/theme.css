@@ -5,6 +5,8 @@
     /* Violet 500 */
     -color-primary-hover: #7C3AED;
     /* Violet 600 */
+    -color-primary-light: #A78BFA;
+    /* Violet 400 */
     -color-secondary: #D946EF;
     /* Fuchsia 500 - Gradient accent */
 
@@ -152,6 +154,24 @@
     -fx-scale-y: 1.02;
 }
 
+.button-danger-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-error;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-text-fill: -color-error;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+}
+
+.button-danger-outline:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.1);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+}
+
 .button-warning {
     -fx-background-color: -color-warning;
     -fx-text-fill: white;
@@ -185,6 +205,27 @@
     -fx-border-color: rgba(255, 255, 255, 0.3);
     -fx-scale-x: 1.02;
     -fx-scale-y: 1.02;
+}
+
+.filter-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-secondary;
+    -fx-background-radius: 20px;
+    -fx-padding: 5 15;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.filter-button:hover {
+    -fx-background-color: rgba(139, 92, 246, 0.15);
+    -fx-text-fill: -color-primary;
+}
+
+.filter-button.active {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.4), 10, 0, 0, 3);
 }
 
 /* --- Text Fields --- */
@@ -1417,4 +1458,90 @@
     -fx-text-fill: white;
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-background-radius: 8px;
+}
+
+/* --- Missing Variables --- */
+.root {
+    -color-info: #3B82F6;
+    /* Blue 500 */
+}
+
+/* --- Page Headers --- */
+.page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+    -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.4), 10, 0, 0, 0);
+}
+
+.page-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-secondary;
+    -fx-padding: 0 0 20 0;
+}
+
+/* --- Stat Cards (Escrow) --- */
+.stat-card {
+    -fx-background-color: -color-card-bg;
+    -fx-background-radius: 16px;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 4);
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 1px;
+    -fx-border-radius: 16px;
+}
+
+.stat-icon-container {
+    -fx-alignment: CENTER;
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-max-width: 48px;
+    -fx-max-height: 48px;
+    -fx-background-radius: 12px;
+}
+
+.stat-icon {
+    -fx-scale-x: 1.4;
+    -fx-scale-y: 1.4;
+}
+
+.stat-label {
+    -fx-text-fill: -color-text-secondary;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+}
+
+.stat-value {
+    -fx-text-fill: -color-text-primary;
+    -fx-font-size: 24px;
+    -fx-font-weight: 900;
+}
+
+/* --- Escrow List Card --- */
+.escrow-card {
+    -fx-background-color: -color-bg-subtle;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
+    -fx-padding: 15;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+}
+
+.escrow-card:hover {
+    -fx-background-color: derive(-color-card-bg, 5%);
+    -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.2), 12, 0, 0, 4);
+    -fx-border-color: -color-primary-transparent;
+}
+
+.escrow-id {
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.escrow-amount {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-primary;
 }

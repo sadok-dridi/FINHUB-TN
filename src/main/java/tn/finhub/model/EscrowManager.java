@@ -43,7 +43,8 @@ public class EscrowManager {
         }
 
         // 1. Hold Funds (Moves to Escrow Balance)
-        walletModel.hold(senderWalletId, amount, "Escrow Creation: " + condition);
+        String conditionSummary = condition.length() > 30 ? condition.substring(0, 30) + "..." : condition;
+        walletModel.hold(senderWalletId, amount, "Escrow: " + conditionSummary);
 
         // 2. Generate Secret
         String secretCode = null;

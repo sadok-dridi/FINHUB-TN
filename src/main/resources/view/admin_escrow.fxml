@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.HBox?>
@@ -9,6 +10,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
@@ -93,7 +95,7 @@
         <VBox styleClass="content-card" VBox.vgrow="ALWAYS" style="-fx-padding: 0;">
             <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
                 <content>
-                    <VBox fx:id="escrowListContainer" spacing="15" style="-fx-padding: 20;"/>
+                    <VBox fx:id="escrowListContainer" spacing="15" style="-fx-padding: 20 0;"/>
                 </content>
             </ScrollPane>
         </VBox>
@@ -113,73 +115,160 @@
                 <Label fx:id="detailIdLabel" text="#ID" styleClass="page-subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="btnToggleView" text="View Profiles" onAction="#handleToggleProfileView" styleClass="button-outlined" style="-fx-min-width: 140;"/>
             <Label fx:id="detailStatusLabel" text="STATUS" style="-fx-font-weight: bold; -fx-padding: 5 10; -fx-background-radius: 4;"/>
         </HBox>
 
-        <HBox spacing="30" VBox.vgrow="ALWAYS">
-            <!-- Left Column: Transaction Details -->
-            <VBox spacing="20" HBox.hgrow="ALWAYS" styleClass="content-card" style="-fx-padding: 30;">
-                <Label text="Transaction Information" styleClass="section-header" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
-                
-                <HBox spacing="50">
-                    <VBox spacing="5">
-                        <Label text="Amount" styleClass="text-muted"/>
-                        <Label fx:id="detailAmountLabel" text="0.000 TND" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
-                    </VBox>
-                    <VBox spacing="5">
-                        <Label text="Type" styleClass="text-muted"/>
-                        <Label fx:id="detailTypeLabel" text="QR_CODE" styleClass="text-default" style="-fx-font-size: 16px;"/>
-                    </VBox>
-                </HBox>
+        <StackPane VBox.vgrow="ALWAYS">
+            <!-- Transaction Details View -->
+            <HBox fx:id="transactionDetailsBox" spacing="30">
+                <!-- Left Column: Transaction Details -->
+                <VBox spacing="20" HBox.hgrow="ALWAYS" style="-fx-border-color: -color-card-border; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20; -fx-background-color: transparent;">
+                    <Label text="Transaction Information" styleClass="section-header" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: -color-primary-light;"/>
+                    
+                    <HBox spacing="50">
+                        <VBox spacing="5">
+                            <Label text="Amount" styleClass="text-muted"/>
+                            <Label fx:id="detailAmountLabel" text="0.000 TND" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="Type" styleClass="text-muted"/>
+                            <Label fx:id="detailTypeLabel" text="QR_CODE" styleClass="text-default" style="-fx-font-size: 16px;"/>
+                        </VBox>
+                    </HBox>
 
-                <VBox spacing="5">
-                   <Label text="Condition" styleClass="text-muted"/>
-                   <Label fx:id="detailConditionLabel" text="Condition text..." wrapText="true" style="-fx-font-style: italic; -fx-font-size: 14px;"/>
+                    <VBox spacing="5" VBox.vgrow="ALWAYS">
+                       <Label text="Condition" styleClass="text-muted"/>
+                       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="100" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-color: -color-card-border; -fx-border-radius: 8; -fx-padding: 5;">
+                           <content>
+                               <Label fx:id="detailConditionLabel" text="Condition text..." wrapText="true" style="-fx-font-style: italic; -fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
+                           </content>
+                       </ScrollPane>
+                    </VBox>
+
+                    <Separator/>
+
+                    <HBox spacing="50">
+                         <VBox spacing="5">
+                            <Label text="From (Sender)" styleClass="text-muted"/>
+                            <Label fx:id="detailSenderLabel" text="Sender Name" styleClass="text-default" style="-fx-font-weight: bold; -fx-font-size: 15px;"/>
+                        </VBox>
+                        <VBox alignment="CENTER">
+                            <SVGPath content="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" style="-fx-fill: -color-text-muted;" scaleX="1.2" scaleY="1.2"/>
+                        </VBox>
+                        <VBox spacing="5">
+                            <Label text="To (Receiver)" styleClass="text-muted"/>
+                            <Label fx:id="detailReceiverLabel" text="Receiver Name" styleClass="text-default" style="-fx-font-weight: bold; -fx-font-size: 15px;"/>
+                        </VBox>
+                    </HBox>
+                    
+                    <Separator/>
+                    
+                    <Label text="Administrative Actions" styleClass="section-header" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-primary-light;"/>
+                    <HBox spacing="15">
+                        <Button fx:id="btnRelease" text="Release Funds" onAction="#handleDetailRelease" styleClass="button-primary" style="-fx-min-width: 150;"/>
+                        <Button fx:id="btnRefund" text="Refund to Sender" onAction="#handleDetailRefund" styleClass="button-danger" style="-fx-min-width: 150;"/>
+                    </HBox>
                 </VBox>
 
-                <Separator/>
-
-                <HBox spacing="50">
-                     <VBox spacing="5">
-                        <Label text="From (Sender)" styleClass="text-muted"/>
-                        <Label fx:id="detailSenderLabel" text="Sender Name" styleClass="text-default" style="-fx-font-weight: bold;"/>
-                    </VBox>
-                    <VBox alignment="CENTER">
-                        <SVGPath content="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" style="-fx-fill: -color-text-muted;"/>
-                    </VBox>
+                <!-- Right Column: Timeline/Metadata -->
+                <VBox spacing="20" minWidth="300" prefWidth="300" maxWidth="300" style="-fx-border-color: -color-card-border; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20; -fx-background-color: transparent;">
+                    <Label text="Metadata" styleClass="section-header" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-primary-light;"/>
+                    
                     <VBox spacing="5">
-                        <Label text="To (Receiver)" styleClass="text-muted"/>
-                        <Label fx:id="detailReceiverLabel" text="Receiver Name" styleClass="text-default" style="-fx-font-weight: bold;"/>
+                        <Label text="Created At" styleClass="text-muted"/>
+                        <Label fx:id="detailDateLabel" text="2023-10-27 10:30" styleClass="text-default"/>
                     </VBox>
-                </HBox>
-                
-                <Separator/>
-                
-                <Label text="Administrative Actions" styleClass="section-header" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                <HBox spacing="15">
-                    <Button fx:id="btnRelease" text="Release Funds to Receiver" onAction="#handleDetailRelease" styleClass="button-success"/>
-                    <Button fx:id="btnRefund" text="Refund to Sender" onAction="#handleDetailRefund" styleClass="button-danger"/>
-                </HBox>
-            </VBox>
 
-            <!-- Right Column: Timeline/Metadata -->
-            <VBox spacing="20" prefWidth="300" styleClass="content-card" style="-fx-padding: 30;">
-                <Label text="Metadata" styleClass="section-header" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
-                
-                <VBox spacing="5">
-                    <Label text="Created At" styleClass="text-muted"/>
-                    <Label fx:id="detailDateLabel" text="2023-10-27 10:30" styleClass="text-default"/>
+                    <VBox spacing="5">
+                        <Label text="Blockchain Hash" styleClass="text-muted"/>
+                        <Label text="0x7f...3a2" styleClass="text-default" style="-fx-font-family: 'Monospaced'; -fx-text-fill: -color-primary-light;"/>
+                    </VBox>
+                    
+                    <Region VBox.vgrow="ALWAYS"/>
+                    <Button text="View Blockchain Record" onAction="#handleViewBlockchain" styleClass="button-outlined" style="-fx-text-fill: -color-text-secondary;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Profile Details View (Hidden initially) -->
+            <!-- Profile Details View (Hidden initially) -->
+            <HBox fx:id="profileDetailsBox" spacing="30" visible="false">
+                <!-- Sender Profile Card -->
+                <VBox styleClass="user-card" HBox.hgrow="ALWAYS" spacing="15" alignment="TOP_CENTER" style="-fx-background-color: transparent; -fx-border-color: -color-card-border; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;">
+                     <Label text="Sender Profile" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-secondary;"/>
+                     <StackPane>
+                         <Circle radius="40" style="-fx-fill: -color-bg-subtle; -fx-stroke: transparent;"/>
+                         <Label fx:id="senderInitials" text="SN" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+                         <ImageView fx:id="senderImage" fitHeight="80" fitWidth="80" preserveRatio="true">
+                            <clip>
+                                <Circle radius="40" centerX="40" centerY="40"/>
+                            </clip>
+                         </ImageView>
+                         <Circle radius="40" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 2;" mouseTransparent="true"/>
+                     </StackPane>
+                     <Label fx:id="profileSenderName" text="Sender Name" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                     <Label fx:id="profileSenderEmail" text="sender@email.com" styleClass="text-muted"/>
+                     <Label fx:id="senderPhone" text="+216 00 000 000" styleClass="text-muted"/>
+                     
+                     <Separator/>
+                     
+                     <HBox spacing="20" alignment="CENTER">
+                         <VBox alignment="CENTER">
+                             <Label text="Trust Score" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                             <Label fx:id="senderTrustScore" text="100" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                         </VBox>
+                         <Separator orientation="VERTICAL"/>
+                         <VBox alignment="CENTER">
+                             <Label text="KYC Status" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                             <Label fx:id="senderKycStatus" text="VERIFIED" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-info;"/>
+                         </VBox>
+                         <Separator orientation="VERTICAL"/>
+                         <VBox alignment="CENTER">
+                             <Label text="Wallet Status" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                             <Label fx:id="senderWalletStatus" text="ACTIVE" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                         </VBox>
+                     </HBox>
                 </VBox>
 
-                <VBox spacing="5">
-                    <Label text="Blockchain Hash" styleClass="text-muted"/>
-                    <Label text="0x7f...3a2" styleClass="text-default" style="-fx-font-family: 'Monospaced';"/>
+                <!-- Receiver Profile Card -->
+                <VBox styleClass="user-card" HBox.hgrow="ALWAYS" spacing="15" alignment="TOP_CENTER" style="-fx-background-color: transparent; -fx-border-color: -color-card-border; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;">
+                     <Label text="Receiver Profile" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-secondary;"/>
+                     <StackPane>
+                         <Circle radius="40" style="-fx-fill: -color-bg-subtle; -fx-stroke: transparent;"/>
+                         <Label fx:id="receiverInitials" text="RN" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-secondary;"/>
+                         <ImageView fx:id="receiverImage" fitHeight="80" fitWidth="80" preserveRatio="true">
+                            <clip>
+                                <Circle radius="40" centerX="40" centerY="40"/>
+                            </clip>
+                         </ImageView>
+                         <Circle radius="40" style="-fx-fill: transparent; -fx-stroke: -color-secondary; -fx-stroke-width: 2;" mouseTransparent="true"/>
+                     </StackPane>
+                     <Label fx:id="profileReceiverName" text="Receiver Name" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                     <Label fx:id="profileReceiverEmail" text="receiver@email.com" styleClass="text-muted"/>
+                     <Label fx:id="receiverPhone" text="+216 00 000 000" styleClass="text-muted"/>
+                     
+                     <Separator/>
+                     
+                     <HBox spacing="20" alignment="CENTER">
+                         <VBox alignment="CENTER">
+                             <Label text="Trust Score" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                             <Label fx:id="receiverTrustScore" text="95" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                         </VBox>
+                         <Separator orientation="VERTICAL"/>
+                         <VBox alignment="CENTER">
+                             <Label text="KYC Status" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                             <Label fx:id="receiverKycStatus" text="VERIFIED" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-info;"/>
+                         </VBox>
+                          <Separator orientation="VERTICAL"/>
+                         <VBox alignment="CENTER">
+                             <Label text="Wallet Status" styleClass="text-muted" style="-fx-font-size: 12px;"/>
+                             <Label fx:id="receiverWalletStatus" text="ACTIVE" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                         </VBox>
+                     </HBox>
                 </VBox>
-                
-                <Region VBox.vgrow="ALWAYS"/>
-                <Button text="View Blockchain Record" styleClass="button-outlined"/>
-            </VBox>
-        </HBox>
+            </HBox>
+
+        </StackPane>
     </VBox>
 
 </StackPane>

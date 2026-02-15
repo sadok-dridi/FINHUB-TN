@@ -6,52 +6,200 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.image.ImageView?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="tn.finhub.controller.EscrowController"
-      spacing="25" style="-fx-padding: 40; -fx-background-color: transparent;">
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="tn.finhub.controller.EscrowController"
+           style="-fx-padding: 40; -fx-background-color: transparent;">
 
-    <!-- Header Section -->
-    <HBox alignment="CENTER_LEFT" spacing="20">
-        <VBox>
-            <Label text="%escrow.title" styleClass="header-text" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
-            <Label text="%escrow.subtitle" styleClass="sub-header-text" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
-        </VBox>
-        <Region HBox.hgrow="ALWAYS"/>
-        
-        <!-- Trust Score Card -->
-        <HBox alignment="CENTER" spacing="15" style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 10 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);">
-            <VBox alignment="CENTER_LEFT">
-                <Label text="%escrow.trust.score" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
-                <Label fx:id="trustScoreLabel" text="100" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+    <!-- MAIN DASHBOARD VIEW -->
+    <VBox fx:id="mainView" spacing="25">
+        <!-- Header Section -->
+        <HBox alignment="CENTER_LEFT" spacing="20">
+            <VBox>
+                <Label text="%escrow.title" styleClass="header-text" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                <Label text="%escrow.subtitle" styleClass="sub-header-text" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
             </VBox>
-            <StackPane>
-                <Circle radius="22" style="-fx-fill: transparent; -fx-stroke: -color-bg; -fx-stroke-width: 4;"/>
-                <Circle fx:id="trustScoreCircle" radius="22" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 4; -fx-stroke-dash-array: 0 1000;"/>
-                <SVGPath fx:id="trustScoreIcon" content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" scaleX="0.8" scaleY="0.8" style="-fx-fill: -color-primary;"/>
-            </StackPane>
+            <Region HBox.hgrow="ALWAYS"/>
+            
+            <!-- Trust Score Card -->
+            <HBox alignment="CENTER" spacing="15" style="-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 10 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);">
+                <VBox alignment="CENTER_LEFT">
+                    <Label text="%escrow.trust.score" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
+                    <Label fx:id="trustScoreLabel" text="100" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+                </VBox>
+                <StackPane>
+                    <Circle radius="22" style="-fx-fill: transparent; -fx-stroke: -color-bg; -fx-stroke-width: 4;"/>
+                    <Circle fx:id="trustScoreCircle" radius="22" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 4; -fx-stroke-dash-array: 0 1000;"/>
+                    <SVGPath fx:id="trustScoreIcon" content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" scaleX="0.8" scaleY="0.8" style="-fx-fill: -color-primary;"/>
+                </StackPane>
+            </HBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button fx:id="addContactBtn" text="Add Contact" onAction="#handleShowAddContactView" visible="false" managed="false" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand; -fx-background-color: -color-secondary;">
+                 <graphic>
+                    <SVGPath content="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" style="-fx-fill: white;"/>
+                 </graphic>
+            </Button>
+
+            <Button fx:id="createEscrowBtn" text="%escrow.create.button" onAction="#handleCreateEscrow" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand;">
+                 <graphic>
+                    <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
+                 </graphic>
+            </Button>
         </HBox>
 
-        <Button fx:id="createEscrowBtn" text="%escrow.create.button" onAction="#handleCreateEscrow" styleClass="button-primary" style="-fx-font-size: 14px; -fx-padding: 12 24; -fx-background-radius: 8; -fx-cursor: hand;">
-             <graphic>
-                <SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" style="-fx-fill: white;"/>
-             </graphic>
-        </Button>
-    </HBox>
 
-    <!-- Filters / Tabs (Optional for future) -->
-    <HBox spacing="15">
-        <Button fx:id="btnActive" text="%escrow.filter.active" onAction="#handleFilterActive" style="-fx-background-color: -color-primary; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 5 15;"/>
-        <Button fx:id="btnHistory" text="%escrow.filter.history" onAction="#handleFilterHistory" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
-        <Button fx:id="btnDisputes" text="%escrow.filter.disputes" onAction="#handleFilterDisputes" style="-fx-background-color: transparent; -fx-text-fill: -color-text-secondary; -fx-padding: 5 15;"/>
-    </HBox>
+        <!-- Filters / Tabs -->
+        <HBox spacing="15">
+            <Button fx:id="btnContacts" text="Contacts" onAction="#handleFilterContacts" styleClass="filter-button"/>
+            <Button fx:id="btnActive" text="%escrow.filter.active" onAction="#handleFilterActive" styleClass="filter-button"/>
+            <Button fx:id="btnHistory" text="%escrow.filter.history" onAction="#handleFilterHistory" styleClass="filter-button"/>
+            <Button fx:id="btnDisputes" text="%escrow.filter.disputes" onAction="#handleFilterDisputes" styleClass="filter-button"/>
+        </HBox>
 
-    <!-- Escrow List (Styled) -->
-    <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
-        <VBox fx:id="escrowCardContainer" spacing="15" style="-fx-background-color: transparent;">
-             <!-- Cards will be injected here by Controller -->
-             <Label text="%common.loading" style="-fx-text-fill: -color-text-muted; -fx-padding: 20;"/>
+        <StackPane VBox.vgrow="ALWAYS">
+            <!-- Escrow List (Styled) -->
+            <ScrollPane fx:id="escrowScrollPane" fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                <VBox fx:id="escrowCardContainer" spacing="15" style="-fx-background-color: transparent;">
+                     <!-- Cards will be injected here by Controller -->
+                     <Label text="%common.loading" style="-fx-text-fill: -color-text-muted; -fx-padding: 20;"/>
+                </VBox>
+            </ScrollPane>
+            
+            <!-- Contact List (Grid/Flow) -->
+            <ScrollPane fx:id="contactsScrollPane" fitToWidth="true" visible="false" style="-fx-background: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
+                 <javafx.scene.layout.FlowPane fx:id="contactsContainer" hgap="20" vgap="20" style="-fx-padding: 10;">
+                     <!-- Contact Cards go here -->
+                 </javafx.scene.layout.FlowPane>
+            </ScrollPane>
+        </StackPane>
+    </VBox>
+
+    <!-- CONTACT DETAILS VIEW (Full Page) -->
+    <VBox fx:id="contactDetailsView" visible="false" spacing="20" style="-fx-background-color: -color-bg;">
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Button onAction="#handleBackToMain" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic>
+                    <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="-fx-fill: -color-text-primary;"/>
+                </graphic>
+            </Button>
+            <Label text="Contact Details" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        </HBox>
+
+        <HBox spacing="30" alignment="TOP_LEFT" VBox.vgrow="ALWAYS">
+            <!-- Left Panel: Profile Info -->
+            <VBox styleClass="card" minWidth="350" maxWidth="350" spacing="20" alignment="TOP_CENTER" style="-fx-padding: 30; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 0); -fx-background-color: -color-card-bg;">
+                <StackPane>
+                     <Circle radius="60" style="-fx-fill: -color-bg-subtle; -fx-stroke: transparent;"/>
+                     <Label fx:id="overlayInitials" text="SN" style="-fx-font-size: 40px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+                     <ImageView fx:id="overlayImage" fitHeight="120" fitWidth="120" preserveRatio="true">
+                        <clip>
+                            <Circle radius="60" centerX="60" centerY="60"/>
+                        </clip>
+                     </ImageView>
+                     <Circle radius="60" style="-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 2;" mouseTransparent="true"/>
+                </StackPane>
+
+                <VBox alignment="CENTER" spacing="5">
+                    <HBox alignment="CENTER" spacing="10">
+                        <Label fx:id="overlayName" text="User Name" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                        <Button onAction="#handleEditAlias" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                             <graphic>
+                                <SVGPath content="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" style="-fx-fill: -color-text-muted;" scaleX="0.8" scaleY="0.8"/>
+                             </graphic>
+                             <tooltip><Tooltip text="Edit Name / Add Alias"/></tooltip>
+                        </Button>
+                    </HBox>
+                    
+                    <!-- Alias Edit Field (Hidden initially) -->
+                    <HBox fx:id="aliasEditBox" visible="false" managed="false" alignment="CENTER" spacing="5">
+                        <TextField fx:id="aliasField" promptText="Enter alias" styleClass="text-field"/>
+                        <Button text="Save" onAction="#handleSaveAlias" styleClass="button-primary" style="-fx-padding: 5 10; -fx-font-size: 12px;"/>
+                        <Button text="Cancel" onAction="#handleCancelEditAlias" styleClass="button-secondary" style="-fx-padding: 5 10; -fx-font-size: 12px;"/>
+                    </HBox>
+
+                    <Label fx:id="overlayEmail" text="user@email.com" style="-fx-text-fill: -color-text-muted;"/>
+                    <Label fx:id="overlayPhone" text="+216 00 000 000" style="-fx-text-fill: -color-text-muted;"/>
+                </VBox>
+
+                <Separator/>
+
+                <HBox spacing="30" alignment="CENTER">
+                     <VBox alignment="CENTER">
+                         <Label text="Trust Score" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
+                         <Label fx:id="overlayTrustScore" text="100" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                     </VBox>
+                     <Separator orientation="VERTICAL"/>
+                     <VBox alignment="CENTER">
+                         <Label text="Wallet Status" style="-fx-font-size: 12px; -fx-text-fill: -color-text-muted;"/>
+                         <Label fx:id="overlayWalletStatus" text="ACTIVE" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-success;"/>
+                     </VBox>
+                </HBox>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+
+                <VBox spacing="10" maxWidth="Infinity">
+                    <Button text="New Escrow Transaction" onAction="#handleCreateEscrowFromContact" styleClass="button-primary" maxWidth="Infinity" style="-fx-padding: 12;"/>
+                    <Button text="Remove from Contacts" onAction="#handleDeleteContact" styleClass="button-danger-outline" maxWidth="Infinity">
+                         <graphic>
+                            <SVGPath content="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" style="-fx-fill: -color-error;"/>
+                         </graphic>
+                    </Button>
+                </VBox>
+            </VBox>
+
+            <!-- Right Panel: Contact History / Stats (Placeholder) -->
+             <VBox HBox.hgrow="ALWAYS" spacing="15">
+                <Label text="Recent Activity with Contact" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                <VBox fx:id="contactActivityContainer" spacing="10">
+                     <Label fx:id="noActivityLabel" text="No recent transactions." style="-fx-text-fill: -color-text-muted;"/>
+                </VBox>
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <!-- ADD CONTACT VIEW (Full Page) -->
+    <VBox fx:id="addContactView" visible="false" spacing="20" style="-fx-background-color: -color-bg;">
+        <HBox alignment="CENTER_LEFT" spacing="15">
+            <Button onAction="#handleBackToMain" style="-fx-background-color: transparent; -fx-cursor: hand;">
+                <graphic>
+                    <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="-fx-fill: -color-text-primary;"/>
+                </graphic>
+            </Button>
+            <Label text="Add New Contact" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        </HBox>
+
+        <VBox styleClass="card" maxWidth="600" spacing="20" alignment="TOP_CENTER" style="-fx-padding: 40; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 0); -fx-background-color: -color-card-bg;">
+            <VBox spacing="10">
+                <Label text="Search by Email Address" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                <HBox spacing="15">
+                    <TextField fx:id="searchEmailField" promptText="Enter user email..." styleClass="text-field" HBox.hgrow="ALWAYS" style="-fx-padding: 12;"/>
+                    <Button text="Search" onAction="#handleSearchUser" styleClass="button-primary" style="-fx-padding: 12 24;"/>
+                </HBox>
+                 <Label fx:id="searchErrorLabel" text="User not found" visible="false" managed="false" style="-fx-text-fill: -color-error;"/>
+            </VBox>
+
+            <Separator/>
+
+            <VBox fx:id="foundUserContainer" visible="false" managed="false" spacing="20" alignment="CENTER" style="-fx-background-color: -color-bg; -fx-padding: 30; -fx-background-radius: 12;">
+                 <StackPane>
+                     <Circle radius="40" style="-fx-fill: -color-bg-subtle; -fx-stroke: transparent;"/>
+                     <Label fx:id="foundUserInitials" text="UN" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+                     <ImageView fx:id="foundUserImage" fitHeight="80" fitWidth="80" preserveRatio="true">
+                        <clip>
+                            <Circle radius="40" centerX="40" centerY="40"/>
+                        </clip>
+                     </ImageView>
+                 </StackPane>
+                 <VBox alignment="CENTER">
+                    <Label fx:id="foundUserName" text="User Name" style="-fx-font-weight: bold; -fx-text-fill: white; -fx-font-size: 18px;"/>
+                    <Label fx:id="foundUserEmail" text="user@email.com" style="-fx-text-fill: -color-text-muted; -fx-font-size: 14px;"/>
+                 </VBox>
+                 <Button text="Add as Contact" onAction="#handleConfirmAdd" styleClass="button-success" maxWidth="200" style="-fx-padding: 12;"/>
+            </VBox>
         </VBox>
-    </ScrollPane>
+    </VBox>
 
-</VBox>
+</StackPane>
