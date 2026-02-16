@@ -9,7 +9,9 @@ public class User {
     private String role;
     @JsonProperty("full_name")
     private String fullName;
+    @JsonProperty("phone_number")
     private String phoneNumber;
+    @JsonProperty("profile_photo_url")
     private String profilePhotoUrl;
     private String contactAlias; // For contact management
 

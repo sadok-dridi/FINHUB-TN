@@ -55,11 +55,10 @@ public class LoginController {
         } catch (Exception e) {
             e.printStackTrace();
             Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle(LanguageManager.getInstance().getString("login.error.loading.view"));
-                alert.setHeaderText(LanguageManager.getInstance().getString("common.error") + " " + fxmlPath);
-                alert.setContentText(e.getMessage());
-                alert.showAndWait();
+                DialogUtil.showError(
+                        LanguageManager.getInstance().getString("login.error.loading.view"),
+                        LanguageManager.getInstance().getString("common.error") + " " + fxmlPath + "\n"
+                                + e.getMessage());
             });
         }
     }
@@ -248,6 +247,9 @@ public class LoginController {
                                 // Knowledge Base
                                 tn.finhub.model.KnowledgeBaseModel kbModel = new tn.finhub.model.KnowledgeBaseModel();
                                 java.util.List<tn.finhub.model.KnowledgeBase> kbArticles = kbModel.getAllArticles();
+
+                                // 3. Escrow Data (Optimized Prefetch)
+                                tn.finhub.controller.AdminEscrowController.prefetchData();
                                 tn.finhub.controller.AdminKnowledgeBaseController.setCachedArticles(kbArticles);
 
                                 // System Alerts
@@ -358,14 +360,15 @@ public class LoginController {
                                     WalletController.WalletDataPacket walletData = new WalletController.WalletDataPacket(
                                             wallet, cards, transactions, badTxId, portValue, totalInvested,
                                             bestAsset,
-                                            maxPnlPercent, assetCount, new java.util.HashMap<>());
+                                            maxPnlPercent, assetCount, new java.util.HashMap<>(),
+                                            new java.util.HashMap<>());
                                     WalletController.setCachedData(walletData);
 
                                     // Transactions Controller Cache
                                     boolean isFrozen = "FROZEN".equals(wallet.getStatus());
                                     TransactionsController.TransactionData txData = new TransactionsController.TransactionData(
                                             userId, transactions, contacts, badTxId, isFrozen,
-                                            new java.util.HashMap<>());
+                                            new java.util.HashMap<>(), new java.util.HashMap<>());
                                     TransactionsController.setCachedData(txData);
 
                                     // Financial Twin Cache

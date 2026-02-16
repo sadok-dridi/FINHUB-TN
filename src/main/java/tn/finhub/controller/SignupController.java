@@ -349,7 +349,8 @@ public class SignupController {
 
                         tn.finhub.controller.WalletController.WalletDataPacket packet = new tn.finhub.controller.WalletController.WalletDataPacket(
                                 wallet, cards, transactions, -1, java.math.BigDecimal.ZERO, totalInvested, "N/A",
-                                java.math.BigDecimal.ZERO, items.size(), new java.util.HashMap<>());
+                                java.math.BigDecimal.ZERO, items.size(), new java.util.HashMap<>(),
+                                new java.util.HashMap<>());
                         WalletController.setCachedData(packet);
                     }
                 } catch (Exception e) {

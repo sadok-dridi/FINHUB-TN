@@ -217,8 +217,54 @@ public class AdminDashboardController {
 
     @FXML
     private void handleLogout() {
-        SessionManager.logout();
-        ViewUtils.setView(sidebar, "/view/login.fxml");
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        if (sidebar.getScene() != null)
+            dialog.initOwner(sidebar.getScene().getWindow());
+
+        VBox root = new VBox(20);
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+        root.setPadding(new javafx.geometry.Insets(30));
+        root.setPrefWidth(340);
+        root.setStyle("-fx-background-color: rgba(30, 20, 60, 0.95); -fx-background-radius: 16; "
+                + "-fx-border-color: rgba(139, 92, 246, 0.3); -fx-border-radius: 16; -fx-border-width: 1; "
+                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 20, 0, 0, 5);");
+
+        Label icon = new Label("\uD83D\uDEAA");
+        icon.setStyle("-fx-font-size: 36px;");
+
+        Label title = new Label("Log Out");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        Label msg = new Label("Are you sure you want to log out?");
+        msg.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 14px;");
+        msg.setWrapText(true);
+        msg.setAlignment(javafx.geometry.Pos.CENTER);
+
+        Button cancelBtn = new Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: rgba(255,255,255,0.8); "
+                + "-fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 10 28;");
+        cancelBtn.setOnAction(e -> dialog.close());
+
+        Button logoutBtn = new Button("Log Out");
+        logoutBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; "
+                + "-fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 10 28;");
+        logoutBtn.setOnAction(e -> {
+            dialog.close();
+            SessionManager.logout();
+            ViewUtils.setView(sidebar, "/view/login.fxml");
+        });
+
+        HBox buttons = new HBox(12, cancelBtn, logoutBtn);
+        buttons.setAlignment(javafx.geometry.Pos.CENTER);
+
+        root.getChildren().addAll(icon, title, msg, buttons);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 
     @FXML

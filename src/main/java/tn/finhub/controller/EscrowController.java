@@ -57,8 +57,6 @@ public class EscrowController {
     private VBox mainView;
     @FXML
     private VBox contactDetailsView;
-    @FXML
-    private VBox addContactView;
 
     // Contact Details UI (inside contactDetailsView)
     @FXML
@@ -86,26 +84,10 @@ public class EscrowController {
     @FXML
     private javafx.scene.control.TextField aliasField;
 
-    // Add Contact UI (inside addContactView)
     @FXML
     private javafx.scene.control.Button addContactBtn;
-    @FXML
-    private javafx.scene.control.TextField searchEmailField;
-    @FXML
-    private Label searchErrorLabel;
-    @FXML
-    private VBox foundUserContainer;
-    @FXML
-    private Label foundUserInitials;
-    @FXML
-    private ImageView foundUserImage;
-    @FXML
-    private Label foundUserName;
-    @FXML
-    private Label foundUserEmail;
 
     // State
-    private User foundContactUser = null;
     private User currentContactUser = null;
 
     // Models
@@ -296,24 +278,51 @@ public class EscrowController {
     }
 
     private javafx.scene.Node createContactCard(User user) {
-        VBox card = new VBox(10);
-        card.setAlignment(javafx.geometry.Pos.CENTER);
-        card.setPrefSize(180, 220);
+        // Main card — horizontal layout, FIXED width for uniformity
+        HBox card = new HBox(0);
+        card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        card.setPrefWidth(320);
+        card.setMinWidth(300);
+        card.setMaxWidth(340);
+        card.setPadding(new javafx.geometry.Insets(16, 18, 16, 18));
         card.setStyle(
-                "-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0); -fx-cursor: hand;");
+                "-fx-background-color: -color-card-bg; -fx-background-radius: 14; "
+                        + "-fx-border-color: rgba(139, 92, 246, 0.15); -fx-border-radius: 14; -fx-border-width: 1; "
+                        + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 10, 0, 0, 3); -fx-cursor: hand;");
+
+        // Hover effect
+        card.setOnMouseEntered(ev -> card.setStyle(
+                "-fx-background-color: -color-card-bg; -fx-background-radius: 14; "
+                        + "-fx-border-color: rgba(139, 92, 246, 0.45); -fx-border-radius: 14; -fx-border-width: 1; "
+                        + "-fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.3), 14, 0, 0, 3); -fx-cursor: hand;"));
+        card.setOnMouseExited(ev -> card.setStyle(
+                "-fx-background-color: -color-card-bg; -fx-background-radius: 14; "
+                        + "-fx-border-color: rgba(139, 92, 246, 0.15); -fx-border-radius: 14; -fx-border-width: 1; "
+                        + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 10, 0, 0, 3); -fx-cursor: hand;"));
+
+        // === LEFT SIDE: Image + Name (fixed width, centered) ===
+        VBox leftSide = new VBox(6);
+        leftSide.setAlignment(javafx.geometry.Pos.CENTER);
+        leftSide.setPrefWidth(90);
+        leftSide.setMinWidth(90);
+        leftSide.setMaxWidth(90);
 
         StackPane imgContainer = new StackPane();
-        Circle bg = new Circle(40);
+        imgContainer.setPrefSize(56, 56);
+        imgContainer.setMinSize(56, 56);
+        imgContainer.setMaxSize(56, 56);
+
+        Circle bg = new Circle(28);
         bg.setStyle("-fx-fill: -color-bg-subtle; -fx-stroke: transparent;");
 
         Label initials = new Label(getInitials(user.getFullName()));
-        initials.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;");
+        initials.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: -color-primary;");
 
         ImageView img = new ImageView();
-        img.setFitWidth(80);
-        img.setFitHeight(80);
+        img.setFitWidth(56);
+        img.setFitHeight(56);
         img.setPreserveRatio(true);
-        Circle clip = new Circle(40, 40, 40);
+        Circle clip = new Circle(28, 28, 28);
         img.setClip(clip);
 
         if (user.getProfilePhotoUrl() != null && !user.getProfilePhotoUrl().isEmpty()) {
@@ -327,7 +336,7 @@ public class EscrowController {
             img.setVisible(false);
         }
 
-        Circle border = new Circle(40);
+        Circle border = new Circle(28);
         border.setStyle("-fx-fill: transparent; -fx-stroke: -color-primary; -fx-stroke-width: 2;");
         border.setMouseTransparent(true);
 
@@ -335,18 +344,87 @@ public class EscrowController {
 
         Label name = new Label(user.getFullName());
         name.setWrapText(true);
+        name.setMaxWidth(88);
         name.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-        name.setStyle("-fx-font-weight: bold; -fx-text-fill: -color-text-primary; -fx-font-size: 16px;");
+        name.setAlignment(javafx.geometry.Pos.CENTER);
+        name.setStyle("-fx-font-weight: bold; -fx-text-fill: -color-text-primary; -fx-font-size: 13px;");
 
-        Label scoreLabel = new Label("Score: " + user.getTrustScore());
-        String scoreColor = user.getTrustScore() >= 70 ? "-color-success"
-                : (user.getTrustScore() >= 30 ? "-color-warning" : "-color-danger");
-        scoreLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + scoreColor + ";");
+        leftSide.getChildren().addAll(imgContainer, name);
 
-        card.getChildren().addAll(imgContainer, name, scoreLabel);
+        // === SEPARATOR ===
+        javafx.scene.layout.Region separator = new javafx.scene.layout.Region();
+        separator.setPrefWidth(1);
+        separator.setMinWidth(1);
+        separator.setMaxWidth(1);
+        separator.setStyle("-fx-background-color: rgba(139, 92, 246, 0.2);");
+        VBox.setVgrow(separator, javafx.scene.layout.Priority.ALWAYS);
+        HBox.setMargin(separator, new javafx.geometry.Insets(4, 14, 4, 14));
+
+        // === RIGHT SIDE: Email, Phone, Score (vertically centered) ===
+        VBox rightSide = new VBox(10);
+        rightSide.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        HBox.setHgrow(rightSide, javafx.scene.layout.Priority.ALWAYS);
+
+        // Email row
+        HBox emailRow = createInfoRow(
+                "M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z",
+                user.getEmail() != null ? user.getEmail() : "N/A",
+                "#8b5cf6");
+
+        // Phone row
+        String phoneText = user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()
+                ? user.getPhoneNumber()
+                : "N/A";
+        HBox phoneRow = createInfoRow(
+                "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z",
+                phoneText,
+                "#8b5cf6");
+
+        // Score row
+        String scoreColor = user.getTrustScore() >= 70 ? "#10b981"
+                : (user.getTrustScore() >= 30 ? "#f59e0b" : "#ef4444");
+        HBox scoreRow = createInfoRow(
+                "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z",
+                "Trust Score: " + user.getTrustScore(),
+                scoreColor);
+        // Override text color for score
+        if (scoreRow.getChildren().size() > 1) {
+            ((Label) scoreRow.getChildren().get(1)).setStyle(
+                    "-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: " + scoreColor + ";");
+        }
+
+        rightSide.getChildren().addAll(emailRow, phoneRow, scoreRow);
+
+        // === Assemble Card ===
+        card.getChildren().addAll(leftSide, separator, rightSide);
         card.setOnMouseClicked(e -> showContactDetails(user));
 
         return card;
+    }
+
+    /** Helper: creates a compact info row with an SVG icon + label */
+    private HBox createInfoRow(String svgPath, String text, String iconColor) {
+        HBox row = new HBox(8);
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
+        icon.setContent(svgPath);
+        icon.setStyle("-fx-fill: " + iconColor + ";");
+        icon.setScaleX(0.65);
+        icon.setScaleY(0.65);
+
+        // Wrap in fixed-size pane for alignment
+        StackPane iconPane = new StackPane(icon);
+        iconPane.setPrefSize(18, 18);
+        iconPane.setMinSize(18, 18);
+        iconPane.setMaxSize(18, 18);
+
+        Label label = new Label(text);
+        label.setStyle("-fx-font-size: 12px; -fx-text-fill: -color-text-secondary;");
+        label.setWrapText(true);
+
+        row.getChildren().addAll(iconPane, label);
+        return row;
     }
 
     private void showContactDetails(User user) {
@@ -447,31 +525,16 @@ public class EscrowController {
     private void showMainView() {
         mainView.setVisible(true);
         contactDetailsView.setVisible(false);
-        addContactView.setVisible(false);
     }
 
     private void showContactDetailsView() {
         mainView.setVisible(false);
         contactDetailsView.setVisible(true);
-        addContactView.setVisible(false);
-    }
-
-    private void showAddContactView() {
-        mainView.setVisible(false);
-        contactDetailsView.setVisible(false);
-        addContactView.setVisible(true);
-        // Reset state
-        searchEmailField.clear();
-        searchErrorLabel.setVisible(false);
-        searchErrorLabel.setManaged(false);
-        foundUserContainer.setVisible(false);
-        foundUserContainer.setManaged(false);
-        foundContactUser = null;
     }
 
     @FXML
     private void handleShowAddContactView() {
-        showAddContactView();
+        openAddContactDialog();
     }
 
     @FXML
@@ -487,12 +550,138 @@ public class EscrowController {
 
     @FXML
     private void handleAddContact() {
-        handleShowAddContactView();
+        openAddContactDialog();
     }
 
-    @FXML
-    private void closeAddContactOverlay() {
-        handleBackToMain();
+    private void openAddContactDialog() {
+        User sessionUser = UserSession.getInstance().getUser();
+        if (sessionUser == null)
+            return;
+
+        // Build dialog stage
+        javafx.stage.Stage dialogStage = new javafx.stage.Stage();
+        dialogStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+        dialogStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        if (mainView.getScene() != null) {
+            dialogStage.initOwner(mainView.getScene().getWindow());
+        }
+
+        // Root container
+        VBox root = new VBox(20);
+        root.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        root.setPadding(new javafx.geometry.Insets(30));
+        root.setMaxWidth(420);
+        root.setPrefWidth(420);
+        root.setStyle("-fx-background-color: rgba(30, 20, 60, 0.95); -fx-background-radius: 16; "
+                + "-fx-border-color: rgba(139, 92, 246, 0.3); -fx-border-radius: 16; -fx-border-width: 1; "
+                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 20, 0, 0, 5);");
+
+        // Title
+        Label title = new Label("Add New Contact");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        // Email field
+        Label emailLabel = new Label("Email Address");
+        emailLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.6); -fx-font-size: 12px; -fx-font-weight: bold;");
+
+        javafx.scene.control.TextField emailField = new javafx.scene.control.TextField();
+        emailField.setPromptText("Enter user email...");
+        emailField.setStyle("-fx-background-color: rgba(255,255,255,0.08); -fx-text-fill: white; "
+                + "-fx-prompt-text-fill: rgba(255,255,255,0.3); -fx-background-radius: 8; -fx-padding: 12; "
+                + "-fx-border-color: rgba(139, 92, 246, 0.2); -fx-border-radius: 8;");
+
+        VBox fieldBox = new VBox(6, emailLabel, emailField);
+
+        // Error label
+        Label errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 12px;");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+        errorLabel.setWrapText(true);
+
+        // Buttons
+        javafx.scene.control.Button cancelBtn = new javafx.scene.control.Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: rgba(255,255,255,0.7); "
+                + "-fx-font-size: 13px; -fx-cursor: hand; -fx-padding: 10 20;");
+        cancelBtn.setOnAction(e -> dialogStage.close());
+
+        javafx.scene.control.Button saveBtn = new javafx.scene.control.Button("Save Contact");
+        saveBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; "
+                + "-fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 10 24;");
+
+        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        HBox buttonRow = new HBox(10, spacer, cancelBtn, saveBtn);
+        buttonRow.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+
+        // Save action
+        saveBtn.setOnAction(e -> {
+            String email = emailField.getText().trim();
+            errorLabel.setVisible(false);
+            errorLabel.setManaged(false);
+
+            if (email.isEmpty()) {
+                errorLabel.setText("Please enter an email address.");
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+                return;
+            }
+
+            if (email.equalsIgnoreCase(sessionUser.getEmail())) {
+                errorLabel.setText("You cannot add yourself as a contact.");
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+                return;
+            }
+
+            // Find user by email
+            User found = userModel.findByEmail(email);
+            if (found == null) {
+                try {
+                    userModel.syncUsersFromServer();
+                    found = userModel.findByEmail(email);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            if (found == null) {
+                errorLabel.setText("No user found with this email.");
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+                return;
+            }
+
+            // Add as escrow contact
+            boolean success = contactModel.addContact(sessionUser.getId(), found.getId());
+            if (success) {
+                dialogStage.close();
+                loadContacts();
+            } else {
+                errorLabel.setText("Contact already exists or could not be added.");
+                errorLabel.setVisible(true);
+                errorLabel.setManaged(true);
+            }
+        });
+
+        root.getChildren().addAll(title, fieldBox, errorLabel, buttonRow);
+
+        // Make draggable
+        final double[] dragDelta = new double[2];
+        root.setOnMousePressed(e -> {
+            dragDelta[0] = dialogStage.getX() - e.getScreenX();
+            dragDelta[1] = dialogStage.getY() - e.getScreenY();
+        });
+        root.setOnMouseDragged(e -> {
+            dialogStage.setX(e.getScreenX() + dragDelta[0]);
+            dialogStage.setY(e.getScreenY() + dragDelta[1]);
+        });
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        scene.getStylesheets().add(getClass().getResource("/style/theme.css").toExternalForm());
+        dialogStage.setScene(scene);
+        dialogStage.showAndWait();
     }
 
     // --- Alias Editing ---
@@ -551,72 +740,6 @@ public class EscrowController {
         // Open create escrow dialog
         // Ideally pass the contact to pre-fill, but for now just open dialog
         handleCreateEscrow();
-    }
-
-    @FXML
-    private void handleSearchUser() {
-        String email = searchEmailField.getText().trim();
-        if (email.isEmpty())
-            return;
-
-        User user = userModel.findByEmail(email);
-        if (user != null && user.getId() != UserSession.getInstance().getUser().getId()) {
-            // Found
-            foundContactUser = user;
-            searchErrorLabel.setVisible(false);
-            searchErrorLabel.setManaged(false);
-
-            foundUserName.setText(user.getFullName());
-            foundUserEmail.setText(user.getEmail());
-            foundUserInitials.setText(getInitials(user.getFullName()));
-
-            if (user.getProfilePhotoUrl() != null && !user.getProfilePhotoUrl().isEmpty()) {
-                try {
-                    foundUserImage.setImage(new javafx.scene.image.Image(user.getProfilePhotoUrl()));
-                    foundUserImage.setVisible(true);
-                    foundUserInitials.setVisible(false);
-                } catch (Exception e) {
-                    foundUserImage.setVisible(false);
-                    foundUserInitials.setVisible(true);
-                }
-            } else {
-                foundUserImage.setVisible(false);
-                foundUserInitials.setVisible(true);
-            }
-
-            foundUserContainer.setVisible(true);
-            foundUserContainer.setManaged(true);
-        } else {
-            // Not found
-            foundContactUser = null;
-            foundUserContainer.setVisible(false);
-            foundUserContainer.setManaged(false);
-            searchErrorLabel.setVisible(true);
-            searchErrorLabel.setManaged(true);
-        }
-    }
-
-    @FXML
-    private void handleConfirmAdd() {
-        if (foundContactUser != null) {
-            int currentUserId = UserSession.getInstance().getUser().getId();
-            boolean success = contactModel.addContact(currentUserId, foundContactUser.getId());
-            if (success) {
-                loadContacts();
-                closeAddContactOverlay();
-            } else {
-                // Show error (user maybe already added)
-                searchErrorLabel.setText("Could not add user (already added?)");
-                searchErrorLabel.setVisible(true);
-                searchErrorLabel.setManaged(true);
-            }
-        }
-    }
-
-    @FXML
-    private void handleSendFundsToContact() {
-        // Future implementation
-        System.out.println("Send funds clicked");
     }
 
     private String getInitials(String name) {
@@ -773,9 +896,10 @@ public class EscrowController {
 
             javafx.scene.Scene scene = new javafx.scene.Scene(root);
             scene.getStylesheets().add(getClass().getResource("/style/theme.css").toExternalForm());
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
 
             javafx.stage.Stage stage = new javafx.stage.Stage();
-            stage.setTitle("Escrow Details #" + e.getId());
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             stage.setScene(scene);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
 
@@ -801,9 +925,10 @@ public class EscrowController {
 
             javafx.scene.Scene scene = new javafx.scene.Scene(root);
             scene.getStylesheets().add(getClass().getResource("/style/theme.css").toExternalForm());
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
 
             javafx.stage.Stage stage = new javafx.stage.Stage();
-            stage.setTitle("Create Secure Escrow");
+            stage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
             stage.setScene(scene);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
 

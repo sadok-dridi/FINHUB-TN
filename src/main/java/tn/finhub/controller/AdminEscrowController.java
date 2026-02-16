@@ -12,9 +12,12 @@ import tn.finhub.model.User;
 import tn.finhub.model.UserModel;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletModel;
+import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
-import java.util.Optional;
 import java.util.List;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.util.Duration;
 
 public class AdminEscrowController {
 
@@ -111,15 +114,64 @@ public class AdminEscrowController {
 
     private Escrow currentEscrow;
 
+    // Auto-refresh
+    private Timeline autoRefreshTimeline;
+
     public static void setCachedEscrows(List<Escrow> escrows) {
         cachedEscrows = escrows;
+    }
+
+    // Public method to pre-fetch data
+    public static void prefetchData() {
+        new Thread(() -> {
+            try {
+                System.out.println("Prefetching Escrow Data...");
+                EscrowManager mgr = new EscrowManager();
+                List<Escrow> data = mgr.getEscrowsForAdmin();
+                setCachedEscrows(data);
+                System.out.println("[DEBUG] Escrow Data pre-fetched: " + data.size());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     @FXML
     public void initialize() {
         showList();
         loadData();
+        setupAutoRefresh();
     }
+
+    private void setupAutoRefresh() {
+        // Refresh every 30 seconds
+        autoRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(30), ev -> {
+            // Only refresh if we are viewing the list to avoid disturbing details view
+            // interaction
+            if (listViewContainer.isVisible()) {
+                loadData();
+            }
+        }));
+        autoRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        autoRefreshTimeline.play();
+    }
+
+    @FXML
+    private void handleRefresh() {
+        if (listViewContainer.isVisible()) {
+            loadData();
+        } else {
+            // If in details view, maybe refresh details?
+            // For now, let's refresh the underlying list but keep user on details if they
+            // want.
+            // Or simpler: just reload data which updates the cached list.
+            loadData();
+        }
+    }
+
+    // Ensure we stop timeline if the controller is disposed (though JavaFX
+    // controllers don't have a standard destroy)
+    // We can rely on view visibility check to simply skip heavy work.
 
     private void showList() {
         listViewContainer.setVisible(true);
@@ -128,22 +180,49 @@ public class AdminEscrowController {
         isProfileView = false;
     }
 
+    // --- Optimized Details Loading ---
+
+    private static class ProfileUiData {
+        String name;
+        String email;
+        String trustScore;
+        String initials;
+        String phone;
+        String photoUrl;
+        String walletStatus;
+        String kycStatus;
+
+        // Helper to create empty/default data
+        static ProfileUiData empty() {
+            ProfileUiData d = new ProfileUiData();
+            d.name = "Unknown";
+            d.email = "";
+            d.trustScore = "0";
+            d.initials = "?";
+            d.phone = "N/A";
+            d.walletStatus = "N/A";
+            d.kycStatus = "UNVERIFIED";
+            return d;
+        }
+    }
+
+    private static class DetailsDataPacket {
+        ProfileUiData sender;
+        ProfileUiData receiver;
+    }
+
     private void showDetails(Escrow e) {
         currentEscrow = e;
         isProfileView = false;
         updateViewMode();
 
+        // 1. Immediate UI Updates (Static Data)
         detailIdLabel.setText("#" + e.getId());
         detailStatusLabel.setText(e.getStatus());
         detailAmountLabel.setText(e.getAmount() + " TND");
         detailTypeLabel.setText(e.getEscrowType());
         detailConditionLabel.setText(e.getConditionText());
-        detailSenderLabel.setText(getUserNameByWalletId(e.getSenderWalletId()));
-        detailReceiverLabel.setText(getUserNameByWalletId(e.getReceiverWalletId()));
         detailDateLabel.setText(e.getCreatedAt().toString());
-
-        // Load Profiles
-        loadProfileData(e.getSenderWalletId(), e.getReceiverWalletId());
 
         // Status Styles
         String statusStyle = "-fx-font-weight: bold; -fx-padding: 5 10; -fx-background-radius: 4; ";
@@ -171,107 +250,129 @@ public class AdminEscrowController {
         btnRelease.setDisable(!isActive);
         btnRefund.setDisable(!isActive);
 
+        // 2. Clear / Show Loading for Dynamic Data
+        detailSenderLabel.setText("Loading...");
+        detailReceiverLabel.setText("Loading...");
+
+        profileSenderName.setText("Loading...");
+        profileReceiverName.setText("Loading...");
+        // Reset images
+        senderImage.setVisible(false);
+        senderInitials.setVisible(true);
+        senderInitials.setText("...");
+        receiverImage.setVisible(false);
+        receiverInitials.setVisible(true);
+        receiverInitials.setText("...");
+
+        // 3. Background Task for Profiles
+        javafx.concurrent.Task<DetailsDataPacket> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected DetailsDataPacket call() throws Exception {
+                DetailsDataPacket packet = new DetailsDataPacket();
+                packet.sender = fetchProfileData(e.getSenderWalletId());
+                packet.receiver = fetchProfileData(e.getReceiverWalletId());
+                return packet;
+            }
+        };
+
+        task.setOnSucceeded(ev -> {
+            DetailsDataPacket data = task.getValue();
+            updateProfileUI(data.sender, true);
+            updateProfileUI(data.receiver, false);
+
+            // Update mini-summary labels
+            detailSenderLabel.setText(data.sender.name);
+            detailReceiverLabel.setText(data.receiver.name);
+        });
+
+        task.setOnFailed(ev -> {
+            // Handle error silently or show unknown
+            detailSenderLabel.setText("Unknown");
+            detailReceiverLabel.setText("Unknown");
+            task.getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+
         listViewContainer.setVisible(false);
         detailsViewContainer.setVisible(true);
     }
 
-    private void loadProfileData(int senderWalletId, int receiverWalletId) {
-        Wallet senderWallet = walletModel.findById(senderWalletId);
-        Wallet receiverWallet = walletModel.findById(receiverWalletId);
+    private ProfileUiData fetchProfileData(int walletId) {
+        ProfileUiData data = new ProfileUiData();
+        Wallet wallet = walletModel.findById(walletId);
 
-        if (senderWallet != null) {
-            User sender = userModel.findById(senderWallet.getUserId());
-            if (sender != null) {
-                profileSenderName.setText(sender.getFullName());
-                profileSenderEmail.setText(sender.getEmail());
-                senderTrustScore.setText(String.valueOf(sender.getTrustScore()));
-                senderInitials.setText(getInitials(sender.getFullName()));
-                senderPhone.setText(sender.getPhoneNumber() != null ? sender.getPhoneNumber() : "N/A");
+        if (wallet != null) {
+            data.walletStatus = wallet.getStatus();
+            User user = userModel.findById(wallet.getUserId());
+            if (user != null) {
+                data.name = user.getFullName();
+                data.email = user.getEmail();
+                data.trustScore = String.valueOf(user.getTrustScore());
+                data.phone = user.getPhoneNumber() != null ? user.getPhoneNumber() : "N/A";
+                data.initials = getInitials(user.getFullName());
+                data.photoUrl = user.getProfilePhotoUrl();
 
-                // Image Logic
-                if (sender.getProfilePhotoUrl() != null && !sender.getProfilePhotoUrl().isEmpty()) {
-                    try {
-                        senderImage.setImage(new javafx.scene.image.Image(sender.getProfilePhotoUrl()));
-                        senderImage.setVisible(true);
-                        senderInitials.setVisible(false);
-                    } catch (Exception e) {
-                        senderImage.setVisible(false);
-                        senderInitials.setVisible(true);
-                    }
-                } else {
-                    senderImage.setVisible(false);
-                    senderInitials.setVisible(true);
-                }
-
-                // Wallet Status
-                senderWalletStatus.setText(senderWallet.getStatus());
-                if ("ACTIVE".equals(senderWallet.getStatus())) {
-                    senderWalletStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-success;");
-                } else {
-                    senderWalletStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #EF4444;");
-                }
-
-                // KYC Status Logic
-                boolean isVerified = checkKycstatus(sender.getId());
-                if (isVerified) {
-                    senderKycStatus.setText("VERIFIED");
-                    senderKycStatus.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-info;");
-                } else {
-                    senderKycStatus.setText("UNVERIFIED");
-                    senderKycStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-text-muted;");
-                }
+                // KYC Check
+                boolean isVerified = checkKycstatus(user.getId());
+                data.kycStatus = isVerified ? "VERIFIED" : "UNVERIFIED";
+            } else {
+                return ProfileUiData.empty();
             }
+        } else {
+            return ProfileUiData.empty();
+        }
+        return data;
+    }
+
+    private void updateProfileUI(ProfileUiData data, boolean isSender) {
+        // Elements selection
+        Label nameLbl = isSender ? profileSenderName : profileReceiverName;
+        Label emailLbl = isSender ? profileSenderEmail : profileReceiverEmail;
+        Label phoneLbl = isSender ? senderPhone : receiverPhone;
+        Label trustLbl = isSender ? senderTrustScore : receiverTrustScore;
+        Label initialsLbl = isSender ? senderInitials : receiverInitials;
+        javafx.scene.image.ImageView imgView = isSender ? senderImage : receiverImage;
+        Label walletStatusLbl = isSender ? senderWalletStatus : receiverWalletStatus;
+        Label kycStatusLbl = isSender ? senderKycStatus : receiverKycStatus;
+
+        nameLbl.setText(data.name);
+        emailLbl.setText(data.email);
+        phoneLbl.setText(data.phone);
+        trustLbl.setText(data.trustScore);
+        initialsLbl.setText(data.initials);
+
+        // Image
+        if (data.photoUrl != null && !data.photoUrl.isEmpty()) {
+            try {
+                // Load in background? We are on UI thread now.
+                // Image constructor with backgroundLoading = true
+                imgView.setImage(new javafx.scene.image.Image(data.photoUrl, true));
+                imgView.setVisible(true);
+                initialsLbl.setVisible(false);
+            } catch (Exception e) {
+                imgView.setVisible(false);
+                initialsLbl.setVisible(true);
+            }
+        } else {
+            imgView.setVisible(false);
+            initialsLbl.setVisible(true);
         }
 
-        if (receiverWallet != null) {
-            User receiver = userModel.findById(receiverWallet.getUserId());
-            if (receiver != null) {
-                profileReceiverName.setText(receiver.getFullName());
-                profileReceiverEmail.setText(receiver.getEmail());
-                receiverTrustScore.setText(String.valueOf(receiver.getTrustScore()));
-                receiverInitials.setText(getInitials(receiver.getFullName()));
-                receiverPhone.setText(receiver.getPhoneNumber() != null ? receiver.getPhoneNumber() : "N/A");
+        // Wallet Status
+        walletStatusLbl.setText(data.walletStatus);
+        if ("ACTIVE".equals(data.walletStatus)) {
+            walletStatusLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-success;");
+        } else {
+            walletStatusLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #EF4444;");
+        }
 
-                // Image Logic
-                if (receiver.getProfilePhotoUrl() != null && !receiver.getProfilePhotoUrl().isEmpty()) {
-                    try {
-                        receiverImage.setImage(new javafx.scene.image.Image(receiver.getProfilePhotoUrl()));
-                        receiverImage.setVisible(true);
-                        receiverInitials.setVisible(false);
-                    } catch (Exception e) {
-                        receiverImage.setVisible(false);
-                        receiverInitials.setVisible(true);
-                    }
-                } else {
-                    receiverImage.setVisible(false);
-                    receiverInitials.setVisible(true);
-                }
-
-                // Wallet Status
-                receiverWalletStatus.setText(receiverWallet.getStatus());
-                if ("ACTIVE".equals(receiverWallet.getStatus())) {
-                    receiverWalletStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-success;");
-                } else {
-                    receiverWalletStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #EF4444;");
-                }
-
-                // KYC Status Logic
-                boolean isVerified = checkKycstatus(receiver.getId());
-                if (isVerified) {
-                    receiverKycStatus.setText("VERIFIED");
-                    receiverKycStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-info;");
-                } else {
-                    receiverKycStatus.setText("UNVERIFIED");
-                    receiverKycStatus
-                            .setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-text-muted;");
-                }
-            }
+        // KYC Status
+        kycStatusLbl.setText(data.kycStatus);
+        if ("VERIFIED".equals(data.kycStatus)) {
+            kycStatusLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-info;");
+        } else {
+            kycStatusLbl.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: -color-text-muted;");
         }
     }
 
@@ -319,31 +420,89 @@ public class AdminEscrowController {
         }
     }
 
-    private void loadData() {
-        List<Escrow> escrows;
-        if (cachedEscrows != null) {
-            escrows = cachedEscrows;
-            cachedEscrows = null;
-        } else {
-            escrows = escrowManager.getEscrowsForAdmin();
+    // --- Optimized Data Loading ---
+
+    // Value Object to hold pre-fetched data
+    private static class EscrowUiData {
+        Escrow escrow;
+        String senderName;
+        String receiverName;
+
+        public EscrowUiData(Escrow escrow, String senderName, String receiverName) {
+            this.escrow = escrow;
+            this.senderName = senderName;
+            this.receiverName = receiverName;
         }
-
-        escrowListContainer.getChildren().clear();
-
-        if (escrows.isEmpty()) {
-            Label empty = new Label("No active escrow transactions found.");
-            empty.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 14px; -fx-padding: 20;");
-            escrowListContainer.getChildren().add(empty);
-        } else {
-            for (Escrow e : escrows) {
-                escrowListContainer.getChildren().add(createEscrowCard(e));
-            }
-        }
-
-        calculateSummaryStats(escrows);
     }
 
-    private HBox createEscrowCard(Escrow e) {
+    private void loadData() {
+        // OPTIMIZATION: Check cache first
+        if (cachedEscrows != null && !cachedEscrows.isEmpty()) {
+            // Render immediately with cached data
+            renderList(cachedEscrows);
+            // Don't return, continue to fetch fresh data in background
+        } else {
+            // Show loading state only if we have no data
+            escrowListContainer.getChildren().clear();
+            Label loadingLabel = new Label("Loading escrows...");
+            loadingLabel.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 14px; -fx-padding: 20;");
+            escrowListContainer.getChildren().add(loadingLabel);
+        }
+
+        // Background Task to fetch fresh data
+        javafx.concurrent.Task<List<EscrowUiData>> task = new javafx.concurrent.Task<>() {
+            @Override
+            protected List<EscrowUiData> call() throws Exception {
+                List<Escrow> escrows = escrowManager.getEscrowsForAdmin();
+                // Update cache with fresh data
+                cachedEscrows = escrows;
+
+                List<EscrowUiData> uiDataList = new java.util.ArrayList<>();
+                for (Escrow e : escrows) {
+                    // Pre-fetch names in background thread
+                    String sender = getUserNameByWalletId(e.getSenderWalletId());
+                    String receiver = getUserNameByWalletId(e.getReceiverWalletId());
+                    uiDataList.add(new EscrowUiData(e, sender, receiver));
+                }
+                return uiDataList;
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<EscrowUiData> dataList = task.getValue();
+            escrowListContainer.getChildren().clear();
+
+            if (dataList.isEmpty()) {
+                Label empty = new Label("No active escrow transactions found.");
+                empty.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 14px; -fx-padding: 20;");
+                escrowListContainer.getChildren().add(empty);
+            } else {
+                for (EscrowUiData data : dataList) {
+                    escrowListContainer.getChildren().add(createEscrowCard(data));
+                }
+            }
+
+            // Extract original escrows for stats calculation
+            List<Escrow> originalEscrows = new java.util.ArrayList<>();
+            for (EscrowUiData data : dataList) {
+                originalEscrows.add(data.escrow);
+            }
+            calculateSummaryStats(originalEscrows);
+        });
+
+        task.setOnFailed(e -> {
+            escrowListContainer.getChildren().clear();
+            Label error = new Label("Error loading data.");
+            error.setStyle("-fx-text-fill: red; -fx-font-size: 14px; -fx-padding: 20;");
+            escrowListContainer.getChildren().add(error);
+            task.getException().printStackTrace();
+        });
+
+        new Thread(task).start();
+    }
+
+    private HBox createEscrowCard(EscrowUiData data) {
+        Escrow e = data.escrow;
         HBox card = new HBox(15);
         card.getStyleClass().add("escrow-card");
         card.setAlignment(Pos.CENTER_LEFT);
@@ -367,11 +526,9 @@ public class AdminEscrowController {
         participantsBox.setPrefWidth(200);
         participantsBox.setMinWidth(200);
         participantsBox.setMaxWidth(200);
-        String senderName = getUserNameByWalletId(e.getSenderWalletId());
-        String receiverName = getUserNameByWalletId(e.getReceiverWalletId());
-
-        Label fromLabel = new Label("From: " + senderName);
-        Label toLabel = new Label("To: " + receiverName);
+        // Use pre-fetched names
+        Label fromLabel = new Label("From: " + data.senderName);
+        Label toLabel = new Label("To: " + data.receiverName);
         participantsBox.getChildren().addAll(fromLabel, toLabel);
 
         // 3. Amount & Condition
@@ -443,6 +600,18 @@ public class AdminEscrowController {
         return "Unknown (" + walletId + ")";
     }
 
+    // Helper to render from raw Escrow list (for cache)
+    private void renderList(List<Escrow> escrows) {
+        escrowListContainer.getChildren().clear();
+        for (Escrow e : escrows) {
+            // For cache rendering, we use placeholders for names
+            EscrowUiData uiData = new EscrowUiData(e, "...", "...");
+            HBox card = createEscrowCard(uiData);
+            escrowListContainer.getChildren().add(card);
+        }
+        calculateSummaryStats(escrows);
+    }
+
     private void calculateSummaryStats(List<Escrow> list) {
         if (list == null)
             return;
@@ -459,13 +628,11 @@ public class AdminEscrowController {
     }
 
     private void handleRelease(Escrow e) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm Release");
-        alert.setHeaderText("Release Funds for Escrow #" + e.getId());
-        alert.setContentText("This will transfer " + e.getAmount() + " TND to the Receiver. Are you sure?");
+        boolean confirmed = DialogUtil.showConfirmation(
+                "Confirm Release",
+                "This will transfer " + e.getAmount() + " TND to the Receiver. Are you sure?");
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (confirmed) {
             try {
                 int adminId = UserSession.getInstance().getUser().getId(); // Current Admin
                 escrowManager.releaseEscrowByAdmin(e.getId(), adminId);
@@ -478,13 +645,11 @@ public class AdminEscrowController {
     }
 
     private void handleRefund(Escrow e) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm Refund");
-        alert.setHeaderText("Refund Escrow #" + e.getId());
-        alert.setContentText("This will return " + e.getAmount() + " TND to the Sender. Are you sure?");
+        boolean confirmed = DialogUtil.showConfirmation(
+                "Confirm Refund",
+                "This will return " + e.getAmount() + " TND to the Sender. Are you sure?");
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (confirmed) {
             try {
                 escrowManager.refundEscrow(e.getId());
                 showInfo("Success", "Funds refunded successfully.");
@@ -522,14 +687,11 @@ public class AdminEscrowController {
         String blockHeight = String.valueOf(100000 + currentEscrow.getId());
         String timestamp = currentEscrow.getCreatedAt().toString();
 
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Blockchain Record");
-        alert.setHeaderText("Immutable Ledger Entry");
-        alert.setContentText("Transaction Hash:\n" + txHash + "\n\n" +
-                "Block Height: " + blockHeight + "\n" +
-                "Timestamp: " + timestamp + "\n" +
-                "Status: CONFIRMED");
-        alert.showAndWait();
+        DialogUtil.showInfo("Blockchain Record",
+                "Transaction Hash:\n" + txHash + "\n\n" +
+                        "Block Height: " + blockHeight + "\n" +
+                        "Timestamp: " + timestamp + "\n" +
+                        "Status: CONFIRMED");
     }
 
     @FXML
@@ -538,18 +700,10 @@ public class AdminEscrowController {
     }
 
     private void showInfo(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        DialogUtil.showInfo(title, content);
     }
 
     private void showError(String content) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        DialogUtil.showError("Error", content);
     }
 }

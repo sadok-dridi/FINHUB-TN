@@ -7,23 +7,23 @@ import tn.finhub.model.UserModel;
 import tn.finhub.model.WalletModel;
 import tn.finhub.util.DialogUtil;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 public class AdminHomeController {
 
     @FXML
     private Label totalUsersLabel;
     @FXML
-    private Label totalVolumeLabel;
+    private Label pendingKycLabel;
     @FXML
     private Label openTicketsLabel;
     @FXML
-    private Label systemHealthLabel;
+    private Label activeEscrowLabel;
 
     private final UserModel userModel = new UserModel();
-    private final WalletModel walletModel = new WalletModel();
+    // private final WalletModel walletModel = new WalletModel(); // Unused after
+    // removing volume card
     private final SupportModel supportModel = new SupportModel();
+    private final tn.finhub.model.KYCModel kycModel = new tn.finhub.model.KYCModel();
+    private final tn.finhub.model.EscrowManager escrowManager = new tn.finhub.model.EscrowManager();
 
     @FXML
     public void initialize() {
@@ -36,17 +36,17 @@ public class AdminHomeController {
             int userCount = userModel.countUsers();
             totalUsersLabel.setText(String.valueOf(userCount));
 
-            // Volume
-            BigDecimal volume = walletModel.getTotalVolume();
-            totalVolumeLabel.setText(volume.setScale(2, RoundingMode.HALF_UP).toString() + " TND");
+            // Pending KYC
+            int pendingKyc = kycModel.findPendingRequests().size();
+            pendingKycLabel.setText(String.valueOf(pendingKyc));
 
             // Tickets
             int openTickets = supportModel.getOpenTicketCount();
             openTicketsLabel.setText(String.valueOf(openTickets));
 
-            // System Health (Mock for now, or check DB)
-            systemHealthLabel.setText("Healthy");
-            systemHealthLabel.setStyle("-fx-text-fill: #10B981; -fx-font-weight: bold;");
+            // Active Escrow Volume
+            java.math.BigDecimal escrowVolume = escrowManager.getTotalActiveEscrowAmount();
+            activeEscrowLabel.setText(escrowVolume.setScale(2, java.math.RoundingMode.HALF_UP).toString() + " TND");
 
         } catch (Exception e) {
             e.printStackTrace();

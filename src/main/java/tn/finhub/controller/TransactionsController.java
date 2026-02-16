@@ -46,7 +46,8 @@ public class TransactionsController {
                 } else {
                     int badTxId = (cachedData != null) ? cachedData.badTxId : -1;
                     java.util.Map<String, String> photos = (cachedData != null) ? cachedData.profilePhotos : null;
-                    setGraphic(createTransactionCard(tx, badTxId, photos));
+                    java.util.Map<Integer, String> names = (cachedData != null) ? cachedData.walletOwnerNames : null;
+                    setGraphic(createTransactionCard(tx, badTxId, photos, names));
                     setStyle("-fx-background-color: transparent; -fx-padding: 0 0 10 0;");
                 }
             }
@@ -93,6 +94,12 @@ public class TransactionsController {
                         .compile("\\s+(?:to|from)\\s+(\\d+)(?:$|\\s)");
                 // Pattern 2: New "Name (Wallet 123)"
                 java.util.regex.Pattern walletIdPattern = java.util.regex.Pattern.compile("\\(Wallet\\s+(\\d+)\\)");
+                // Pattern 3: Escrow "Released to Wallet 123"
+                java.util.regex.Pattern escrowIdPattern = java.util.regex.Pattern
+                        .compile("Released to Wallet\\s+(\\d+)");
+                // Pattern 4: Escrow "Received from Escrow Wallet 123"
+                java.util.regex.Pattern escrowRcvdPattern = java.util.regex.Pattern
+                        .compile("Received from Escrow Wallet\\s+(\\d+)");
 
                 for (WalletTransaction tx : transactions) {
                     String ref = tx.getReference();
@@ -117,6 +124,28 @@ public class TransactionsController {
                             if (mOld.find()) {
                                 try {
                                     wId = Integer.parseInt(mOld.group(1));
+                                } catch (Exception ignore) {
+                                }
+                            }
+                        }
+
+                        // Try Escrow Pattern if no ID found
+                        if (wId == -1) {
+                            java.util.regex.Matcher mEscrow = escrowIdPattern.matcher(ref);
+                            if (mEscrow.find()) {
+                                try {
+                                    wId = Integer.parseInt(mEscrow.group(1));
+                                } catch (Exception ignore) {
+                                }
+                            }
+                        }
+
+                        // Try Escrow Received Pattern if no ID found
+                        if (wId == -1) {
+                            java.util.regex.Matcher mEscrowRcvd = escrowRcvdPattern.matcher(ref);
+                            if (mEscrowRcvd.find()) {
+                                try {
+                                    wId = Integer.parseInt(mEscrowRcvd.group(1));
                                 } catch (Exception ignore) {
                                 }
                             }
@@ -169,13 +198,24 @@ public class TransactionsController {
                 }
 
                 // Overlay Wallet ID results (Highest Priority)
+                java.util.Map<Integer, String> walletOwnerNames = new java.util.HashMap<>();
                 if (!walletIdsToFetch.isEmpty()) {
                     java.util.Map<Integer, String> idPhotos = walletModel
                             .findProfilePhotosByWalletIds(walletIdsToFetch);
+                    walletOwnerNames = walletModel.findOwnerNamesByWalletIds(walletIdsToFetch);
+
                     for (java.util.Map.Entry<String, Integer> entry : nameToWalletIdMap.entrySet()) {
                         String url = idPhotos.get(entry.getValue());
                         if (url != null) {
                             profilePhotos.put(entry.getKey(), url); // Overwrite any name-based match
+                        }
+                    }
+
+                    // Also map resolved owner names to their photos (for escrow name resolution)
+                    for (java.util.Map.Entry<Integer, String> ownerEntry : walletOwnerNames.entrySet()) {
+                        String photoUrl = idPhotos.get(ownerEntry.getKey());
+                        if (photoUrl != null && ownerEntry.getValue() != null) {
+                            profilePhotos.put(ownerEntry.getValue(), photoUrl);
                         }
                     }
                 }
@@ -193,7 +233,8 @@ public class TransactionsController {
 
                 boolean isFrozen = wallet != null && "FROZEN".equals(wallet.getStatus());
 
-                return new TransactionData(user.getId(), transactions, contacts, badTxId, isFrozen, profilePhotos);
+                return new TransactionData(user.getId(), transactions, contacts, badTxId, isFrozen, profilePhotos,
+                        walletOwnerNames);
             }
         };
 
@@ -526,15 +567,18 @@ public class TransactionsController {
         int badTxId;
         boolean isFrozen;
         java.util.Map<String, String> profilePhotos;
+        java.util.Map<Integer, String> walletOwnerNames;
 
         public TransactionData(int uid, List<WalletTransaction> txs, List<tn.finhub.model.SavedContact> contacts,
-                int badTxId, boolean isFrozen, java.util.Map<String, String> profilePhotos) {
+                int badTxId, boolean isFrozen, java.util.Map<String, String> profilePhotos,
+                java.util.Map<Integer, String> walletOwnerNames) {
             this.userId = uid;
             this.transactions = txs;
             this.contacts = contacts;
             this.badTxId = badTxId;
             this.isFrozen = isFrozen;
             this.profilePhotos = profilePhotos;
+            this.walletOwnerNames = walletOwnerNames;
         }
     }
 
@@ -544,7 +588,7 @@ public class TransactionsController {
 
     // --- SHARED LOGIC FROM WalletController (Should be refactored eventually) ---
     private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId,
-            java.util.Map<String, String> profilePhotos) {
+            java.util.Map<String, String> profilePhotos, java.util.Map<Integer, String> walletOwnerNames) {
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -560,10 +604,31 @@ public class TransactionsController {
         }
 
         // --- Determine Type & Styles ---
-        boolean isPositive = "CREDIT".equals(tx.getType()) || "RELEASE".equals(tx.getType())
-                || "TRANSFER_RECEIVED".equals(tx.getType()) || "GENESIS".equals(tx.getType());
-        boolean isNegative = "DEBIT".equals(tx.getType()) || "TRANSFER_SENT".equals(tx.getType());
-        boolean isTransferSent = "TRANSFER_SENT".equals(tx.getType());
+        String type = tx.getType();
+        String ref = tx.getReference();
+
+        // Broader check for Escrow (Type OR Reference text)
+        boolean isEscrow = (type != null && type.startsWith("ESCROW_")) ||
+                (ref != null && ref.startsWith("Escrow")); // Removed colon to catch "Escrow Creation:"
+
+        boolean isPositive = "CREDIT".equals(type) || "RELEASE".equals(type)
+                || "TRANSFER_RECEIVED".equals(type) || "GENESIS".equals(type);
+        boolean isNegative = "DEBIT".equals(type) || "TRANSFER_SENT".equals(type);
+        boolean isTransferSent = "TRANSFER_SENT".equals(type);
+
+        // Overwrite for Escrow (Type Logic)
+        if (isEscrow) {
+            if ("ESCROW_RCVD".equals(type) || "ESCROW_REFUND".equals(type)) {
+                // Incoming money (Release to winner or Refund)
+                isPositive = true;
+                isNegative = false;
+            } else {
+                // Outgoing money (Creation/Hold or Release from sender side)
+                // HOLD, ESCROW_SENT, ESCROW_CREATE, or generic DEBIT with Escrow ref
+                isPositive = false;
+                isNegative = true;
+            }
+        }
 
         String iconClass = isPositive ? "transaction-icon-positive"
                 : (isNegative ? "transaction-icon-negative" : "transaction-icon");
@@ -576,8 +641,18 @@ public class TransactionsController {
         iconBg.setMaxSize(40, 40);
 
         javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
-        icon.setContent(getIconPath(tx.getType()));
-        icon.getStyleClass().addAll("transaction-icon", iconClass);
+        if (isEscrow) {
+            // Shield/Lock Icon
+            icon.setContent(
+                    "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z");
+            if (isPositive)
+                icon.setStyle("-fx-fill: #10B981;");
+            else
+                icon.setStyle("-fx-fill: #F59E0B;");
+        } else {
+            icon.setContent(getIconPath(tx.getType()));
+            icon.getStyleClass().addAll("transaction-icon", iconClass);
+        }
         iconBg.getChildren().add(icon);
 
         // --- Left Details (Also needed for name lookup) ---
@@ -596,9 +671,85 @@ public class TransactionsController {
             displayRef = "Unknown";
         }
 
+        // Escrow Override
+        // Escrow Override (Text & Display Logic)
+        if (isEscrow) {
+            if ("HOLD".equals(type) || "ESCROW_CREATE".equals(type)) {
+                displayRef = "Escrow On Hold";
+            } else if ("ESCROW_SENT".equals(type)) {
+                // Check if we can extract name from ref "Released to ..."
+                if (ref != null && ref.startsWith("Released to ")) {
+                    String extractedName = ref.substring("Released to ".length()).trim();
+                    if (!extractedName.isEmpty()) {
+                        // Check if extractedName is "Wallet X" and if we have a resolved name
+                        if (extractedName.startsWith("Wallet ") && walletOwnerNames != null) {
+                            try {
+                                int wId = Integer.parseInt(extractedName.substring("Wallet ".length()));
+                                if (walletOwnerNames.containsKey(wId)) {
+                                    extractedName = walletOwnerNames.get(wId);
+                                }
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
+                        displayRef = "Escrow Released to " + extractedName;
+                    } else {
+                        displayRef = "Escrow Released";
+                    }
+                } else {
+                    displayRef = "Escrow Released";
+                }
+            } else if ("ESCROW_RCVD".equals(type)) {
+                // Check if we can extract name from ref "Received from Escrow Wallet X"
+                if (ref != null && ref.startsWith("Received from Escrow Wallet ")) {
+                    String extractedName = ref.substring("Received from Escrow ".length()).trim(); // "Wallet X"
+                    if (!extractedName.isEmpty()) {
+                        // Resolve "Wallet X" to Name if possible
+                        if (extractedName.startsWith("Wallet ") && walletOwnerNames != null) {
+                            try {
+                                int wId = Integer.parseInt(extractedName.substring("Wallet ".length()));
+                                if (walletOwnerNames.containsKey(wId)) {
+                                    extractedName = walletOwnerNames.get(wId);
+                                }
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
+                        displayRef = "Escrow Received from " + extractedName;
+                    } else {
+                        displayRef = "Escrow Payment Received";
+                    }
+                } else {
+                    displayRef = "Escrow Payment Received";
+                }
+            } else if ("ESCROW_REFUND".equals(type)) {
+                displayRef = "Escrow Refunded";
+            } else {
+                // Fallback for generic types (DEBIT/CREDIT) with "Escrow:" ref
+                // "Escrow: condition" usually means Creation/Hold
+                if (isNegative)
+                    displayRef = "Escrow On Hold";
+                else if (isPositive)
+                    displayRef = "Escrow Refunded";
+                else
+                    displayRef = "Escrow Transaction";
+            }
+        }
+
+        // Logic Mapping for Escrow Sub-cases (Refined)
+        if (isEscrow && displayRef.startsWith("Escrow On Hold")) {
+            // Force Blue
+        } else if (isEscrow && displayRef.startsWith("Escrow Released")) {
+            // Force Orange/Amber (Refined text)
+        }
+
         // --- Profile Photo Override ---
         if (profilePhotos != null) {
             String lookupName = displayRef.trim();
+            // If it's an "Escrow Released to ..." string, extract the name for lookup
+            if (isEscrow && displayRef.startsWith("Escrow Released to ")) {
+                lookupName = displayRef.substring("Escrow Released to ".length()).trim();
+            } else if (isEscrow && displayRef.startsWith("Escrow Received from ")) {
+                lookupName = displayRef.substring("Escrow Received from ".length()).trim();
+            }
             if (!lookupName.isEmpty() && profilePhotos.containsKey(lookupName)) {
                 String url = profilePhotos.get(lookupName);
                 if (url != null && !url.isEmpty()) {
@@ -658,9 +809,16 @@ public class TransactionsController {
         }
 
         amountLabel.setText(prefix + " TND " + tx.getAmount());
-        amountLabel.setStyle(isPositive ? "-fx-text-fill: #10B981; -fx-font-weight: bold;"
-                : (isNegative ? "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"
-                        : "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"));
+
+        if (isEscrow && displayRef.equals("Escrow On Hold")) {
+            amountLabel.setStyle("-fx-text-fill: #3B82F6; -fx-font-weight: bold;"); // Blue
+        } else if (isEscrow && displayRef.equals("Escrow Released")) {
+            amountLabel.setStyle("-fx-text-fill: #F59E0B; -fx-font-weight: bold;"); // Orange
+        } else {
+            amountLabel.setStyle(isPositive ? "-fx-text-fill: #10B981; -fx-font-weight: bold;"
+                    : (isNegative ? "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"
+                            : "-fx-text-fill: #F59E0B; -fx-font-weight: bold;"));
+        }
 
         Label dateLabel = new Label(
                 tx.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")));

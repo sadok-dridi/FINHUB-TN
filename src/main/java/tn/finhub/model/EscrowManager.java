@@ -348,6 +348,20 @@ public class EscrowManager {
         return list;
     }
 
+    public BigDecimal getTotalActiveEscrowAmount() {
+        String sql = "SELECT SUM(amount) FROM escrow WHERE status IN ('LOCKED', 'DISPUTED')";
+        try (Statement st = getConnection().createStatement();
+                ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                BigDecimal total = rs.getBigDecimal(1);
+                return total != null ? total : BigDecimal.ZERO;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return BigDecimal.ZERO;
+    }
+
     private Escrow mapResultSetToEscrow(ResultSet rs) throws SQLException {
         Escrow e = new Escrow();
         e.setId(rs.getInt("id"));

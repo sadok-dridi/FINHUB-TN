@@ -279,6 +279,12 @@ public class WalletController {
                         .compile("\\s+(?:to|from)\\s+(\\d+)(?:$|\\s)");
                 // Pattern 2: New "Name (Wallet 123)"
                 java.util.regex.Pattern walletIdPattern = java.util.regex.Pattern.compile("\\(Wallet\\s+(\\d+)\\)");
+                // Pattern 3: Escrow "Released to Wallet 123"
+                java.util.regex.Pattern escrowIdPattern = java.util.regex.Pattern
+                        .compile("Released to Wallet\\s+(\\d+)");
+                // Pattern 4: Escrow "Received from Escrow Wallet 123"
+                java.util.regex.Pattern escrowRcvdPattern = java.util.regex.Pattern
+                        .compile("Received from Escrow Wallet\\s+(\\d+)");
 
                 for (int i = 0; i < limit; i++) {
                     WalletTransaction tx = transactions.get(i);
@@ -304,6 +310,28 @@ public class WalletController {
                             if (mOld.find()) {
                                 try {
                                     wId = Integer.parseInt(mOld.group(1));
+                                } catch (Exception ignore) {
+                                }
+                            }
+                        }
+
+                        // Try Escrow Received Pattern if no ID found
+                        if (wId == -1) {
+                            java.util.regex.Matcher mEscrowRcvd = escrowRcvdPattern.matcher(ref);
+                            if (mEscrowRcvd.find()) {
+                                try {
+                                    wId = Integer.parseInt(mEscrowRcvd.group(1));
+                                } catch (Exception ignore) {
+                                }
+                            }
+                        }
+
+                        // Try Escrow Pattern if no ID found
+                        if (wId == -1) {
+                            java.util.regex.Matcher mEscrow = escrowIdPattern.matcher(ref);
+                            if (mEscrow.find()) {
+                                try {
+                                    wId = Integer.parseInt(mEscrow.group(1));
                                 } catch (Exception ignore) {
                                 }
                             }
@@ -351,19 +379,30 @@ public class WalletController {
                 }
 
                 // Overlay Wallet ID results (Highest Priority)
+                java.util.Map<Integer, String> walletOwnerNames = new java.util.HashMap<>();
                 if (!walletIdsToFetch.isEmpty()) {
                     java.util.Map<Integer, String> idPhotos = walletModel
                             .findProfilePhotosByWalletIds(walletIdsToFetch);
+                    walletOwnerNames = walletModel.findOwnerNamesByWalletIds(walletIdsToFetch);
+
                     for (java.util.Map.Entry<String, Integer> entry : nameToWalletIdMap.entrySet()) {
                         String url = idPhotos.get(entry.getValue());
                         if (url != null) {
                             profilePhotos.put(entry.getKey(), url); // Overwrite any name-based match
                         }
                     }
+
+                    // Also map resolved owner names to their photos (for escrow name resolution)
+                    for (java.util.Map.Entry<Integer, String> ownerEntry : walletOwnerNames.entrySet()) {
+                        String photoUrl = idPhotos.get(ownerEntry.getKey());
+                        if (photoUrl != null && ownerEntry.getValue() != null) {
+                            profilePhotos.put(ownerEntry.getValue(), photoUrl);
+                        }
+                    }
                 }
 
                 return new WalletDataPacket(wallet, cards, transactions, badTxId, currentValue, totalInvested,
-                        bestAsset, maxPnlPercent, assetCount, profilePhotos);
+                        bestAsset, maxPnlPercent, assetCount, profilePhotos, walletOwnerNames);
             }
         };
 
@@ -419,7 +458,8 @@ public class WalletController {
             int limit = Math.min(data.transactions.size(), 4);
             for (int i = 0; i < limit; i++) {
                 transactionContainer.getChildren()
-                        .add(createTransactionCard(data.transactions.get(i), data.badTxId, data.profilePhotos));
+                        .add(createTransactionCard(data.transactions.get(i), data.badTxId, data.profilePhotos,
+                                data.walletOwnerNames));
             }
         }
     }
@@ -436,10 +476,11 @@ public class WalletController {
         java.math.BigDecimal maxPnlPercent;
         int assetCount;
         java.util.Map<String, String> profilePhotos;
+        java.util.Map<Integer, String> walletOwnerNames;
 
         public WalletDataPacket(Wallet w, List<VirtualCard> c, List<WalletTransaction> t, int badId,
                 java.math.BigDecimal val, java.math.BigDecimal inv, String best, java.math.BigDecimal maxPnl,
-                int count, java.util.Map<String, String> photos) {
+                int count, java.util.Map<String, String> photos, java.util.Map<Integer, String> names) {
             this.wallet = w;
             this.cards = c;
             this.transactions = t;
@@ -450,6 +491,7 @@ public class WalletController {
             this.maxPnlPercent = maxPnl;
             this.assetCount = count;
             this.profilePhotos = photos;
+            this.walletOwnerNames = names;
         }
     }
 
@@ -673,7 +715,7 @@ public class WalletController {
     }
 
     private javafx.scene.Node createTransactionCard(WalletTransaction tx, int badTxId,
-            java.util.Map<String, String> profilePhotos) {
+            java.util.Map<String, String> profilePhotos, java.util.Map<Integer, String> walletOwnerNames) {
         HBox card = new HBox(15);
         card.getStyleClass().add("transaction-item");
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -685,10 +727,32 @@ public class WalletController {
         }
 
         // --- Determine Type & Styles ---
-        boolean isPositive = "CREDIT".equals(tx.getType()) || "RELEASE".equals(tx.getType())
-                || "TRANSFER_RECEIVED".equals(tx.getType());
-        boolean isNegative = "DEBIT".equals(tx.getType()) || "TRANSFER_SENT".equals(tx.getType());
-        boolean isTransferSent = "TRANSFER_SENT".equals(tx.getType());
+        String type = tx.getType();
+        String ref = tx.getReference();
+
+        // Broader check for Escrow (Type OR Reference text)
+        boolean isEscrow = (type != null && type.startsWith("ESCROW_")) ||
+                (ref != null && ref.startsWith("Escrow")); // Removed colon to catch "Escrow Creation:"
+
+        boolean isPositive = "CREDIT".equals(type) || "RELEASE".equals(type)
+                || "TRANSFER_RECEIVED".equals(type);
+        boolean isNegative = "DEBIT".equals(type) || "TRANSFER_SENT".equals(type);
+        boolean isTransferSent = "TRANSFER_SENT".equals(type);
+
+        // Overwrite for Escrow
+        // Overwrite for Escrow (Type Logic)
+        if (isEscrow) {
+            if ("ESCROW_RCVD".equals(type) || "ESCROW_REFUND".equals(type)) {
+                // Incoming money (Release to winner or Refund)
+                isPositive = true;
+                isNegative = false;
+            } else {
+                // Outgoing money (Creation/Hold or Release from sender side)
+                // HOLD, ESCROW_SENT, ESCROW_CREATE, or generic DEBIT with Escrow ref
+                isPositive = false;
+                isNegative = true;
+            }
+        }
 
         String iconClass = isPositive ? "transaction-icon-positive"
                 : (isNegative ? "transaction-icon-negative" : "transaction-icon");
@@ -716,9 +780,80 @@ public class WalletController {
             displayRef = "Unknown";
         }
 
+        // Escrow Override
+        // Escrow Override
+        // Escrow Override (Text & Display Logic)
+        if (isEscrow) {
+            if ("HOLD".equals(type) || "ESCROW_CREATE".equals(type)) {
+                displayRef = "Escrow On Hold";
+            } else if ("ESCROW_SENT".equals(type)) {
+                // Check if we can extract name from ref "Released to ..."
+                if (ref != null && ref.startsWith("Released to ")) {
+                    String extractedName = ref.substring("Released to ".length()).trim();
+                    if (!extractedName.isEmpty()) {
+                        // Check if extractedName is "Wallet X" and if we have a resolved name
+                        if (extractedName.startsWith("Wallet ") && walletOwnerNames != null) {
+                            try {
+                                int wId = Integer.parseInt(extractedName.substring("Wallet ".length()));
+                                if (walletOwnerNames.containsKey(wId)) {
+                                    extractedName = walletOwnerNames.get(wId);
+                                }
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
+                        displayRef = "Escrow Released to " + extractedName;
+                    } else {
+                        displayRef = "Escrow Released";
+                    }
+                } else {
+                    displayRef = "Escrow Released";
+                }
+            } else if ("ESCROW_RCVD".equals(type)) {
+                // Check if we can extract name from ref "Received from Escrow Wallet X"
+                if (ref != null && ref.startsWith("Received from Escrow Wallet ")) {
+                    String extractedName = ref.substring("Received from Escrow ".length()).trim(); // "Wallet X"
+                    if (!extractedName.isEmpty()) {
+                        // Resolve "Wallet X" to Name if possible
+                        if (extractedName.startsWith("Wallet ") && walletOwnerNames != null) {
+                            try {
+                                int wId = Integer.parseInt(extractedName.substring("Wallet ".length()));
+                                if (walletOwnerNames.containsKey(wId)) {
+                                    extractedName = walletOwnerNames.get(wId);
+                                }
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
+                        displayRef = "Escrow Received from " + extractedName;
+                    } else {
+                        displayRef = "Escrow Payment Received";
+                    }
+                } else {
+                    displayRef = "Escrow Payment Received";
+                }
+            } else if ("ESCROW_REFUND".equals(type)) {
+                displayRef = "Escrow Refunded";
+            } else {
+                // Fallback for generic types (DEBIT/CREDIT) with "Escrow:" ref
+                // "Escrow: condition" usually means Creation/Hold
+                if (isNegative)
+                    displayRef = "Escrow On Hold";
+                else if (isPositive)
+                    displayRef = "Escrow Refunded";
+                else
+                    displayRef = "Escrow Transaction";
+            }
+        }
+
         boolean photoLoaded = false;
         if (profilePhotos != null) {
             String lookupName = displayRef.trim();
+            // If it's an "Escrow Released to ..." string, extract the name for lookup
+            if (isEscrow && displayRef.startsWith("Escrow Released to ")) {
+                lookupName = displayRef.substring("Escrow Released to ".length()).trim();
+            } else if (isEscrow && displayRef.startsWith("Escrow Received from ")) {
+                lookupName = displayRef.substring("Escrow Received from ".length()).trim();
+            }
+
             if (!lookupName.isEmpty() && profilePhotos.containsKey(lookupName)) {
                 String url = profilePhotos.get(lookupName);
                 if (url != null && !url.isEmpty()) {
@@ -740,8 +875,19 @@ public class WalletController {
 
         if (!photoLoaded) {
             javafx.scene.shape.SVGPath icon = new javafx.scene.shape.SVGPath();
-            icon.setContent(getIconPath(tx.getType()));
-            icon.getStyleClass().addAll("transaction-icon", iconClass); // Base class + color modifier
+            if (isEscrow) {
+                // Shield/Lock Icon
+                icon.setContent(
+                        "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z");
+                // Color tweaks for Escrow icon?
+                if (isPositive)
+                    icon.setStyle("-fx-fill: #10B981;");
+                else
+                    icon.setStyle("-fx-fill: #F59E0B;"); // Amber for deposit/lock
+            } else {
+                icon.setContent(getIconPath(tx.getType()));
+                icon.getStyleClass().addAll("transaction-icon", iconClass);
+            }
             iconBg.getChildren().add(icon);
         }
 
@@ -817,8 +963,17 @@ public class WalletController {
             styleClass = "amount-hold";
         }
 
+        // Overwrite Style for Escrow Hold (Blue)
+        if (isEscrow && displayRef.equals("Escrow On Hold")) {
+            styleClass = ""; // Clear class
+            amountLabel.setStyle("-fx-text-fill: #3B82F6; -fx-font-weight: bold;"); // Blue
+        } else if (isEscrow && displayRef.equals("Escrow Released")) {
+            styleClass = "amount-negative"; // Orange/Amber
+        }
+
         amountLabel.setText(prefix + " TND " + tx.getAmount());
-        amountLabel.getStyleClass().add(styleClass);
+        if (!styleClass.isEmpty())
+            amountLabel.getStyleClass().add(styleClass);
 
         // Date Logic
         Label dateLabel = new Label(

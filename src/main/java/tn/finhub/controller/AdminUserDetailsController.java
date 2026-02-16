@@ -181,18 +181,14 @@ public class AdminUserDetailsController {
         }
 
         // 1. Password Confirmation
-        javafx.scene.control.TextInputDialog passwordDialog = new javafx.scene.control.TextInputDialog();
-        passwordDialog.setTitle("Admin Authentication");
-        passwordDialog.setHeaderText("Security Verification Required");
-        passwordDialog.setContentText("Please enter your Admin Password to confirm deletion:");
+        String inputPassword = DialogUtil.showPasswordInput(
+                "Admin Authentication",
+                "Please enter your Admin Password to confirm deletion:");
 
-        java.util.Optional<String> result = passwordDialog.showAndWait();
-        if (result.isEmpty())
-            return; // Cancelled
-
-        String inputPassword = result.get();
-        if (inputPassword.isEmpty()) {
-            DialogUtil.showError("Error", "Password cannot be empty.");
+        if (inputPassword == null || inputPassword.isEmpty()) {
+            if (inputPassword != null) {
+                DialogUtil.showError("Error", "Password cannot be empty.");
+            }
             return;
         }
 

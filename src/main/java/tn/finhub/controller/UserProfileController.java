@@ -8,6 +8,7 @@ import javafx.scene.image.ImageView;
 import tn.finhub.model.User;
 
 import tn.finhub.util.CloudinaryService;
+import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 import tn.finhub.util.ViewUtils;
 
@@ -108,7 +109,12 @@ public class UserProfileController {
 
     private void setupComboBoxes() {
         riskBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
-        languageBox.getItems().addAll("English", "Français", "العربية");
+        // Use LanguageManager for consistency
+        languageBox.getItems().addAll(tn.finhub.util.LanguageManager.getAvailableLanguages());
+
+        // Set current language
+        String current = tn.finhub.util.LanguageManager.getInstance().getCurrentLanguageName();
+        languageBox.setValue(current);
     }
 
     private void loadUserData() {
@@ -245,7 +251,8 @@ public class UserProfileController {
     private void loadSettings() {
         // Mock Settings Loading - In a real app, this would come from a Preferences
         // service
-        languageBox.setValue("English");
+        // languageBox.setValue("English"); // REMOVED to avoid overwriting current
+        // language
         // apiKeyField.setText("..."); // Keep empty for security or load masked
     }
 
@@ -266,8 +273,10 @@ public class UserProfileController {
                 ImageCropperController cropper = loader.getController();
 
                 Stage cropperStage = new Stage();
-                cropperStage.setTitle("Crop Image");
-                cropperStage.setScene(new Scene(root));
+                cropperStage.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+                Scene cropperScene = new Scene(root);
+                cropperScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+                cropperStage.setScene(cropperScene);
                 cropperStage.initModality(Modality.WINDOW_MODAL);
                 cropperStage.initOwner(nameLabel.getScene().getWindow());
 
@@ -291,12 +300,7 @@ public class UserProfileController {
                     profileImageView.setImage(new Image(url));
 
                     // Show Success Dialog
-                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                            javafx.scene.control.Alert.AlertType.INFORMATION);
-                    alert.setTitle("Success");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Profile photo updated successfully!");
-                    alert.showAndWait();
+                    DialogUtil.showInfo("Success", "Profile photo updated successfully!");
 
                     // Sync Sidebar
                     UserDashboardController.refreshProfile();
@@ -316,13 +320,11 @@ public class UserProfileController {
     private void handleDeletePhoto() {
         if (currentUser != null && currentUser.getProfilePhotoUrl() != null) {
             // Confirmation Dialog
-            javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.CONFIRMATION);
-            confirm.setTitle("Delete Photo");
-            confirm.setHeaderText("Delete Profile Photo?");
-            confirm.setContentText("Are you sure you want to remove your profile photo?");
+            boolean confirmed = DialogUtil.showConfirmation(
+                    "Delete Photo",
+                    "Are you sure you want to remove your profile photo?");
 
-            if (confirm.showAndWait().get() == javafx.scene.control.ButtonType.OK) {
+            if (confirmed) {
                 currentUser.setProfilePhotoUrl(null);
                 userModel.updateProfile(currentUser);
                 UserSession.getInstance().setUser(currentUser);
@@ -331,12 +333,7 @@ public class UserProfileController {
                 profileImageView.setImage(null);
 
                 // Show Success Dialog
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                        javafx.scene.control.Alert.AlertType.INFORMATION);
-                alert.setTitle("Success");
-                alert.setHeaderText(null);
-                alert.setContentText("Profile photo deleted successfully.");
-                alert.showAndWait();
+                DialogUtil.showInfo("Success", "Profile photo deleted successfully.");
 
                 // Sync Sidebar
                 UserDashboardController.refreshProfile();
@@ -443,10 +440,57 @@ public class UserProfileController {
 
     @FXML
     private void handleSaveSettings() {
-        // Placeholder for future implementation
-        String lang = languageBox.getValue();
-        showStatus("Settings saved: " + lang, false);
-        // In real app, save to UserPreferences or Config file
+        String selectedLanguage = languageBox.getValue();
+        if (selectedLanguage != null) {
+            String currentLang = tn.finhub.util.LanguageManager.getInstance().getCurrentLanguageName();
+
+            if (!selectedLanguage.equals(currentLang)) {
+                // Change Language
+                if (selectedLanguage.equals("Français")) {
+                    tn.finhub.util.LanguageManager.getInstance().setLanguage(tn.finhub.util.LanguageManager.FRENCH);
+                } else {
+                    tn.finhub.util.LanguageManager.getInstance().setLanguage(tn.finhub.util.LanguageManager.ENGLISH);
+                }
+
+                // Reload View to apply changes
+                try {
+                    // Get the MAIN content area (where UserDashboard lives)
+                    javafx.scene.layout.StackPane mainContent = (javafx.scene.layout.StackPane) nameLabel.getScene()
+                            .lookup("#contentArea");
+
+                    if (mainContent != null) {
+                        // Load the entire UserDashboard (this brings back the Sidebar with new
+                        // language)
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/user_dashboard.fxml"));
+                        loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+                        Parent dashboardRoot = loader.load();
+
+                        // Navigate to Profile within the new Dashboard
+                        tn.finhub.controller.UserDashboardController dashboardCtrl = loader.getController();
+                        dashboardCtrl.handleSettings();
+
+                        // Replace content
+                        mainContent.getChildren().setAll(dashboardRoot);
+
+                        // Fade In Effect
+                        dashboardRoot.setOpacity(0);
+                        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(
+                                javafx.util.Duration.millis(300), dashboardRoot);
+                        fade.setFromValue(0);
+                        fade.setToValue(1);
+                        fade.play();
+                    }
+
+                    showStatus("Language changed to " + selectedLanguage, false);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showStatus("Error reloading view: " + e.getMessage(), true);
+                }
+            } else {
+                showStatus("Settings saved (No changes)", false);
+            }
+        }
     }
 
     private void showStatus(String message, boolean isError) {

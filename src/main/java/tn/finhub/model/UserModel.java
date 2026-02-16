@@ -117,8 +117,8 @@ public class UserModel {
                     email = VALUES(email),
                     role = VALUES(role),
                     full_name = VALUES(full_name),
-                    phone_number = VALUES(phone_number),
-                    profile_photo_url = VALUES(profile_photo_url)
+                    phone_number = COALESCE(VALUES(phone_number), phone_number),
+                    profile_photo_url = COALESCE(VALUES(profile_photo_url), profile_photo_url)
                 """;
 
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
@@ -236,6 +236,19 @@ public class UserModel {
                 savedContactModel.deleteByContactEmail(user.getEmail()); // This user saved IN others' lists
             }
 
+            // Trusted Contacts (Escrow contacts)
+            deleteFromTable("trusted_contacts", "user_id", id);
+            deleteFromTable("trusted_contacts", "contact_id", id);
+
+            // Financial Profile
+            deleteFromTable("financial_profiles_local", "user_id", id);
+
+            // KYC Requests
+            deleteFromTable("kyc_requests", "user_id", id);
+
+            // System Alerts
+            deleteFromTable("system_alerts", "user_id", id);
+
             MarketModel marketModel = new MarketModel();
             marketModel.deletePortfolioByUserId(id);
             marketModel.deleteTradesByUserId(id);
@@ -250,6 +263,16 @@ public class UserModel {
 
         // 5. Delete User Local
         delete(id);
+    }
+
+    private void deleteFromTable(String table, String column, int value) {
+        String sql = "DELETE FROM " + table + " WHERE " + column + " = ?";
+        try (java.sql.PreparedStatement ps = getConnection().prepareStatement(sql)) {
+            ps.setInt(1, value);
+            ps.executeUpdate();
+        } catch (java.sql.SQLException e) {
+            logger.warn("Failed to delete from {} where {} = {}", table, column, value, e);
+        }
     }
 
     private void deleteUserOnServer(int userId) {
