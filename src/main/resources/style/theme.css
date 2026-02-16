@@ -709,27 +709,25 @@
 /* --- Wallet Gradients --- */
 /* --- Wallet Gradients (Refined) --- */
 .card-balance {
-    -fx-background-color: -color-card-bg;
+    -fx-background-color: rgba(30, 27, 46, 0.85);
     -fx-background-radius: 16px;
     -fx-border-color: #10B981;
     -fx-border-width: 2px;
     -fx-border-radius: 16px;
-    -fx-effect: dropshadow(three-pass-box, rgba(16, 185, 129, 0.5), 15, 0, 0, 0);
     -fx-padding: 30;
 }
 
 .card-escrow {
-    -fx-background-color: -color-card-bg;
+    -fx-background-color: rgba(30, 27, 46, 0.85);
     -fx-background-radius: 16px;
     -fx-border-color: #F59E0B;
     -fx-border-width: 2px;
     -fx-border-radius: 16px;
-    -fx-effect: dropshadow(three-pass-box, rgba(245, 158, 11, 0.5), 15, 0, 0, 0);
     -fx-padding: 30;
 }
 
 .card-total {
-    -fx-background-color: -color-card-bg;
+    -fx-background-color: rgba(30, 27, 46, 0.85);
     -fx-background-radius: 16px;
     -fx-border-color: #6366F1;
     -fx-border-width: 2px;
@@ -745,7 +743,7 @@
 /* --- Transaction List --- */
 /* --- Transaction List --- */
 .transaction-item {
-    -fx-background-color: -color-card-bg;
+    -fx-background-color: rgba(30, 27, 46, 0.75);
     -fx-background-radius: 12px;
     -fx-padding: 12;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 5, 0, 0, 2);

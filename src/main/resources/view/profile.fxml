@@ -12,7 +12,7 @@
             <Label text="%profile.title" styleClass="header-text"/>
             
             <!-- Personal Info Section -->
-            <VBox styleClass="card" spacing="15">
+            <VBox styleClass="card" spacing="15" style="-fx-background-color: rgba(30, 27, 46, 0.75);">
                 <HBox alignment="CENTER_LEFT" spacing="20">
                     <!-- Profile Photo Area -->
                     <VBox alignment="CENTER" spacing="10">
@@ -122,7 +122,7 @@
 
 
             <!-- Financial Profile Section -->
-            <VBox styleClass="card" spacing="15">
+            <VBox styleClass="card" spacing="15" style="-fx-background-color: rgba(30, 27, 46, 0.75);">
                 <HBox alignment="CENTER_LEFT">
                     <Label text="%profile.financial.profile" styleClass="header-text" style="-fx-font-size: 18px;"/>
                     <Region HBox.hgrow="ALWAYS"/>
@@ -157,7 +157,7 @@
             </VBox>
 
             <!-- Application Settings Section -->
-            <VBox styleClass="card" spacing="15">
+            <VBox styleClass="card" spacing="15" style="-fx-background-color: rgba(30, 27, 46, 0.75);">
                 <HBox alignment="CENTER_LEFT">
                     <Label text="%profile.settings" styleClass="header-text" style="-fx-font-size: 18px;"/>
                     <Region HBox.hgrow="ALWAYS"/>

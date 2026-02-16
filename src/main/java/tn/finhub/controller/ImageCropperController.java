@@ -28,7 +28,6 @@ public class ImageCropperController {
     @FXML
     private StackPane imageContainer;
 
-    private File sourceFile;
     private File croppedFile;
     private Stage stage;
 
@@ -65,7 +64,6 @@ public class ImageCropperController {
     }
 
     public void setImage(File file) {
-        this.sourceFile = file;
         Image image = new Image(file.toURI().toString());
         imageView.setImage(image);
 

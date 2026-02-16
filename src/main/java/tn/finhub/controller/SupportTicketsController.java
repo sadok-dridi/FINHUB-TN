@@ -86,7 +86,7 @@ public class SupportTicketsController {
     private VBox createTicketCard(SupportTicket ticket) {
         VBox card = new VBox(8);
         card.getStyleClass().add("card");
-        card.setStyle("-fx-padding: 20; -fx-cursor: hand;");
+        card.setStyle("-fx-padding: 20; -fx-cursor: hand; -fx-background-color: rgba(30, 27, 46, 0.75);");
 
         // Header: Subject + Status + Spacer + Delete Button
         HBox header = new HBox(10);

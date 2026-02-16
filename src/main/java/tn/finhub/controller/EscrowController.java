@@ -252,11 +252,14 @@ public class EscrowController {
             addContactBtn.setManaged(isContacts);
         }
 
-        switch (currentFilter) {
-            case CONTACTS -> addActiveClass(btnContacts);
-            case ACTIVE -> addActiveClass(btnActive);
-            case HISTORY -> addActiveClass(btnHistory);
-            case DISPUTES -> addActiveClass(btnDisputes);
+        if (currentFilter == FilterType.CONTACTS) {
+            addActiveClass(btnContacts);
+        } else if (currentFilter == FilterType.ACTIVE) {
+            addActiveClass(btnActive);
+        } else if (currentFilter == FilterType.HISTORY) {
+            addActiveClass(btnHistory);
+        } else if (currentFilter == FilterType.DISPUTES) {
+            addActiveClass(btnDisputes);
         }
     }
 
@@ -286,17 +289,17 @@ public class EscrowController {
         card.setMaxWidth(340);
         card.setPadding(new javafx.geometry.Insets(16, 18, 16, 18));
         card.setStyle(
-                "-fx-background-color: -color-card-bg; -fx-background-radius: 14; "
+                "-fx-background-color: rgba(30, 27, 46, 0.75); -fx-background-radius: 14; "
                         + "-fx-border-color: rgba(139, 92, 246, 0.15); -fx-border-radius: 14; -fx-border-width: 1; "
                         + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 10, 0, 0, 3); -fx-cursor: hand;");
 
         // Hover effect
         card.setOnMouseEntered(ev -> card.setStyle(
-                "-fx-background-color: -color-card-bg; -fx-background-radius: 14; "
+                "-fx-background-color: rgba(30, 27, 46, 0.75); -fx-background-radius: 14; "
                         + "-fx-border-color: rgba(139, 92, 246, 0.45); -fx-border-radius: 14; -fx-border-width: 1; "
                         + "-fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.3), 14, 0, 0, 3); -fx-cursor: hand;"));
         card.setOnMouseExited(ev -> card.setStyle(
-                "-fx-background-color: -color-card-bg; -fx-background-radius: 14; "
+                "-fx-background-color: rgba(30, 27, 46, 0.75); -fx-background-radius: 14; "
                         + "-fx-border-color: rgba(139, 92, 246, 0.15); -fx-border-radius: 14; -fx-border-width: 1; "
                         + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 10, 0, 0, 3); -fx-cursor: hand;"));
 
@@ -758,7 +761,7 @@ public class EscrowController {
         card.setSpacing(20);
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         card.setStyle(
-                "-fx-background-color: -color-card-bg; -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 0);");
+                "-fx-background-color: rgba(30, 27, 46, 0.75); -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 0);");
 
         // Icon / Type Indicator
         javafx.scene.layout.StackPane iconPane = new javafx.scene.layout.StackPane();
@@ -823,7 +826,7 @@ public class EscrowController {
         card.setSpacing(10);
         card.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
         card.setStyle(
-                "-fx-background-color: -color-card-bg; -fx-background-radius: 8; -fx-padding: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 0); -fx-cursor: hand;");
+                "-fx-background-color: rgba(30, 27, 46, 0.75); -fx-background-radius: 8; -fx-padding: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 3, 0, 0, 0); -fx-cursor: hand;");
 
         // Smaller Icon
         javafx.scene.layout.StackPane iconPane = new javafx.scene.layout.StackPane();

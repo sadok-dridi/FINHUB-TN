@@ -8,7 +8,7 @@
            fx:controller="tn.finhub.controller.LoginController"
            style="-fx-background-color: transparent;">
 
-    <VBox alignment="CENTER" spacing="20" maxWidth="400" maxHeight="500" styleClass="card">
+    <VBox alignment="CENTER" spacing="20" maxWidth="400" maxHeight="500" styleClass="card" style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 16;">
         <padding>
             <Insets top="40" right="40" bottom="40" left="40"/>
         </padding>

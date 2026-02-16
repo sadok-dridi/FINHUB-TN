@@ -1059,6 +1059,7 @@ public class WalletController {
         node.setMinHeight(220);
         node.setMaxWidth(Double.MAX_VALUE); // Allow growing to fill width
         node.getStyleClass().add("card-total"); // Use consistent theme style
+        node.setStyle("-fx-background-color: rgba(30, 27, 46, 0.85);");
 
         // Header
         HBox header = new HBox();

@@ -76,7 +76,8 @@ public class SupportAlertsController {
         }
 
         // Apply Left Border to ALL cards for consistent "Warning Card" look
-        card.setStyle("-fx-border-color: " + borderColor + "; -fx-border-width: 0 0 0 4; -fx-padding: 15;");
+        card.setStyle("-fx-border-color: " + borderColor
+                + "; -fx-border-width: 0 0 0 4; -fx-padding: 15; -fx-background-color: rgba(30, 27, 46, 0.75);");
 
         HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);

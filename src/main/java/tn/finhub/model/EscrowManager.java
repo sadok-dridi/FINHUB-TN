@@ -2,6 +2,7 @@ package tn.finhub.model;
 
 import tn.finhub.util.DBConnection;
 import tn.finhub.util.TokenGenerator;
+import tn.finhub.util.DatabaseFixer;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -15,6 +16,11 @@ public class EscrowManager {
     private final UserModel userModel = new UserModel();
     private final BlockchainManager blockchainManager = new BlockchainManager();
     private final SupportModel supportModel = new SupportModel();
+
+    public EscrowManager() {
+        // Temporary fix for schema
+        DatabaseFixer.fixEscrowTable();
+    }
 
     private Connection getConnection() {
         return DBConnection.getInstance();
@@ -46,18 +52,21 @@ public class EscrowManager {
         String conditionSummary = condition.length() > 30 ? condition.substring(0, 30) + "..." : condition;
         walletModel.hold(senderWalletId, amount, "Escrow: " + conditionSummary);
 
-        // 2. Generate Secret
+        // 2. Generate Secret & QR Code
         String secretCode = null;
+        String qrCodeImage = null;
         if ("QR_CODE".equals(type)) {
             // Simple random string
             secretCode = TokenGenerator.generateToken().substring(0, 10).toUpperCase();
+            // Generate QR Code
+            qrCodeImage = tn.finhub.util.QRCodeGenerator.generateQRCodeImage(secretCode, 300, 300);
         }
 
         // 3. Insert Escrow
         String sql = """
                     INSERT INTO escrow
-                    (sender_wallet_id, receiver_wallet_id, amount, condition_text, escrow_type, secret_code, status, expiry_date)
-                    VALUES (?, ?, ?, ?, ?, ?, 'LOCKED', ?)
+                    (sender_wallet_id, receiver_wallet_id, amount, condition_text, escrow_type, secret_code, qr_code_image, status, expiry_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'LOCKED', ?)
                 """;
 
         int escrowId = -1;
@@ -68,7 +77,8 @@ public class EscrowManager {
             ps.setString(4, condition);
             ps.setString(5, type);
             ps.setString(6, secretCode); // Can be null if ADMIN
-            ps.setTimestamp(7, Timestamp.valueOf(LocalDateTime.now().plusDays(7))); // 7 days expiry
+            ps.setString(7, qrCodeImage);
+            ps.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now().plusDays(7))); // 7 days expiry
 
             ps.executeUpdate();
 
@@ -371,6 +381,7 @@ public class EscrowManager {
         e.setConditionText(rs.getString("condition_text"));
         e.setEscrowType(rs.getString("escrow_type"));
         e.setSecretCode(rs.getString("secret_code"));
+        e.setQrCodeImage(rs.getString("qr_code_image"));
         e.setStatus(rs.getString("status"));
         if (rs.getTimestamp("expiry_date") != null)
             e.setExpiryDate(rs.getTimestamp("expiry_date").toLocalDateTime());
