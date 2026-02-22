@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.geometry.Insets?>
+
+<HBox xmlns:fx="http://javafx.com/fxml" 
+      alignment="CENTER_LEFT" spacing="20"
+      style="-fx-background-color: rgba(30, 27, 46, 0.75); -fx-background-radius: 12; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 0); -fx-cursor: hand;">
+
+    <!-- Icon -->
+    <StackPane prefWidth="50" prefHeight="50">
+        <Circle radius="25" fill="#eef2ff"/>
+        <!-- Shopping Bag Icon -->
+        <SVGPath content="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z" 
+                 style="-fx-fill: -color-primary;" scaleX="1.2" scaleY="1.2"/>
+    </StackPane>
+
+    <!-- Details -->
+    <VBox alignment="CENTER_LEFT" spacing="5">
+        <Label fx:id="merchantLabel" text="Merchant Name" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary; -fx-font-size: 16px;"/>
+        <Label fx:id="dateLabel" text="YYYY-MM-DD HH:mm" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 13px;"/>
+    </VBox>
+
+    <Region HBox.hgrow="ALWAYS"/>
+
+    <!-- Amount & Status -->
+    <HBox alignment="CENTER_RIGHT" spacing="15">
+        <Label fx:id="amountLabel" text="0.00 TND" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary; -fx-font-size: 18px;"/>
+        
+        <Label text="EXPENSE" style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-text-fill: -color-error; -fx-background-radius: 6; -fx-padding: 5 10; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+    </HBox>
+
+</HBox>

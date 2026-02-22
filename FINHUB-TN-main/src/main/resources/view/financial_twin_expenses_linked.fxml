@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" 
+      spacing="20" VBox.vgrow="ALWAYS"
+      style="-fx-padding: 0 0 20 0;"
+      minHeight="400">
+
+    <!-- Header Stats -->
+    <HBox spacing="20" style="-fx-padding: 0 10;">
+         <VBox styleClass="card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="5" 
+               style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-background-radius: 16px; -fx-padding: 30; -fx-border-color: #8B5CF6; -fx-border-width: 2px; -fx-border-radius: 16px; -fx-min-height: 120;">
+            <Label text="Total Expenses" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 14px;"/>
+            <Label fx:id="totalSpentLabel" text="0.00 TND" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.4), 10, 0, 0, 0);"/>
+        </VBox>
+        <VBox styleClass="card" HBox.hgrow="ALWAYS" alignment="CENTER_LEFT" spacing="5" 
+               style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-background-radius: 16px; -fx-padding: 30; -fx-border-color: #D946EF; -fx-border-width: 2px; -fx-border-radius: 16px; -fx-min-height: 120;">
+            <Label text="Recent Activity" style="-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 14px;"/>
+            <Label text="Last 30 Days" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white; -fx-effect: dropshadow(gaussian, rgba(217, 70, 239, 0.4), 10, 0, 0, 0);"/>
+        </VBox>
+    </HBox>
+
+    <Label text="Recent Scans" styleClass="section-label" style="-fx-padding: 0 10;"/>
+
+    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-border-width: 0;">
+        <VBox fx:id="expensesContainer" spacing="15" style="-fx-padding: 10;" minHeight="100">
+            <!-- Expense Cards will be added here dynamically -->
+        </VBox>
+    </ScrollPane>
+
+</VBox>
