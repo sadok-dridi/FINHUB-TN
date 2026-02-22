@@ -189,7 +189,7 @@ public class WalletModel {
 
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
                         "ESCROW_REFUND" ->
                     sumOthers = sumOthers.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> sumOthers = sumOthers.subtract(amt);
@@ -256,7 +256,7 @@ public class WalletModel {
         for (WalletTransaction tx : transactions) {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
                         "ESCROW_REFUND" ->
                     newBalance = newBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> newBalance = newBalance.subtract(amt);
@@ -640,7 +640,8 @@ public class WalletModel {
                 for (WalletTransaction t : txs) {
                     BigDecimal amt = t.getAmount();
                     switch (t.getType()) {
-                        case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                        case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD",
+                                "ESCROW_FEE",
                                 "ESCROW_REFUND" ->
                             debugCalcBalance = debugCalcBalance.add(amt);
                         case "DEBIT", "HOLD", "TRANSFER_SENT" -> debugCalcBalance = debugCalcBalance.subtract(amt);
@@ -665,7 +666,7 @@ public class WalletModel {
         for (WalletTransaction tx : txs) {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
                         "ESCROW_REFUND" ->
                     calcBalance = calcBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> calcBalance = calcBalance.subtract(amt);

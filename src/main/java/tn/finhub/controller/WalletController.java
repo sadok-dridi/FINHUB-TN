@@ -734,7 +734,7 @@ public class WalletController {
         boolean isEscrow = (type != null && type.startsWith("ESCROW_")) ||
                 (ref != null && ref.startsWith("Escrow")); // Removed colon to catch "Escrow Creation:"
 
-        boolean isPositive = "CREDIT".equals(type) || "RELEASE".equals(type)
+        boolean isPositive = "CREDIT".equals(type) || "DEPOSIT".equals(type) || "RELEASE".equals(type)
                 || "TRANSFER_RECEIVED".equals(type);
         boolean isNegative = "DEBIT".equals(type) || "TRANSFER_SENT".equals(type);
         boolean isTransferSent = "TRANSFER_SENT".equals(type);
@@ -1041,6 +1041,9 @@ public class WalletController {
 
     private String getIconPath(String type) {
         return switch (type) {
+            // Bank Icon for deposits
+            case "DEPOSIT" ->
+                "M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3zm-4.5-9L2 6v2h19V6l-9.5-5z";
             // Plus Icon for incoming
             case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS" -> "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z";
             // Minus Icon for outgoing

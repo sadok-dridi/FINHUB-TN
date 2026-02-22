@@ -18,11 +18,6 @@ public class DBConnection {
     private static final String USER_HOSTED = dotenv.get("DB_HOSTED_USER");
     private static final String PASSWORD_HOSTED = dotenv.get("DB_HOSTED_PASSWORD");
 
-    // Local Credentials (Default)
-    private static final String URL_LOCAL = dotenv.get("DB_LOCAL_URL");
-    private static final String USER_LOCAL = dotenv.get("DB_LOCAL_USER");
-    private static final String PASSWORD_LOCAL = dotenv.get("DB_LOCAL_PASSWORD");
-
     private DBConnection() {
     }
 
@@ -48,15 +43,9 @@ public class DBConnection {
                     }
                 }
 
-                // FORCE HOSTED MODE
-                String mode = "Hosted";
-                String url = URL_HOSTED;
-                String user = USER_HOSTED;
-                String password = PASSWORD_HOSTED;
-                logger.info("Connecting to HOSTED database (Enforced)...");
-
-                instance = DriverManager.getConnection(url, user, password);
-                logger.info("Database connection established ({})", mode);
+                logger.info("Connecting to HOSTED database...");
+                instance = DriverManager.getConnection(URL_HOSTED, USER_HOSTED, PASSWORD_HOSTED);
+                logger.info("Database connection established (Hosted)");
             }
         } catch (SQLException e) {
             logger.error("Database connection failed", e);
@@ -64,22 +53,8 @@ public class DBConnection {
         return instance;
     }
 
-    public static Connection getLocalConnection() {
-        try {
-            return DriverManager.getConnection(URL_LOCAL, USER_LOCAL, PASSWORD_LOCAL);
-        } catch (SQLException e) {
-            logger.error("Failed to connect to LOCAL DB", e);
-            return null;
-        }
-    }
-
     public static Connection getHostedConnection() {
-        try {
-            return DriverManager.getConnection(URL_HOSTED, USER_HOSTED, PASSWORD_HOSTED);
-        } catch (SQLException e) {
-            logger.error("Failed to connect to HOSTED DB", e);
-            throw new RuntimeException("Hosted DB Connection failed", e);
-        }
+        return getInstance();
     }
 
     public static void resetConnection() {
