@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.finhub.controller.EscrowDetailsController"
+      spacing="20" styleClass="escrow-dialog"
+      prefWidth="450" alignment="TOP_CENTER">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <!-- Header -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label fx:id="escrowIdLabel" text="Escrow #..." style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Label fx:id="statusLabel" text="STATUS" />
+    </HBox>
+
+    <!-- Amount -->
+    <VBox spacing="5" alignment="CENTER">
+        <Label text="%escrow.details.locked.amount" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px;"/>
+        <Label fx:id="amountLabel" text="0.000 TND" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+    </VBox>
+
+    <!-- Condition -->
+    <VBox spacing="8">
+        <Label text="%escrow.details.condition" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <TextArea fx:id="conditionArea" editable="false" wrapText="true" prefRowCount="3"
+                  styleClass="text-area-modern"/>
+    </VBox>
+
+    <!-- SENDER VIEW: QR Code -->
+    <VBox fx:id="senderSection" spacing="15" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-background-radius: 12; -fx-padding: 15;">
+        <Label text="%escrow.details.scan" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <ImageView fx:id="qrCodeImageView" fitWidth="150" fitHeight="150" preserveRatio="true"/>
+        <Label fx:id="secretCodeLabel" text="Secret Code: ..." style="-fx-font-family: 'Monospaced'; -fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
+        <Label text="%escrow.details.show.qr" wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+        
+        <HBox spacing="10" alignment="CENTER">
+             <Button text="Release Funds" onAction="#handleSenderRelease" styleClass="button-success" />
+             <Button fx:id="refundButton" text="Claim Refund" onAction="#handleSenderRefund" styleClass="button-danger" visible="false" managed="false"/>
+        </HBox>
+    </VBox>
+
+    <!-- RECEIVER VIEW: Claim Input -->
+    <VBox fx:id="receiverSection" spacing="15" alignment="CENTER" style="-fx-background-color: -color-bg-subtle; -fx-background-radius: 12; -fx-padding: 15;">
+        <Label text="%escrow.details.claim" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        <Label text="%escrow.details.enter.code" wrapText="true" textAlignment="CENTER" style="-fx-text-fill: -color-text-muted; -fx-font-size: 12px;"/>
+        
+        <TextField fx:id="codeInputField" promptText="%escrow.details.code.prompt" styleClass="text-field-modern"/>
+        <Button fx:id="claimButton" text="%escrow.details.claim.button" onAction="#handleClaim"
+                styleClass="button-primary" maxWidth="Infinity"/>
+    </VBox>
+
+    <!-- Footer Actions -->
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="%common.close" onAction="#handleClose" styleClass="button-outlined" prefWidth="100"/>
+        <Button fx:id="disputeButton" text="%escrow.details.dispute" onAction="#handleDispute"
+                style="-fx-background-color: transparent; -fx-text-fill: #dc2626; -fx-border-color: #dc2626; -fx-border-radius: 6;"
+                prefWidth="120"/>
+    </HBox>
+
+    <Label fx:id="errorLabel" visible="false" wrapText="true" style="-fx-text-fill: #dc2626;"/>
+
+</VBox>
