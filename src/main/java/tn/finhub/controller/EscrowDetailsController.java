@@ -100,7 +100,7 @@ public class EscrowDetailsController {
                 secretCodeLabel.setText("Secret Code: " + currentEscrow.getSecretCode());
 
                 if ("QR_CODE".equals(currentEscrow.getEscrowType())) {
-                    String qrData = "https://escrowfinhub.work.gd/escrow/claim_ui?id=" + currentEscrow.getId()
+                    String qrData = "https://escrow.finhub.tn/escrow/claim_ui?id=" + currentEscrow.getId()
                             + "&secret=" + currentEscrow.getSecretCode();
                     loadQrCode(qrData);
                     startPolling(); // Start listening for remote release

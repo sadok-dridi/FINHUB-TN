@@ -76,7 +76,7 @@ public class DepositController {
         BigDecimal oldBalance = currentWallet.getBalance();
 
         // Build the URL for the Python backend page
-        String url = String.format("https://escrowfinhub.work.gd/plaid/link_page?user_id=%d&wallet_id=%d&amount=%s",
+        String url = String.format("https://escrow.finhub.tn/plaid/link_page?user_id=%d&wallet_id=%d&amount=%s",
                 userId, walletId, amountText);
 
         try {
