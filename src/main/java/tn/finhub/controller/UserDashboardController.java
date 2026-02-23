@@ -130,7 +130,7 @@ public class UserDashboardController {
     }
 
     @FXML
-    private void handleSettings() {
+    public void handleSettings() {
         tn.finhub.util.ViewUtils.loadContent(dashboardContent, "/view/profile.fxml");
         setActiveButton(btnSettings);
     }
@@ -340,7 +340,54 @@ public class UserDashboardController {
 
     @FXML
     private void handleLogout() {
-        tn.finhub.util.UserSession.getInstance().cleanUserSession();
-        tn.finhub.util.ViewUtils.setView(sidebar, "/view/login.fxml");
+        // Build confirmation dialog
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        if (sidebar.getScene() != null)
+            dialog.initOwner(sidebar.getScene().getWindow());
+
+        javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(20);
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+        root.setPadding(new javafx.geometry.Insets(30));
+        root.setPrefWidth(340);
+        root.setStyle("-fx-background-color: rgba(30, 20, 60, 0.95); -fx-background-radius: 16; "
+                + "-fx-border-color: rgba(139, 92, 246, 0.3); -fx-border-radius: 16; -fx-border-width: 1; "
+                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 20, 0, 0, 5);");
+
+        javafx.scene.control.Label icon = new javafx.scene.control.Label("🚪");
+        icon.setStyle("-fx-font-size: 36px;");
+
+        javafx.scene.control.Label title = new javafx.scene.control.Label("Log Out");
+        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;");
+
+        javafx.scene.control.Label msg = new javafx.scene.control.Label("Are you sure you want to log out?");
+        msg.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 14px;");
+        msg.setWrapText(true);
+        msg.setAlignment(javafx.geometry.Pos.CENTER);
+
+        javafx.scene.control.Button cancelBtn = new javafx.scene.control.Button("Cancel");
+        cancelBtn.setStyle("-fx-background-color: rgba(255,255,255,0.1); -fx-text-fill: rgba(255,255,255,0.8); "
+                + "-fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 10 28;");
+        cancelBtn.setOnAction(e -> dialog.close());
+
+        javafx.scene.control.Button logoutBtn = new javafx.scene.control.Button("Log Out");
+        logoutBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; "
+                + "-fx-font-size: 13px; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 10 28;");
+        logoutBtn.setOnAction(e -> {
+            dialog.close();
+            tn.finhub.util.UserSession.getInstance().cleanUserSession();
+            tn.finhub.util.ViewUtils.setView(sidebar, "/view/login.fxml");
+        });
+
+        javafx.scene.layout.HBox buttons = new javafx.scene.layout.HBox(12, cancelBtn, logoutBtn);
+        buttons.setAlignment(javafx.geometry.Pos.CENTER);
+
+        root.getChildren().addAll(icon, title, msg, buttons);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 }

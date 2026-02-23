@@ -60,6 +60,7 @@
                         <HBox spacing="15" alignment="CENTER_LEFT">
                              <Button text="%admin.user.view.portfolio" styleClass="button-primary" onAction="#handleViewPortfolio" style="-fx-background-color: -color-primary; -fx-text-fill: white;"/>
                              <Button fx:id="freezeBtn" text="%admin.user.freeze.wallet" styleClass="button-warning" onAction="#handleFreezeWallet"/>
+                             <Button text="Export PDF" styleClass="button-back" onAction="#handleExportPdf"/>
                         </HBox>
 
 

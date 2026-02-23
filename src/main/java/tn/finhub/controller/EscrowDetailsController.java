@@ -7,6 +7,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.finhub.model.*;
+import tn.finhub.util.DialogUtil;
 import tn.finhub.util.UserSession;
 
 public class EscrowDetailsController {
@@ -29,6 +30,10 @@ public class EscrowDetailsController {
     private ImageView qrCodeImageView;
     @FXML
     private Label secretCodeLabel;
+    @FXML
+    private Label scanToReleaseLabel;
+    @FXML
+    private Label showQrLabel;
 
     // Receiver View (Code Input)
     @FXML
@@ -100,8 +105,15 @@ public class EscrowDetailsController {
                     loadQrCode(qrData);
                     startPolling(); // Start listening for remote release
                 } else {
+                    // Admin Approval — hide all QR-related elements
                     qrCodeImageView.setVisible(false);
-                    secretCodeLabel.setText("Waiting for Admin Approval");
+                    qrCodeImageView.setManaged(false);
+                    scanToReleaseLabel.setVisible(false);
+                    scanToReleaseLabel.setManaged(false);
+                    showQrLabel.setVisible(false);
+                    showQrLabel.setManaged(false);
+                    secretCodeLabel.setText("\u23F3 Waiting for Admin Approval");
+                    secretCodeLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #a78bfa;");
                 }
 
                 // Show Refund Button if Expired
@@ -227,10 +239,6 @@ public class EscrowDetailsController {
     }
 
     private void showInfo(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        DialogUtil.showInfo(title, content);
     }
 }

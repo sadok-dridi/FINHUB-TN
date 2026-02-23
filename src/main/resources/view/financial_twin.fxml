@@ -193,5 +193,10 @@
                     </HBox>
                 </Tab>
 
+                <!-- TAB 3: Expense Tracker (New) -->
+                <Tab text="Expense Tracker">
+                     <fx:include source="financial_twin_expenses.fxml"/>
+                </Tab>
+
             </TabPane>
 </VBox>

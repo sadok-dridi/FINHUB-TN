@@ -189,7 +189,7 @@ public class WalletModel {
 
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
                         "ESCROW_REFUND" ->
                     sumOthers = sumOthers.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> sumOthers = sumOthers.subtract(amt);
@@ -256,7 +256,7 @@ public class WalletModel {
         for (WalletTransaction tx : transactions) {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
                         "ESCROW_REFUND" ->
                     newBalance = newBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> newBalance = newBalance.subtract(amt);
@@ -640,7 +640,8 @@ public class WalletModel {
                 for (WalletTransaction t : txs) {
                     BigDecimal amt = t.getAmount();
                     switch (t.getType()) {
-                        case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                        case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD",
+                                "ESCROW_FEE",
                                 "ESCROW_REFUND" ->
                             debugCalcBalance = debugCalcBalance.add(amt);
                         case "DEBIT", "HOLD", "TRANSFER_SENT" -> debugCalcBalance = debugCalcBalance.subtract(amt);
@@ -665,7 +666,7 @@ public class WalletModel {
         for (WalletTransaction tx : txs) {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
                         "ESCROW_REFUND" ->
                     calcBalance = calcBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> calcBalance = calcBalance.subtract(amt);
@@ -762,7 +763,7 @@ public class WalletModel {
 
             // 2. Credit Receiver Main Balance
             updateBalanceInTx(receiverId, netAmount, conn);
-            recordTransaction(receiverId, "ESCROW_RCVD", netAmount, "Received from Escrow");
+            recordTransaction(receiverId, "ESCROW_RCVD", netAmount, "Received from Escrow Wallet " + senderId);
 
             // 3. Credit Admin Fee (if fee > 0)
             if (fee.compareTo(BigDecimal.ZERO) > 0) {
@@ -851,5 +852,37 @@ public class WalletModel {
             e.printStackTrace();
         }
         return photoMap;
+    }
+
+    public java.util.Map<Integer, String> findOwnerNamesByWalletIds(java.util.Set<Integer> walletIds) {
+        java.util.Map<Integer, String> nameMap = new java.util.HashMap<>();
+        if (walletIds == null || walletIds.isEmpty()) {
+            return nameMap;
+        }
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT w.id as wallet_id, u.full_name FROM wallets w JOIN users_local u ON w.user_id = u.user_id WHERE w.id IN (");
+        for (int i = 0; i < walletIds.size(); i++) {
+            sql.append(i == 0 ? "?" : ", ?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement ps = getConnection().prepareStatement(sql.toString())) {
+            int index = 1;
+            for (Integer id : walletIds) {
+                ps.setInt(index++, id);
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int wId = rs.getInt("wallet_id");
+                String fullName = rs.getString("full_name");
+                if (fullName != null && !fullName.isEmpty()) {
+                    nameMap.put(wId, fullName);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return nameMap;
     }
 }

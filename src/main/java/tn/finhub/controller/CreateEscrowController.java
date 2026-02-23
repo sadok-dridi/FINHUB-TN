@@ -3,6 +3,7 @@ package tn.finhub.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import tn.finhub.util.DialogUtil;
 import tn.finhub.model.EscrowManager;
 import tn.finhub.model.User;
 import tn.finhub.model.UserModel;
@@ -130,10 +131,6 @@ public class CreateEscrowController {
     }
 
     private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        DialogUtil.showError(title, content);
     }
 }

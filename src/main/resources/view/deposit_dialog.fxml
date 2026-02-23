@@ -12,33 +12,26 @@
          <HBox alignment="CENTER_LEFT" spacing="10.0">
              <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
                  <Label text="%deposit.title" styleClass="header-text"/>
-                 <Label text="%deposit.subtitle" styleClass="sub-header-text"/>
+                 <Label text="Secure Plaid Bank Verification" styleClass="sub-header-text"/>
              </VBox>
              <javafx.scene.shape.SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" styleClass="window-close-icon" onMouseClicked="#handleCancel"/>
          </HBox>
          
          <VBox spacing="10.0">
-            <Label text="%deposit.amount" styleClass="section-label"/>
+            <Label text="Amount to Pull from Bank" styleClass="section-label"/>
             <HBox alignment="CENTER_LEFT" spacing="10" styleClass="amount-input-container">
                 <Label text="TND" styleClass="currency-label"/>
                 <TextField fx:id="amountField" promptText="0.00" styleClass="amount-field-large" HBox.hgrow="ALWAYS"/>
             </HBox>
          </VBox>
    
-         <VBox spacing="10.0">
-            <Label text="%deposit.card.details" styleClass="section-label"/>
-            <VBox spacing="15" styleClass="card-form-container">
-                <TextField fx:id="cardNumberField" promptText="Card Number" styleClass="text-field"/>
-                <HBox spacing="15">
-                    <TextField fx:id="expiryField" promptText="MM/YY" styleClass="text-field" HBox.hgrow="ALWAYS"/>
-                    <TextField fx:id="cvvField" promptText="CVV" styleClass="text-field" HBox.hgrow="ALWAYS"/>
-                </HBox>
-            </VBox>
+         <VBox spacing="10.0" alignment="CENTER">
+            <Label text="Click below to securely connect to your bank via Plaid API Sandbox." styleClass="sub-header-text" style="-fx-text-fill: #9CA3AF; -fx-wrap-text: true; -fx-text-alignment: center;"/>
          </VBox>
          
          <HBox spacing="15.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
              <Button fx:id="cancelButton" text="%common.cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
-             <Button fx:id="payButton" text="%deposit.confirm.button" onAction="#handleDeposit" styleClass="button-primary"/>
+             <Button fx:id="payButton" text="Link Bank Account" onAction="#handleDeposit" styleClass="button-primary" style="-fx-background-color: #111827; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 1px; -fx-border-radius: 5px; -fx-background-radius: 5px;"/>
          </HBox>
       </children>
    </VBox>

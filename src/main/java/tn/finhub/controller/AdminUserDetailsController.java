@@ -4,12 +4,24 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.stage.FileChooser;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletModel;
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.ViewUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.awt.Desktop;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class AdminUserDetailsController {
 
@@ -136,6 +148,209 @@ public class AdminUserDetailsController {
     }
 
     @FXML
+    private void handleExportPdf() {
+        if (currentUser == null) {
+            DialogUtil.showError("Error", "No user selected.");
+            return;
+        }
+
+        String safeName = (currentUser.getFullName() != null ? currentUser.getFullName() : "User")
+                .replaceAll("[^a-zA-Z0-9_-]", "_");
+        String defaultFileName = "UserDetails_" + currentUser.getId() + "_" + safeName + ".pdf";
+
+        javafx.stage.Window window = nameLabel.getScene() != null ? nameLabel.getScene().getWindow() : null;
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save user details as PDF");
+        chooser.setInitialFileName(defaultFileName);
+        File file = chooser.showSaveDialog(window);
+        if (file == null)
+            return;
+
+        File targetFile = file;
+        if (!targetFile.getName().toLowerCase().endsWith(".pdf")) {
+            targetFile = new File(targetFile.getParent(), targetFile.getName() + ".pdf");
+        }
+
+        final File toSave = targetFile;
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                Wallet wallet = walletModel.findByUserId(currentUser.getId());
+
+                // FinHub theme colors (RGB 0-1 for PDFBox)
+                final float[] colorPrimary = { 139f/255f, 92f/255f, 246f/255f };      // #8B5CF6 violet
+                final float[] colorSecondary = { 217f/255f, 70f/255f, 239f/255f };     // #D946EF fuchsia
+                final float[] colorCardBg = { 30f/255f, 27f/255f, 46f/255f };          // #1E1B2E
+                final float[] colorCardBorder = { 46f/255f, 42f/255f, 69f/255f };      // #2E2A45
+                final float[] colorTextPrimary = { 243f/255f, 244f/255f, 246f/255f }; // #F3F4F6
+                final float[] colorTextMuted = { 156f/255f, 163f/255f, 175f/255f };    // #9CA3AF
+                final float[] colorSuccess = { 16f/255f, 185f/255f, 129f/255f };      // #10B981
+                final float[] colorError = { 239f/255f, 68f/255f, 68f/255f };          // #EF4444
+
+                try (PDDocument doc = new PDDocument()) {
+                    PDPage page = new PDPage(PDRectangle.A4);
+                    doc.addPage(page);
+
+                    float pageWidth = page.getMediaBox().getWidth();
+                    float pageHeight = page.getMediaBox().getHeight();
+                    float margin = 50f;
+
+                    try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
+                        // ----- Header band (violet gradient effect: solid primary) -----
+                        float headerH = 72f;
+                        float headerY = pageHeight - headerH;
+                        cs.setNonStrokingColor(colorPrimary[0], colorPrimary[1], colorPrimary[2]);
+                        cs.addRect(0, headerY, pageWidth, headerH);
+                        cs.fill();
+
+                        // Accent line (secondary) under header
+                        cs.setNonStrokingColor(colorSecondary[0], colorSecondary[1], colorSecondary[2]);
+                        cs.addRect(0, headerY - 4f, pageWidth, 4f);
+                        cs.fill();
+
+                        // Header text
+                        cs.beginText();
+                        cs.setFont(PDType1Font.HELVETICA_BOLD, 24);
+                        cs.setNonStrokingColor(1f, 1f, 1f);
+                        cs.newLineAtOffset(margin, headerY + 26f);
+                        cs.showText("FinHub");
+                        cs.setFont(PDType1Font.HELVETICA, 14);
+                        cs.newLineAtOffset(0, -12f);
+                        cs.showText("User Details Report");
+                        cs.endText();
+
+                        float y = headerY - 40f;
+                        float cardWidth = pageWidth - 2f * margin;
+                        float cardPadding = 16f;
+                        float lineH = 16f;
+
+                        // ----- Card 1: Personal information -----
+                        float card1H = 118f;
+                        float card1Y = y - card1H;
+
+                        cs.setNonStrokingColor(colorCardBg[0], colorCardBg[1], colorCardBg[2]);
+                        cs.addRect(margin, card1Y, cardWidth, card1H);
+                        cs.fill();
+                        cs.setStrokingColor(colorCardBorder[0], colorCardBorder[1], colorCardBorder[2]);
+                        cs.setLineWidth(1.5f);
+                        cs.addRect(margin, card1Y, cardWidth, card1H);
+                        cs.stroke();
+
+                        // Card title with violet left accent
+                        cs.setNonStrokingColor(colorPrimary[0], colorPrimary[1], colorPrimary[2]);
+                        cs.addRect(margin, card1Y + card1H - 28f, 4f, 20f);
+                        cs.fill();
+                        cs.beginText();
+                        cs.setFont(PDType1Font.HELVETICA_BOLD, 14);
+                        cs.setNonStrokingColor(colorTextPrimary[0], colorTextPrimary[1], colorTextPrimary[2]);
+                        cs.newLineAtOffset(margin + 14f, card1Y + card1H - 22f);
+                        cs.showText("Personal information");
+                        cs.endText();
+
+                        float textX = margin + cardPadding;
+                        float textY = card1Y + card1H - 52f;
+                        cs.beginText();
+                        cs.setFont(PDType1Font.HELVETICA, 11);
+                        cs.setNonStrokingColor(colorTextMuted[0], colorTextMuted[1], colorTextMuted[2]);
+                        cs.newLineAtOffset(textX, textY);
+                        cs.showText("Full name");
+                        cs.setNonStrokingColor(colorTextPrimary[0], colorTextPrimary[1], colorTextPrimary[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText(currentUser.getFullName() != null ? currentUser.getFullName() : "N/A");
+                        cs.setNonStrokingColor(colorTextMuted[0], colorTextMuted[1], colorTextMuted[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText("Email");
+                        cs.setNonStrokingColor(colorTextPrimary[0], colorTextPrimary[1], colorTextPrimary[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText(currentUser.getEmail() != null ? currentUser.getEmail() : "N/A");
+                        cs.setNonStrokingColor(colorTextMuted[0], colorTextMuted[1], colorTextMuted[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText("Role  •  User ID");
+                        cs.setNonStrokingColor(colorPrimary[0], colorPrimary[1], colorPrimary[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText((currentUser.getRole() != null ? currentUser.getRole() : "USER") + "  #" + currentUser.getId());
+                        cs.endText();
+
+                        // ----- Card 2: Wallet status -----
+                        y = card1Y - 24f;
+                        float card2H = 110f;
+                        float card2Y = y - card2H;
+
+                        cs.setNonStrokingColor(colorCardBg[0], colorCardBg[1], colorCardBg[2]);
+                        cs.addRect(margin, card2Y, cardWidth, card2H);
+                        cs.fill();
+                        cs.setStrokingColor(colorCardBorder[0], colorCardBorder[1], colorCardBorder[2]);
+                        cs.addRect(margin, card2Y, cardWidth, card2H);
+                        cs.stroke();
+
+                        boolean isFrozen = wallet != null && "FROZEN".equals(wallet.getStatus());
+                        float[] statusColor = isFrozen ? colorError : colorSuccess;
+
+                        cs.setNonStrokingColor(statusColor[0], statusColor[1], statusColor[2]);
+                        cs.addRect(margin, card2Y + card2H - 28f, 4f, 20f);
+                        cs.fill();
+                        cs.beginText();
+                        cs.setFont(PDType1Font.HELVETICA_BOLD, 14);
+                        cs.setNonStrokingColor(colorTextPrimary[0], colorTextPrimary[1], colorTextPrimary[2]);
+                        cs.newLineAtOffset(margin + 14f, card2Y + card2H - 22f);
+                        cs.showText("Wallet status");
+                        cs.endText();
+
+                        textX = margin + cardPadding;
+                        textY = card2Y + card2H - 50f;
+                        cs.beginText();
+                        cs.setFont(PDType1Font.HELVETICA, 11);
+                        cs.setNonStrokingColor(colorTextMuted[0], colorTextMuted[1], colorTextMuted[2]);
+                        cs.newLineAtOffset(textX, textY);
+                        cs.showText("Balance");
+                        cs.setNonStrokingColor(colorPrimary[0], colorPrimary[1], colorPrimary[2]);
+                        cs.setFont(PDType1Font.HELVETICA_BOLD, 16);
+                        cs.newLineAtOffset(0, -lineH - 2f);
+                        if (wallet != null) {
+                            String curr = wallet.getCurrency() != null ? wallet.getCurrency() : "TND";
+                            cs.showText(wallet.getBalance() + " " + curr);
+                        } else {
+                            cs.showText("N/A");
+                        }
+                        cs.setFont(PDType1Font.HELVETICA, 11);
+                        cs.setNonStrokingColor(colorTextMuted[0], colorTextMuted[1], colorTextMuted[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText("Status");
+                        cs.setNonStrokingColor(statusColor[0], statusColor[1], statusColor[2]);
+                        cs.newLineAtOffset(0, -lineH);
+                        cs.showText(wallet != null && wallet.getStatus() != null ? wallet.getStatus() : "No wallet");
+                        cs.endText();
+
+                        // ----- Footer -----
+                        String generatedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+                        cs.beginText();
+                        cs.setFont(PDType1Font.HELVETICA, 9);
+                        cs.setNonStrokingColor(colorTextMuted[0], colorTextMuted[1], colorTextMuted[2]);
+                        cs.newLineAtOffset(margin, 28f);
+                        cs.showText("Generated on " + generatedAt + "  •  FinHub Admin");
+                        cs.endText();
+                    }
+
+                    doc.save(toSave);
+                }
+
+                Platform.runLater(() -> {
+                    DialogUtil.showInfo("PDF exported", "File saved: " + toSave.getAbsolutePath());
+                    try {
+                        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                            Desktop.getDesktop().open(toSave);
+                        }
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                });
+            } catch (IOException e) {
+                Platform.runLater(() -> DialogUtil.showError("Export failed", "Could not create PDF: " + e.getMessage()));
+                e.printStackTrace();
+            }
+        });
+    }
+
+    @FXML
     private void handleFreezeWallet() {
         if (currentUser == null) {
             DialogUtil.showError("Error", "No user selected.");
@@ -181,18 +396,14 @@ public class AdminUserDetailsController {
         }
 
         // 1. Password Confirmation
-        javafx.scene.control.TextInputDialog passwordDialog = new javafx.scene.control.TextInputDialog();
-        passwordDialog.setTitle("Admin Authentication");
-        passwordDialog.setHeaderText("Security Verification Required");
-        passwordDialog.setContentText("Please enter your Admin Password to confirm deletion:");
+        String inputPassword = DialogUtil.showPasswordInput(
+                "Admin Authentication",
+                "Please enter your Admin Password to confirm deletion:");
 
-        java.util.Optional<String> result = passwordDialog.showAndWait();
-        if (result.isEmpty())
-            return; // Cancelled
-
-        String inputPassword = result.get();
-        if (inputPassword.isEmpty()) {
-            DialogUtil.showError("Error", "Password cannot be empty.");
+        if (inputPassword == null || inputPassword.isEmpty()) {
+            if (inputPassword != null) {
+                DialogUtil.showError("Error", "Password cannot be empty.");
+            }
             return;
         }
 

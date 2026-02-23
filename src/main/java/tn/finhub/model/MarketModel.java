@@ -40,8 +40,7 @@ public class MarketModel {
     // ========================
 
     private Connection getLocalConnection() {
-        Connection conn = DBConnection.getLocalConnection();
-        return (conn != null) ? conn : DBConnection.getHostedConnection();
+        return DBConnection.getHostedConnection();
     }
 
     private Connection getHostedConnection() {

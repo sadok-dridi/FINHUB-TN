@@ -3,20 +3,23 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.web.WebView?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:controller="tn.finhub.controller.LoginController"
            style="-fx-background-color: transparent;">
 
-    <VBox alignment="CENTER" spacing="20" maxWidth="400" maxHeight="500" styleClass="card">
+    <!-- effect: null to avoid D3D 0-height texture crashes with WebView -->
+    <VBox alignment="CENTER" spacing="15" maxWidth="420" maxHeight="520" styleClass="card"
+          style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 16; -fx-effect: null;">
         <padding>
-            <Insets top="40" right="40" bottom="40" left="40"/>
+            <Insets top="30" right="40" bottom="30" left="40"/>
         </padding>
 
         <Label text="%login.title" styleClass="header-text"/>
         <Label text="%login.subtitle" styleClass="sub-header-text"/>
-        
-        <Region prefHeight="20"/>
+
+        <Region prefHeight="5"/>
 
         <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="Infinity">
             <Label text="%login.email" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
@@ -27,8 +30,14 @@
             <Label text="%login.password" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 12px;"/>
             <PasswordField fx:id="passwordField" promptText="%login.password.prompt" styleClass="text-field"/>
         </VBox>
-        
-        <Region prefHeight="10"/>
+
+        <!-- reCAPTCHA: compact size so all login elements fit on screen; challenge opens in popup -->
+        <WebView fx:id="recaptchaWebView"
+                 minHeight="304" prefHeight="320" maxHeight="400"
+                 minWidth="304" prefWidth="320" maxWidth="380"/>
+
+        <!-- Hidden field to receive the reCAPTCHA token -->
+        <TextField fx:id="recaptchaTokenField" visible="false" managed="false"/>
 
         <Button text="%login.button" onAction="#handleLogin" maxWidth="Infinity" styleClass="button-primary"/>
 
@@ -36,7 +45,7 @@
             <Label text="%login.no.account" style="-fx-text-fill: -color-text-secondary;"/>
             <Hyperlink text="%login.create.account" onAction="#goToSignup" styleClass="hyperlink"/>
         </HBox>
-        
+
         <Hyperlink text="%login.forgot.password" onAction="#goToForgotPassword" styleClass="hyperlink" style="-fx-font-size: 12px;"/>
 
         <Label fx:id="messageLabel" textFill="#ef4444"/>
@@ -44,4 +53,3 @@
     </VBox>
 
 </StackPane>
-

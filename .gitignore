@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 .kotlin
 .env
+FINHUB-WEB/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
