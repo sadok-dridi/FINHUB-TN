@@ -22,6 +22,11 @@
                  </graphic>
             </Button>
         </HBox>
+
+        <!-- Statistiques par catégorie -->
+        <VBox fx:id="statsContainer" spacing="6">
+            <!-- rempli dynamiquement dans SupportTicketsController.updateUI -->
+        </VBox>
     
         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">
             <VBox fx:id="ticketsContainer" spacing="15" style="-fx-padding: 5;"/>

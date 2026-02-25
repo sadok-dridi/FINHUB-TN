@@ -21,6 +21,7 @@ import tn.finhub.util.ApiClient;
 import tn.finhub.util.DBConnection;
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.LanguageManager;
+import tn.finhub.util.DesktopNotificationUtil;
 import tn.finhub.util.RecaptchaLocalServer;
 import tn.finhub.util.RecaptchaService;
 import tn.finhub.util.SessionManager;
@@ -265,13 +266,13 @@ public class LoginController {
         // Input Validation
         String email = emailField.getText();
         if (!ValidationUtils.isValidEmail(email)) {
-            messageLabel.setStyle("-fx-text-fill: red;");
+            messageLabel.setStyle("-fx-text-fill: #ff4d4f; -fx-font-size: 13px; -fx-font-weight: bold;");
             messageLabel.setText(LanguageManager.getInstance().getString("login.invalid.email"));
             return;
         }
 
         if (passwordField.getText().isEmpty()) {
-            messageLabel.setStyle("-fx-text-fill: red;");
+            messageLabel.setStyle("-fx-text-fill: #ff4d4f; -fx-font-size: 13px; -fx-font-weight: bold;");
             messageLabel.setText(LanguageManager.getInstance().getString("login.empty.password"));
             return;
         }
@@ -281,7 +282,7 @@ public class LoginController {
         final String recaptchaToken = (recaptchaTokenField != null) ? recaptchaTokenField.getText() : null;
 
         if (RecaptchaService.isConfigured() && (recaptchaToken == null || recaptchaToken.isBlank())) {
-            messageLabel.setStyle("-fx-text-fill: red;");
+            messageLabel.setStyle("-fx-text-fill: #ff4d4f; -fx-font-size: 13px; -fx-font-weight: bold;");
             messageLabel.setText("Please complete the security verification (reCAPTCHA).");
             return;
         }
@@ -296,7 +297,7 @@ public class LoginController {
                     boolean captchaOk = RecaptchaService.verify(recaptchaToken);
                     if (!captchaOk) {
                         Platform.runLater(() -> {
-                            messageLabel.setStyle("-fx-text-fill: red;");
+                            messageLabel.setStyle("-fx-text-fill: #ff4d4f; -fx-font-size: 13px; -fx-font-weight: bold;");
                             messageLabel.setText("Security verification failed. Please try again.");
                             // ✅ Reset widget so user can re-check the box
                             resetRecaptcha();
@@ -346,7 +347,7 @@ public class LoginController {
 
                     String finalMsg = errorMessage;
                     Platform.runLater(() -> {
-                        messageLabel.setStyle("-fx-text-fill: red;");
+                        messageLabel.setStyle("-fx-text-fill: #ff4d4f; -fx-font-size: 13px; -fx-font-weight: bold;");
                         messageLabel.setText(finalMsg);
                         // ✅ Reset reCAPTCHA on any login failure so user must re-verify
                         resetRecaptcha();
@@ -369,6 +370,10 @@ public class LoginController {
                         user.getString("email"),
                         user.getString("role"),
                         body.getString("access_token"));
+
+                // After session is initialized, show latest system alert (if any) as
+                // desktop notification.
+                showLatestSystemAlertNotification(user.getInt("id"));
 
                 System.out.println("[DEBUG] Syncing local DB...");
                 syncUserLocal(
@@ -566,5 +571,29 @@ public class LoginController {
 
     private void Message(String msg) {
         Platform.runLater(() -> messageLabel.setText(msg));
+    }
+
+    /**
+     * Fetches the latest system alert for the given user and shows it as a native
+     * desktop notification.
+     */
+    private void showLatestSystemAlertNotification(int userId) {
+        new Thread(() -> {
+            try {
+                tn.finhub.model.SystemAlertModel alertModel = new tn.finhub.model.SystemAlertModel();
+                java.util.List<tn.finhub.model.SystemAlert> alerts = alertModel.getAlertsByUserId(userId);
+                if (alerts == null || alerts.isEmpty()) {
+                    return;
+                }
+
+                tn.finhub.model.SystemAlert latest = alerts.get(0); // list is ordered DESC by created_at
+                String title = "FinHub Alert";
+                String message = latest.getMessage() != null ? latest.getMessage() : "You have a new system alert.";
+
+                DesktopNotificationUtil.showInfo(title, message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }

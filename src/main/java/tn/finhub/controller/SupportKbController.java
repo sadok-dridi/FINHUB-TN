@@ -2,13 +2,33 @@ package tn.finhub.controller;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import tn.finhub.model.KnowledgeBase;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.common.BitMatrix;
+import javafx.embed.swing.SwingFXUtils;
+
+import com.lowagie.text.Document;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.pdf.PdfWriter;
 
 public class SupportKbController {
 
@@ -17,16 +37,31 @@ public class SupportKbController {
     @FXML
     private VBox kbContainer;
 
+    @FXML
+    private Button exportPdfButton;
+
     private final tn.finhub.model.KnowledgeBaseModel kbModel = new tn.finhub.model.KnowledgeBaseModel();
+    private KnowledgeBase selectedArticle;
 
     @FXML
     public void initialize() {
+        // Dynamic search: filter articles as the user types
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldValue, newValue) -> performSearch(newValue));
+        }
+        if (exportPdfButton != null) {
+            exportPdfButton.setDisable(true); // no article selected yet
+        }
         loadAllArticles();
     }
 
     @FXML
     private void handleSearch() {
-        String query = searchField.getText().trim();
+        performSearch(searchField.getText());
+    }
+
+    private void performSearch(String rawQuery) {
+        String query = rawQuery != null ? rawQuery.trim() : "";
         if (query.isEmpty()) {
             loadAllArticles();
         } else {
@@ -77,6 +112,136 @@ public class SupportKbController {
         content.setStyle("-fx-font-size: 14px; -fx-text-fill: -color-text-primary; -fx-line-spacing: 4;");
 
         card.getChildren().addAll(header, content);
+        // When the card is clicked, remember the article, enable export button and show QR dialog
+        card.setOnMouseClicked(e -> {
+            selectedArticle = article;
+            if (exportPdfButton != null) {
+                exportPdfButton.setDisable(false);
+            }
+            openArticleDialog(article);
+        });
         return card;
+    }
+
+    private void openArticleDialog(KnowledgeBase article) {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.WINDOW_MODAL);
+        if (kbContainer != null && kbContainer.getScene() != null) {
+            dialog.initOwner(kbContainer.getScene().getWindow());
+        }
+        dialog.setTitle(article.getTitle());
+
+        VBox root = new VBox(18);
+        root.setStyle("-fx-padding: 24; -fx-background-color: #050816;");
+
+        Label title = new Label(article.getTitle());
+        title.setStyle(
+                "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-primary; -fx-padding: 0 0 6 0;");
+
+        TextArea contentArea = new TextArea(article.getContent());
+        contentArea.setWrapText(true);
+        contentArea.setEditable(false);
+        contentArea.setStyle(
+                "-fx-font-size: 14px; -fx-text-fill: -color-text-primary; -fx-control-inner-background: #020617;");
+        contentArea.setPrefRowCount(9);
+
+        // QR card on the right
+        VBox qrCard = new VBox(10);
+        qrCard.setStyle(
+                "-fx-background-color: rgba(15,23,42,0.95); -fx-background-radius: 16; -fx-padding: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 18, 0, 0, 0);");
+        qrCard.setAlignment(Pos.TOP_CENTER);
+
+        Label qrTitle = new Label("Visualiser ce sujet en images");
+        qrTitle.setStyle("-fx-text-fill: -color-text-primary; -fx-font-size: 13px; -fx-font-weight: bold;");
+
+        Label qrHint = new Label("Scannez le QR code avec votre téléphone\npour ouvrir Google Images sur ce thème.");
+        qrHint.setWrapText(true);
+        qrHint.setStyle("-fx-text-fill: -color-text-secondary; -fx-font-size: 11px;");
+
+        ImageView qrView = new ImageView();
+        qrView.setFitWidth(200);
+        qrView.setFitHeight(200);
+
+        try {
+            Image qrImage = generateQrImage(article);
+            qrView.setImage(qrImage);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        Button exportPdfBtn = new Button("Export PDF");
+        exportPdfBtn.getStyleClass().add("button-primary");
+        exportPdfBtn.setOnAction(e -> exportArticleToPdf(article));
+
+        qrCard.getChildren().addAll(qrTitle, qrHint, qrView, exportPdfBtn);
+
+        HBox contentRow = new HBox(18);
+        contentRow.setAlignment(Pos.TOP_LEFT);
+        contentRow.getChildren().addAll(contentArea, qrCard);
+
+        HBox.setHgrow(contentArea, javafx.scene.layout.Priority.ALWAYS);
+
+        root.getChildren().addAll(title, contentRow);
+
+        Scene scene = new Scene(root, 750, 460);
+        dialog.setScene(scene);
+        dialog.show();
+    }
+
+    private Image generateQrImage(KnowledgeBase article) throws WriterException {
+        // QR code points to Google Images search for the article title
+        String encodedTitle;
+        try {
+            encodedTitle = java.net.URLEncoder.encode(article.getTitle(), java.nio.charset.StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            encodedTitle = article.getTitle();
+        }
+        String qrText = "https://www.google.com/search?tbm=isch&q=" + encodedTitle;
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        int size = 220;
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrText, BarcodeFormat.QR_CODE, size, size);
+
+        java.awt.image.BufferedImage bufferedImage = new java.awt.image.BufferedImage(size, size,
+                java.awt.image.BufferedImage.TYPE_INT_RGB);
+        for (int x = 0; x < size; x++) {
+            for (int y = 0; y < size; y++) {
+                int color = bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
+                bufferedImage.setRGB(x, y, color);
+            }
+        }
+        return SwingFXUtils.toFXImage(bufferedImage, null);
+    }
+
+    private void exportArticleToPdf(KnowledgeBase article) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Export Knowledge Base Article");
+        fileChooser.getExtensionFilters()
+                .add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        fileChooser.setInitialFileName(article.getTitle().replaceAll("[^a-zA-Z0-9-_]+", "_") + ".pdf");
+
+        File target = fileChooser.showSaveDialog(
+                kbContainer != null && kbContainer.getScene() != null ? kbContainer.getScene().getWindow() : null);
+        if (target == null) {
+            return;
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(target)) {
+            Document document = new Document();
+            PdfWriter.getInstance(document, fos);
+            document.open();
+            document.add(new Paragraph(article.getTitle()));
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph(article.getContent()));
+            document.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleExportSelectedArticle() {
+        if (selectedArticle != null) {
+            exportArticleToPdf(selectedArticle);
+        }
     }
 }

@@ -6,6 +6,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 // import javafx.scene.Node; // Removed unused import
 import tn.finhub.model.User;
+import tn.finhub.model.Wallet;
+import tn.finhub.model.WalletModel;
 import tn.finhub.util.MailClient;
 
 import tn.finhub.util.ApiClient;
@@ -20,7 +22,20 @@ public class AdminUserController {
     @FXML
     private TextField searchField;
 
+    @FXML
+    private Label totalUsersLabel;
+
+    @FXML
+    private Label adminClientBreakdownLabel;
+
+    @FXML
+    private Label walletStatusLabel;
+
+    @FXML
+    private ProgressBar frozenRatioBar;
+
     private tn.finhub.model.UserModel userModel = new tn.finhub.model.UserModel();
+    private final WalletModel walletModel = new WalletModel();
     private ObservableList<User> allUsers;
 
     @FXML
@@ -29,10 +44,74 @@ public class AdminUserController {
         allUsers = FXCollections.observableArrayList(userModel.findAll());
         refreshUserCards(allUsers);
 
+        // Load stats
+        refreshStats();
+
         // Add search listener
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filterUsers(newValue);
         });
+    }
+
+    private void refreshStats() {
+        // Run in background to avoid blocking UI if data grows
+        new Thread(() -> {
+            try {
+                java.util.List<User> users = userModel.findAll();
+                int total = users.size();
+                long adminCount = users.stream().filter(u -> "ADMIN".equalsIgnoreCase(u.getRole())).count();
+                long clientCount = total - adminCount;
+
+                // Wallet stats
+                int active = 0;
+                int frozen = 0;
+                try (java.sql.Connection conn = walletModel.getConnection();
+                        java.sql.Statement st = conn.createStatement();
+                        java.sql.ResultSet rs = st.executeQuery(
+                                "SELECT status, COUNT(*) AS c FROM wallets GROUP BY status")) {
+                    while (rs.next()) {
+                        String status = rs.getString("status");
+                        int c = rs.getInt("c");
+                        if ("FROZEN".equalsIgnoreCase(status)) {
+                            frozen += c;
+                        } else {
+                            active += c;
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                final int totalUsers = total;
+                final long admins = adminCount;
+                final long clients = clientCount;
+                final int activeWallets = active;
+                final int frozenWallets = frozen;
+
+                javafx.application.Platform.runLater(() -> {
+                    totalUsersLabel.setText(String.valueOf(totalUsers));
+                    adminClientBreakdownLabel
+                            .setText(admins + " Admin • " + clients + " Clients");
+
+                    walletStatusLabel
+                            .setText(activeWallets + " Active / " + frozenWallets + " Frozen");
+
+                    int totalWallets = activeWallets + frozenWallets;
+                    double ratio = totalWallets == 0 ? 0.0 : (double) frozenWallets / totalWallets;
+                    frozenRatioBar.setProgress(ratio);
+
+                    if (ratio < 0.1) {
+                        frozenRatioBar.setStyle("-fx-accent: #10B981;"); // green
+                    } else if (ratio < 0.3) {
+                        frozenRatioBar.setStyle("-fx-accent: #F59E0B;"); // amber
+                    } else {
+                        frozenRatioBar.setStyle("-fx-accent: #EF4444;"); // red
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void filterUsers(String query) {
@@ -199,6 +278,8 @@ public class AdminUserController {
         try {
             userModel.syncUsersFromServer();
             loadUsers();
+
+            refreshStats();
 
             tn.finhub.util.DialogUtil.showInfo(
                     "Sync Completed",

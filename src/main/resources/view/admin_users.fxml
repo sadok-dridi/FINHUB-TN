@@ -13,6 +13,20 @@
                 <Label text="%admin.users.subtitle" styleClass="sub-header-text"/>
             </VBox>
 
+            <!-- Stats cards -->
+            <HBox spacing="15">
+                <VBox spacing="6" styleClass="card" style="-fx-padding: 12; -fx-background-color: -color-card-bg; -fx-background-radius: 10;">
+                    <Label text="Total Users" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 11;"/>
+                    <Label fx:id="totalUsersLabel" text="0" style="-fx-text-fill: -color-text-primary; -fx-font-size: 20; -fx-font-weight: bold;"/>
+                    <Label fx:id="adminClientBreakdownLabel" text="0 Admin • 0 Clients" style="-fx-text-fill: -color-text-muted; -fx-font-size: 10;"/>
+                </VBox>
+                <VBox spacing="6" styleClass="card" style="-fx-padding: 12; -fx-background-color: -color-card-bg; -fx-background-radius: 10;">
+                    <Label text="Wallet Health" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 11;"/>
+                    <Label fx:id="walletStatusLabel" text="0 Active / 0 Frozen" style="-fx-text-fill: -color-text-primary; -fx-font-size: 14; -fx-font-weight: bold;"/>
+                    <ProgressBar fx:id="frozenRatioBar" prefWidth="160" progress="0.0" styleClass="status-progress"/>
+                </VBox>
+            </HBox>
+
             <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-padding: 0 0 10 0;">
                 <TextField fx:id="searchField" promptText="%admin.users.search" prefWidth="300" styleClass="search-field"/>
                 <Region HBox.hgrow="ALWAYS" />

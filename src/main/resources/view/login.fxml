@@ -10,7 +10,8 @@
            style="-fx-background-color: transparent;">
 
     <!-- effect: null to avoid D3D 0-height texture crashes with WebView -->
-    <VBox alignment="CENTER" spacing="15" maxWidth="420" maxHeight="520" styleClass="card"
+    <!-- maxHeight="620" — card must be tall enough for when challenge expands WebView to 400px -->
+    <VBox alignment="CENTER" spacing="15" maxWidth="420" maxHeight="620" styleClass="card"
           style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 16; -fx-effect: null;">
         <padding>
             <Insets top="30" right="40" bottom="30" left="40"/>
@@ -31,10 +32,10 @@
             <PasswordField fx:id="passwordField" promptText="%login.password.prompt" styleClass="text-field"/>
         </VBox>
 
-        <!-- reCAPTCHA: compact size so all login elements fit on screen; challenge opens in popup -->
+        <!-- reCAPTCHA area: always tall, background is dark to avoid big white box -->
         <WebView fx:id="recaptchaWebView"
-                 minHeight="304" prefHeight="320" maxHeight="400"
-                 minWidth="304" prefWidth="320" maxWidth="380"/>
+                 minHeight="300" prefHeight="300" maxHeight="380"
+                 minWidth="304" prefWidth="340" maxWidth="380"/>
 
         <!-- Hidden field to receive the reCAPTCHA token -->
         <TextField fx:id="recaptchaTokenField" visible="false" managed="false"/>
@@ -48,7 +49,13 @@
 
         <Hyperlink text="%login.forgot.password" onAction="#goToForgotPassword" styleClass="hyperlink" style="-fx-font-size: 12px;"/>
 
-        <Label fx:id="messageLabel" textFill="#ef4444"/>
+        <!-- Global message (errors/success). Centered, bold and clearly visible. -->
+        <Label fx:id="messageLabel"
+               textFill="#ef4444"
+               wrapText="true"
+               maxWidth="Infinity"
+               alignment="CENTER"
+               style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
 
     </VBox>
 

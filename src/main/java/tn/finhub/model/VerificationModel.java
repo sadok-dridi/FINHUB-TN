@@ -29,7 +29,7 @@ public class VerificationModel {
             ps.setTimestamp(3, Timestamp.valueOf(expiresAt));
             ps.executeUpdate();
 
-            MailClient.sendVerificationEmail(email, token); // Use MailClient
+            MailClient.sendVerificationEmail(email, token); // Use MailClient (returns boolean; ignored here)
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

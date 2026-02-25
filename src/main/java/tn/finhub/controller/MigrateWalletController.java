@@ -57,7 +57,7 @@ public class MigrateWalletController {
 
                 // 2. Send Verification Email
                 System.out.println("Sending verification email to: " + email);
-                MailClient.sendVerificationEmail(email, verificationLink);
+                boolean emailSent = MailClient.sendVerificationEmail(email, verificationLink);
                 System.out.println("Verification Link: " + verificationLink); // Log for debugging
 
                 // 3. Switch UI to verification mode
@@ -70,9 +70,15 @@ public class MigrateWalletController {
                     emailField.setDisable(true);
                     passwordField.setDisable(true);
 
-                    DialogUtil.showInfo("Verification Email Sent",
-                            "We have sent a verification link to " + email
-                                    + ".\n\nPlease check your inbox and verify your account, then click the button below.");
+                    if (emailSent) {
+                        DialogUtil.showInfo("Verification Email Sent",
+                                "We have sent a verification link to " + email
+                                        + ".\n\nPlease check your inbox (and Spam/Promotions) and verify your account, then click the button below.");
+                    } else {
+                        DialogUtil.showInfo("Verification Link",
+                                "We couldn't send an email from this app (SMTP not configured / blocked).\n\nOpen this verification link in your browser:\n"
+                                        + verificationLink);
+                    }
                 });
 
             } catch (Exception e) {
