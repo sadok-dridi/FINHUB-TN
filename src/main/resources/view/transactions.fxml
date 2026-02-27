@@ -18,6 +18,8 @@
         <HBox alignment="CENTER_LEFT" spacing="10">
              <Label text="%transactions.quick.send" style="-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
              <Region HBox.hgrow="ALWAYS"/>
+             <javafx.scene.control.Button text="Receive QR" onAction="#handleShowMyQr" 
+                    style="-fx-background-color: rgba(139, 92, 246, 0.1); -fx-text-fill: #8b5cf6; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 6 12; -fx-cursor: hand; -fx-font-size: 12px; -fx-border-color: #8b5cf6; -fx-border-radius: 8;"/>
              <javafx.scene.control.Button text="%transactions.new.contact" onAction="#handleAddContact" 
                     style="-fx-background-color: rgba(16, 185, 129, 0.1); -fx-text-fill: #10B981; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 6 12; -fx-cursor: hand; -fx-font-size: 12px; -fx-border-color: #10B981; -fx-border-radius: 8;"/>
         </HBox>

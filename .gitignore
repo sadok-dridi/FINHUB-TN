@@ -5,6 +5,7 @@ target/
 .kotlin
 .env
 FINHUB-WEB/
+app.py
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

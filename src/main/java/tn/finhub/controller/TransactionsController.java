@@ -559,6 +559,58 @@ public class TransactionsController {
         }
     }
 
+    @FXML
+    private void handleShowMyQr() {
+        tn.finhub.model.User user = UserSession.getInstance().getUser();
+        if (user == null)
+            return;
+
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.initStyle(javafx.stage.StageStyle.TRANSPARENT);
+
+        VBox root = new VBox(20);
+        root.setStyle(
+                "-fx-background-color: #1F2937; -fx-border-color: #8b5cf6; -fx-border-width: 2; -fx-background-radius: 15; -fx-border-radius: 15; -fx-padding: 30; -fx-effect: dropshadow(three-pass-box, rgba(139, 92, 246, 0.4), 15, 0, 0, 0);");
+        root.setAlignment(javafx.geometry.Pos.CENTER);
+        root.setMinWidth(320);
+
+        Label title = new Label("Receive Crypto & TND");
+        title.setStyle("-fx-text-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;");
+
+        Label msg = new Label("Scan this code to send funds directly to\n" + user.getFullName());
+        msg.setStyle("-fx-text-fill: #9CA3AF; -fx-font-size: 14px;");
+        msg.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+
+        // Generate QR Code URL
+        String url = "https://escrow.finhub.tn/profile?email=" + user.getEmail();
+        String base64Image = tn.finhub.util.QRCodeGenerator.generateQRCodeImage(url, 200, 200);
+
+        javafx.scene.image.ImageView qrView = new javafx.scene.image.ImageView();
+        if (base64Image != null && base64Image.startsWith("data:image/png;base64,")) {
+            String b64 = base64Image.substring("data:image/png;base64,".length());
+            byte[] decoded = java.util.Base64.getDecoder().decode(b64);
+            javafx.scene.image.Image img = new javafx.scene.image.Image(new java.io.ByteArrayInputStream(decoded));
+            qrView.setImage(img);
+        }
+
+        // Add white background so QR code is readable
+        javafx.scene.layout.StackPane qrContainer = new javafx.scene.layout.StackPane(qrView);
+        qrContainer.setStyle("-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 10;");
+
+        Button close = new Button("Done");
+        close.setStyle(
+                "-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand; -fx-padding: 10 30; -fx-font-weight: bold; -fx-font-size: 14px;");
+        close.setOnAction(e -> dialog.close());
+
+        root.getChildren().addAll(title, msg, qrContainer, close);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+        dialog.setScene(scene);
+        dialog.show();
+    }
+
     // Data Transfer Object
     public static class TransactionData {
         int userId;
