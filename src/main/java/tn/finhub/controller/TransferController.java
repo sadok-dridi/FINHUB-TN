@@ -185,7 +185,8 @@ public class TransferController {
                 String senderName = currentUser != null && currentUser.getFullName() != null
                         ? currentUser.getFullName()
                         : currentUser.getEmail();
-                tn.finhub.util.WebhookUtil.sendTransferNotification(senderName, email, amount.toString());
+                String senderEmail = currentUser != null ? currentUser.getEmail() : "Unknown";
+                tn.finhub.util.WebhookUtil.sendTransferNotification(senderName, senderEmail, email, amount.toString());
 
                 if (onSuccessCallback != null) {
                     onSuccessCallback.run();

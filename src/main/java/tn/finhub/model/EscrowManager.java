@@ -2,7 +2,6 @@ package tn.finhub.model;
 
 import tn.finhub.util.DBConnection;
 import tn.finhub.util.TokenGenerator;
-import tn.finhub.util.DatabaseFixer;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -18,8 +17,6 @@ public class EscrowManager {
     private final SupportModel supportModel = new SupportModel();
 
     public EscrowManager() {
-        // Temporary fix for schema
-        DatabaseFixer.fixEscrowTable();
     }
 
     private Connection getConnection() {
@@ -28,7 +25,7 @@ public class EscrowManager {
 
     // 1. Create Escrow
     public void createEscrow(int senderWalletId, int receiverWalletId, BigDecimal amount, String condition,
-            String type) {
+            String type, boolean requireDocusign) {
         if (senderWalletId == receiverWalletId) {
             throw new RuntimeException("Cannot create escrow with self");
         }
@@ -36,9 +33,20 @@ public class EscrowManager {
             throw new RuntimeException("Amount must be positive");
         }
 
-        // Check Verification Status (Risk Limit)
+        // Validate balances & status (WalletModel will handle the hold internally)
         Wallet senderWallet = walletModel.findById(senderWalletId);
+        if (senderWallet == null || senderWallet.getBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("Insufficient funds or invalid sender wallet");
+        }
         User sender = userModel.findById(senderWallet.getUserId());
+        if (sender == null)
+            throw new RuntimeException("Sender user not found");
+
+        // Check Verification Status (Risk Limit)
+        // Wallet senderWallet = walletModel.findById(senderWalletId); // Already
+        // fetched above
+        // User sender = userModel.findById(senderWallet.getUserId()); // Already
+        // fetched above
 
         if (!sender.isEmailVerified()) {
             // Unverified Limit: 500 TND
@@ -55,6 +63,8 @@ public class EscrowManager {
         // 2. Generate Secret & QR Code
         String secretCode = null;
         String qrCodeImage = null;
+        String docusignEnvelopeId = null;
+
         if ("QR_CODE".equals(type)) {
             // Simple random string
             secretCode = TokenGenerator.generateToken().substring(0, 10).toUpperCase();
@@ -62,11 +72,30 @@ public class EscrowManager {
             qrCodeImage = tn.finhub.util.QRCodeGenerator.generateQRCodeImage(secretCode, 300, 300);
         }
 
+        if (requireDocusign) {
+            try {
+                // We create an envelope using our new utility
+                // Temporary mock object since we don't have the full Escrow instanciated yet
+                Escrow tempEscrow = new Escrow();
+                tempEscrow.setSenderWalletId(senderWalletId);
+                tempEscrow.setReceiverWalletId(receiverWalletId);
+                tempEscrow.setAmount(amount);
+                tempEscrow.setConditionText(condition);
+                // Note: The DocuSign API Account ID is required here, we grab it from dotenv
+                String accountId = io.github.cdimascio.dotenv.Dotenv.load().get("DOCUSIGN_API_ACCOUNT_ID");
+                docusignEnvelopeId = tn.finhub.util.DocuSignUtil.createEscrowAgreementEnvelope(tempEscrow, accountId);
+            } catch (Exception e) {
+                // If DocuSign fails, we must rollback the hold
+                walletModel.refundEscrow(senderWalletId, amount);
+                throw new RuntimeException("DocuSign Integration Failed: " + e.getMessage(), e);
+            }
+        }
+
         // 3. Insert Escrow
         String sql = """
                     INSERT INTO escrow
-                    (sender_wallet_id, receiver_wallet_id, amount, condition_text, escrow_type, secret_code, qr_code_image, status, expiry_date)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 'LOCKED', ?)
+                    (sender_wallet_id, receiver_wallet_id, amount, condition_text, escrow_type, secret_code, qr_code_image, require_docusign, docusign_envelope_id, status, expiry_date)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'LOCKED', ?)
                 """;
 
         int escrowId = -1;
@@ -78,7 +107,9 @@ public class EscrowManager {
             ps.setString(5, type);
             ps.setString(6, secretCode); // Can be null if ADMIN
             ps.setString(7, qrCodeImage);
-            ps.setTimestamp(8, Timestamp.valueOf(LocalDateTime.now().plusDays(7))); // 7 days expiry
+            ps.setBoolean(8, requireDocusign);
+            ps.setString(9, docusignEnvelopeId);
+            ps.setTimestamp(10, Timestamp.valueOf(LocalDateTime.now().plusDays(7))); // 7 days expiry
 
             ps.executeUpdate();
 
@@ -94,6 +125,13 @@ public class EscrowManager {
         blockchainManager.addBlock("ESCROW_CREATE",
                 "Created Escrow " + escrowId + " Amount: " + amount,
                 null, escrowId);
+
+        // 5. Trigger Webhook
+        Wallet receiverWallet = walletModel.findById(receiverWalletId);
+        User receiver = userModel.findById(receiverWallet.getUserId());
+        String senderName = sender.getFullName() != null ? sender.getFullName() : sender.getEmail();
+        tn.finhub.util.WebhookUtil.sendEscrowNotification(senderName, sender.getEmail(), receiver.getEmail(),
+                amount.toString(), "ESCROW_LOCKED");
     }
 
     // 2. Release Escrow (QR / Auto)
@@ -150,6 +188,25 @@ public class EscrowManager {
     }
 
     private void processRelease(Escrow escrow) {
+        // Enforce DocuSign Requirement
+        if (escrow.isRequireDocusign() && escrow.getDocusignEnvelopeId() != null) {
+            try {
+                // Fetch the API Account ID from .env
+                String accountId = io.github.cdimascio.dotenv.Dotenv.load().get("DOCUSIGN_API_ACCOUNT_ID");
+                String status = tn.finhub.util.DocuSignUtil.getEnvelopeStatus(escrow.getDocusignEnvelopeId(),
+                        accountId);
+
+                if (!"completed".equalsIgnoreCase(status)) {
+                    throw new RuntimeException("DocuSign agreement is still " + status + ". Both parties must sign.");
+                }
+            } catch (Exception e) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new RuntimeException("Failed to verify DocuSign status before release: " + e.getMessage(), e);
+            }
+        }
+
         // Calculate Fee (1%)
         BigDecimal fee = escrow.getAmount().multiply(new BigDecimal("0.01"));
         int adminWalletId = walletModel.getBankWalletId();
@@ -178,6 +235,14 @@ public class EscrowManager {
         // Receiver.
         Wallet receiverWallet = walletModel.findById(escrow.getReceiverWalletId());
         userModel.updateTrustScore(receiverWallet.getUserId(), 10);
+
+        User receiver = userModel.findById(receiverWallet.getUserId());
+        Wallet senderWallet = walletModel.findById(escrow.getSenderWalletId());
+        User sender = userModel.findById(senderWallet.getUserId());
+
+        String senderName = sender.getFullName() != null ? sender.getFullName() : sender.getEmail();
+        tn.finhub.util.WebhookUtil.sendEscrowNotification(senderName, sender.getEmail(), receiver.getEmail(),
+                escrow.getAmount().toString(), "ESCROW_RELEASED");
     }
 
     // 4. Refund (Cancellation)
@@ -265,6 +330,8 @@ public class EscrowManager {
                     e.setConditionText(rs.getString("condition_text"));
                     e.setEscrowType(rs.getString("escrow_type"));
                     e.setSecretCode(rs.getString("secret_code"));
+                    e.setRequireDocusign(rs.getBoolean("require_docusign"));
+                    e.setDocusignEnvelopeId(rs.getString("docusign_envelope_id"));
                     e.setStatus(rs.getString("status"));
                     e.setExpiryDate(rs.getTimestamp("expiry_date").toLocalDateTime());
                     e.setDisputed(rs.getBoolean("is_disputed"));
@@ -382,6 +449,8 @@ public class EscrowManager {
         e.setEscrowType(rs.getString("escrow_type"));
         e.setSecretCode(rs.getString("secret_code"));
         e.setQrCodeImage(rs.getString("qr_code_image"));
+        e.setRequireDocusign(rs.getBoolean("require_docusign"));
+        e.setDocusignEnvelopeId(rs.getString("docusign_envelope_id"));
         e.setStatus(rs.getString("status"));
         if (rs.getTimestamp("expiry_date") != null)
             e.setExpiryDate(rs.getTimestamp("expiry_date").toLocalDateTime());
