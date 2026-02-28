@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.AdminKnowledgeBaseController"
+           style="-fx-padding: 20;">
+
+    <!-- VIEW 1: Article List -->
+    <VBox fx:id="listViewContainer" spacing="15" maxWidth="800">
+        <HBox alignment="CENTER_LEFT" spacing="20">
+            <Label text="Knowledge Base" styleClass="page-title" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="+ New Article" onAction="#handleNewArticle" styleClass="button-primary"/>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: -color-card-bg; -fx-padding: 10; -fx-background-radius: 8;">
+             <TextField fx:id="searchField" promptText="Search articles..." HBox.hgrow="ALWAYS" style="-fx-background-color: transparent; -fx-text-fill: -color-text-primary;"/>
+             <Button text="Search" onAction="#handleSearch" styleClass="button-outlined-primary"/>
+        </HBox>
+
+        <ListView fx:id="articlesListView" VBox.vgrow="ALWAYS" styleClass="custom-list-view" style="-fx-background-radius: 8; -fx-border-color: -color-card-border; -fx-border-radius: 8;"/>
+    </VBox>
+
+    <!-- VIEW 2: Editor (Initially Hidden) -->
+    <VBox fx:id="editorContainer" spacing="20" visible="false" maxWidth="800" style="-fx-background-color: -color-card-bg; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+        
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Button onAction="#handleBack" styleClass="button-icon">
+                <graphic>
+                    <SVGPath content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" style="-fx-fill: -color-text-secondary;"/>
+                </graphic>
+            </Button>
+            <Label fx:id="editorTitleLabel" text="New Article" styleClass="section-title"/>
+        </HBox>
+        
+        <VBox spacing="5">
+            <Label text="Title" styleClass="text-muted"/>
+            <TextField fx:id="titleField" promptText="Enter article title" styleClass="input-field"/>
+        </VBox>
+
+        <VBox spacing="5">
+            <Label text="Category" styleClass="text-muted"/>
+            <TextField fx:id="categoryField" promptText="e.g. Wallet, Security, Account" styleClass="input-field"/>
+        </VBox>
+
+        <VBox spacing="5" VBox.vgrow="ALWAYS">
+            <Label text="Content" styleClass="text-muted"/>
+            <TextArea fx:id="contentArea" promptText="Write article content here..." wrapText="true" VBox.vgrow="ALWAYS" styleClass="text-area"/>
+        </VBox>
+
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <Button fx:id="deleteButton" text="Delete Article" onAction="#handleDelete" styleClass="button-outlined-danger" visible="false"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Cancel" onAction="#handleBack" styleClass="button-text"/>
+            <Button text="Save Article" onAction="#handleSave" styleClass="button-primary"/>
+        </HBox>
+    </VBox>
+
+</StackPane>

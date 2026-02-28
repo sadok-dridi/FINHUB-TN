@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.SVGPath?>
+<?import java.net.URL?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="tn.finhub.controller.MigrateWalletController"
+            style="-fx-background-color: transparent;">
+
+    <stylesheets>
+        <URL value="@../style/theme.css"/>
+    </stylesheets>
+
+    <center>
+        <!-- Main Card Container -->
+        <VBox alignment="CENTER" spacing="25" maxWidth="480" 
+              style="-fx-background-color: #1E1B2E; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 10); -fx-padding: 40;">
+            
+            <!-- Icon & Header -->
+            <VBox alignment="CENTER" spacing="15">
+                <StackPane style="-fx-background-color: rgba(239, 68, 68, 0.1); -fx-background-radius: 50; -fx-min-width: 80; -fx-min-height: 80;">
+                     <SVGPath content="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" style="-fx-fill: -color-error;" scaleX="2" scaleY="2"/>
+                </StackPane>
+                <Label text="%migrate.title" styleClass="h2" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                <Label text="%migrate.subtitle" style="-fx-text-fill: #9CA3AF; -fx-font-size: 14px;" wrapText="true" textAlignment="CENTER"/>
+            </VBox>
+
+            <Separator style="-fx-opacity: 0.1; -fx-background-color: white;"/>
+
+            <!-- Form Section -->
+            <VBox spacing="20">
+                <Label text="%migrate.create.account" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+                
+                <VBox spacing="8">
+                    <Label text="%signup.full.name" style="-fx-text-fill: #D1D5DB; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="fullNameField" promptText="%signup.full.name.prompt" styleClass="text-field" style="-fx-text-fill: white; -fx-prompt-text-fill: #6B7280;"/>
+                </VBox>
+
+                <VBox spacing="8">
+                    <Label text="%signup.email" style="-fx-text-fill: #D1D5DB; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <TextField fx:id="emailField" promptText="%migrate.email.prompt" styleClass="text-field" style="-fx-text-fill: white; -fx-prompt-text-fill: #6B7280;"/>
+                </VBox>
+                
+                <VBox spacing="8">
+                    <Label text="%signup.password" style="-fx-text-fill: #D1D5DB; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+                    <PasswordField fx:id="passwordField" promptText="%migrate.password.prompt" styleClass="text-field" style="-fx-text-fill: white; -fx-prompt-text-fill: #6B7280;"/>
+                </VBox>
+
+                <Button fx:id="migrateBtn" text="%migrate.button" styleClass="button-primary" maxWidth="Infinity" onAction="#handleMigration" style="-fx-font-size: 14px; -fx-padding: 12;"/>
+                
+                <Label fx:id="errorLabel" text="" style="-fx-text-fill: #EF4444; -fx-font-size: 12px;" wrapText="true"/>
+            </VBox>
+            
+            <Label text="%migrate.footer" style="-fx-text-fill: #6B7280; -fx-font-size: 11px; -fx-font-style: italic;" wrapText="true" textAlignment="CENTER"/>
+        </VBox>
+    </center>
+</BorderPane>
