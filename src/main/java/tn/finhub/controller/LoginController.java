@@ -6,6 +6,8 @@ import javafx.scene.control.*;
 import javafx.application.Platform;
 import tn.finhub.util.*;
 import java.net.http.*;
+import tn.finhub.util.OAuthLocalServer;
+import java.util.concurrent.CompletableFuture;
 import java.net.URI;
 import org.json.JSONObject;
 import java.sql.*;
@@ -184,220 +186,7 @@ public class LoginController {
 
                 System.out.println("[DEBUG] Login successful, initializing session...");
 
-                Platform.runLater(() -> {
-                    messageLabel.setStyle("-fx-text-fill: green;");
-                    messageLabel.setText(LanguageManager.getInstance().getString("login.success"));
-                });
-                SessionManager.login(
-                        user.getInt("id"),
-                        user.optString("full_name", ""), // Use optString for safety
-                        user.getString("email"),
-                        user.getString("role"),
-                        body.getString("access_token"));
-
-                System.out.println("[DEBUG] Syncing local DB...");
-                syncUserLocal(
-                        user.getInt("id"),
-                        user.optString("full_name", ""),
-                        user.getString("email"),
-                        user.getString("role"));
-
-                // Navigate based on role and profile status
-                // Navigate based on role and profile status
-                if (SessionManager.isAdmin()) {
-                    try {
-                        // CHECK MIGRATION REQUIREMENT (Background Thread)
-                        tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
-                        if (walletModel.hasWallet(user.getInt("id"))) {
-                            Platform.runLater(() -> {
-                                System.out.println("Admin has a personal wallet. Redirecting to Migration Wizard.");
-                                setView("/view/migrate_wallet.fxml");
-                            });
-                        } else {
-                            // PRE-FETCH ADMIN DATA
-                            Platform.runLater(() -> Message("Fetching admin data..."));
-
-                            try {
-                                // 1. User/Wallet Data for Transactions Page
-                                tn.finhub.model.UserModel uModel = new tn.finhub.model.UserModel();
-                                java.util.List<tn.finhub.model.User> allUsersList = uModel.findAll();
-                                java.util.List<tn.finhub.controller.AdminTransactionsController.UserWalletData> cacheList = new java.util.ArrayList<>();
-
-                                for (tn.finhub.model.User u : allUsersList) {
-                                    tn.finhub.model.Wallet w = walletModel.findByUserId(u.getId());
-                                    String status = (w != null) ? w.getStatus() : "NO_WALLET";
-                                    cacheList.add(new tn.finhub.controller.AdminTransactionsController.UserWalletData(
-                                            u, status));
-                                }
-                                tn.finhub.controller.AdminTransactionsController.setCachedData(cacheList);
-
-                                // 2. Support & Safety Data
-                                Platform.runLater(() -> Message("Fetching support data..."));
-
-                                // Support Tickets
-                                tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
-                                java.util.List<tn.finhub.model.SupportTicket> tickets = supportModel.getAllTickets();
-                                tn.finhub.controller.AdminSupportController.setCachedTickets(tickets);
-
-                                // KYC Requests
-                                tn.finhub.model.KYCModel kycModel = new tn.finhub.model.KYCModel();
-                                java.util.List<tn.finhub.model.KYCRequest> kycRequests = kycModel.findAllRequests();
-                                tn.finhub.controller.AdminKYCController.setCachedRequests(kycRequests);
-
-                                // Knowledge Base
-                                tn.finhub.model.KnowledgeBaseModel kbModel = new tn.finhub.model.KnowledgeBaseModel();
-                                java.util.List<tn.finhub.model.KnowledgeBase> kbArticles = kbModel.getAllArticles();
-
-                                // 3. Escrow Data (Optimized Prefetch)
-                                tn.finhub.controller.AdminEscrowController.prefetchData();
-                                tn.finhub.controller.AdminKnowledgeBaseController.setCachedArticles(kbArticles);
-
-                                // System Alerts
-                                tn.finhub.model.SystemAlertModel alertModel = new tn.finhub.model.SystemAlertModel();
-                                java.util.List<tn.finhub.model.SystemAlert> alerts = alertModel.getAllBroadcasts();
-                                tn.finhub.controller.AdminAlertsController.setCachedAlerts(alerts);
-
-                                // Escrow Management
-                                tn.finhub.model.EscrowManager escrowManager = new tn.finhub.model.EscrowManager();
-                                java.util.List<tn.finhub.model.Escrow> escrows = escrowManager.getEscrowsForAdmin();
-                                tn.finhub.controller.AdminEscrowController.setCachedEscrows(escrows);
-
-                            } catch (Exception e) {
-                                System.err.println("Admin pre-fetch failed: " + e.getMessage());
-                                // Proceed anyway
-                            }
-
-                            Platform.runLater(() -> {
-                                System.out.println("User is Admin. Navigating to Admin Dashboard.");
-                                setView("/view/admin_dashboard.fxml");
-                            });
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Platform.runLater(() -> messageLabel.setText("Error loading view"));
-                    }
-                } else {
-                    System.out.println("[DEBUG] Checking profile completion...");
-                    try {
-                        tn.finhub.model.FinancialProfileModel profileModel = new tn.finhub.model.FinancialProfileModel();
-                        int userId = user.getInt("id");
-
-                        // Ensure profile exists (create with default values if not) - Running on
-                        // background thread now
-                        profileModel.ensureProfile(userId);
-
-                        boolean completed = profileModel.isProfileCompleted(userId);
-                        System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
-
-                        if (!completed) {
-                            Platform.runLater(() -> {
-                                System.out.println("Redirecting to Complete Profile.");
-                                setView("/view/complete_profile.fxml");
-                            });
-                        } else {
-                            Platform.runLater(() -> Message("Fetching your financial data..."));
-
-                            // Pre-fetch Wallet Data for Dashboard - already on background thread, so just
-                            // continue
-                            try {
-                                tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
-                                tn.finhub.model.Wallet wallet = walletModel.findByUserId(userId);
-
-                                if (wallet != null) {
-                                    // Ensure wallet exists before fetching dependent data
-                                    if ("FROZEN".equals(wallet.getStatus())) {
-                                        // Handle frozen logic if needed, but mainly just fetch
-                                    }
-
-                                    // Fetch dependency models
-                                    tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
-                                    tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
-
-                                    // 1. Fetch Wallet & Dependencies
-                                    java.util.List<tn.finhub.model.VirtualCard> cards = cardModel
-                                            .findByWalletId(wallet.getId());
-                                    java.util.List<tn.finhub.model.WalletTransaction> transactions = walletModel
-                                            .getTransactionHistory(wallet.getId());
-                                    int badTxId = "FROZEN".equals(wallet.getStatus())
-                                            ? walletModel.getTamperedTransactionId(wallet.getId())
-                                            : -1;
-
-                                    // 2. Fetch Portfolio & Market Data
-                                    java.util.List<tn.finhub.model.PortfolioItem> items = marketModel
-                                            .getPortfolio(userId);
-                                    java.util.Map<String, tn.finhub.model.PortfolioItem> portfolioMap = new java.util.HashMap<>();
-
-                                    java.math.BigDecimal portValue = java.math.BigDecimal.ZERO;
-                                    java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
-
-                                    for (tn.finhub.model.PortfolioItem item : items) {
-                                        totalInvested = totalInvested
-                                                .add(item.getAverageCost().multiply(item.getQuantity()));
-                                        portfolioMap.put(item.getSymbol(), item);
-                                    }
-
-                                    // 3. Fetch Contacts (For Transactions Page)
-                                    tn.finhub.model.SavedContactModel contactModel = new tn.finhub.model.SavedContactModel();
-                                    java.util.List<tn.finhub.model.SavedContact> contacts = contactModel
-                                            .getContactsByUserId(userId);
-
-                                    // 4. Fetch Profile
-                                    tn.finhub.model.FinancialProfileModel fpm = new tn.finhub.model.FinancialProfileModel();
-                                    tn.finhub.model.FinancialProfile profile = fpm.findByUserId(userId);
-
-                                    // 5. Fetch Support Tickets
-                                    tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
-                                    java.util.List<tn.finhub.model.SupportTicket> tickets = supportModel
-                                            .getTicketsByUserId(userId);
-
-                                    // --- INJECT INTO CACHES ---
-
-                                    // Wallet Controller Cache
-                                    String bestAsset = "N/A"; // Simplified for pre-fetch
-                                    java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.ZERO;
-                                    int assetCount = items.size();
-
-                                    WalletController.WalletDataPacket walletData = new WalletController.WalletDataPacket(
-                                            wallet, cards, transactions, badTxId, portValue, totalInvested,
-                                            bestAsset,
-                                            maxPnlPercent, assetCount, new java.util.HashMap<>(),
-                                            new java.util.HashMap<>());
-                                    WalletController.setCachedData(walletData);
-
-                                    // Transactions Controller Cache
-                                    boolean isFrozen = "FROZEN".equals(wallet.getStatus());
-                                    TransactionsController.TransactionData txData = new TransactionsController.TransactionData(
-                                            userId, transactions, contacts, badTxId, isFrozen,
-                                            new java.util.HashMap<>(), new java.util.HashMap<>());
-                                    TransactionsController.setCachedData(txData);
-
-                                    // Financial Twin Cache
-                                    FinancialTwinController.setCachedPortfolio(portfolioMap);
-
-                                    // Profile Cache
-                                    if (profile != null) {
-                                        ProfileController.setCachedProfile(profile);
-                                    }
-
-                                    // Support Tickets Cache
-                                    SupportTicketsController.setCachedTickets(tickets);
-                                }
-                            } catch (Exception e) {
-                                System.out.println("Pre-fetch failed: " + e.getMessage());
-                                // Continue anyway, dashboard will load data itself
-                            }
-
-                            // Navigate after fetch (success or fail)
-                            Platform.runLater(() -> {
-                                System.out.println("Redirecting to User Dashboard.");
-                                setView("/view/user_dashboard.fxml");
-                            });
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Platform.runLater(() -> messageLabel.setText("Error loading profile"));
-                    }
-                }
+                processLoginSuccess(user, body.getString("access_token"));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -405,6 +194,289 @@ public class LoginController {
                         () -> messageLabel.setText(LanguageManager.getInstance().getString("login.server.error")));
             }
         }).start();
+    }
+
+    private void processLoginSuccess(JSONObject user, String accessToken) throws Exception {
+        Platform.runLater(() -> {
+            messageLabel.setStyle("-fx-text-fill: green;");
+            messageLabel.setText(LanguageManager.getInstance().getString("login.success"));
+        });
+        SessionManager.login(
+                user.getInt("id"),
+                user.optString("full_name", ""), // Use optString for safety
+                user.getString("email"),
+                user.getString("role"),
+                accessToken);
+
+        System.out.println("[DEBUG] Syncing local DB...");
+        syncUserLocal(
+                user.getInt("id"),
+                user.optString("full_name", ""),
+                user.getString("email"),
+                user.getString("role"));
+
+        // Navigate based on role and profile status
+        // Navigate based on role and profile status
+        if (SessionManager.isAdmin()) {
+            try {
+                // CHECK MIGRATION REQUIREMENT (Background Thread)
+                tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+                if (walletModel.hasWallet(user.getInt("id"))) {
+                    Platform.runLater(() -> {
+                        System.out.println("Admin has a personal wallet. Redirecting to Migration Wizard.");
+                        setView("/view/migrate_wallet.fxml");
+                    });
+                } else {
+                    // PRE-FETCH ADMIN DATA
+                    Platform.runLater(() -> Message("Fetching admin data..."));
+
+                    try {
+                        // 1. User/Wallet Data for Transactions Page
+                        tn.finhub.model.UserModel uModel = new tn.finhub.model.UserModel();
+                        java.util.List<tn.finhub.model.User> allUsersList = uModel.findAll();
+                        java.util.List<tn.finhub.controller.AdminTransactionsController.UserWalletData> cacheList = new java.util.ArrayList<>();
+
+                        for (tn.finhub.model.User u : allUsersList) {
+                            tn.finhub.model.Wallet w = walletModel.findByUserId(u.getId());
+                            String status = (w != null) ? w.getStatus() : "NO_WALLET";
+                            cacheList.add(new tn.finhub.controller.AdminTransactionsController.UserWalletData(
+                                    u, status));
+                        }
+                        tn.finhub.controller.AdminTransactionsController.setCachedData(cacheList);
+
+                        // 2. Support & Safety Data
+                        Platform.runLater(() -> Message("Fetching support data..."));
+
+                        // Support Tickets
+                        tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
+                        java.util.List<tn.finhub.model.SupportTicket> tickets = supportModel.getAllTickets();
+                        tn.finhub.controller.AdminSupportController.setCachedTickets(tickets);
+
+                        // KYC Requests
+                        tn.finhub.model.KYCModel kycModel = new tn.finhub.model.KYCModel();
+                        java.util.List<tn.finhub.model.KYCRequest> kycRequests = kycModel.findAllRequests();
+                        tn.finhub.controller.AdminKYCController.setCachedRequests(kycRequests);
+
+                        // Knowledge Base
+                        tn.finhub.model.KnowledgeBaseModel kbModel = new tn.finhub.model.KnowledgeBaseModel();
+                        java.util.List<tn.finhub.model.KnowledgeBase> kbArticles = kbModel.getAllArticles();
+
+                        // 3. Escrow Data (Optimized Prefetch)
+                        tn.finhub.controller.AdminEscrowController.prefetchData();
+                        tn.finhub.controller.AdminKnowledgeBaseController.setCachedArticles(kbArticles);
+
+                        // System Alerts
+                        tn.finhub.model.SystemAlertModel alertModel = new tn.finhub.model.SystemAlertModel();
+                        java.util.List<tn.finhub.model.SystemAlert> alerts = alertModel.getAllBroadcasts();
+                        tn.finhub.controller.AdminAlertsController.setCachedAlerts(alerts);
+
+                        // Escrow Management
+                        tn.finhub.model.EscrowManager escrowManager = new tn.finhub.model.EscrowManager();
+                        java.util.List<tn.finhub.model.Escrow> escrows = escrowManager.getEscrowsForAdmin();
+                        tn.finhub.controller.AdminEscrowController.setCachedEscrows(escrows);
+
+                    } catch (Exception e) {
+                        System.err.println("Admin pre-fetch failed: " + e.getMessage());
+                        // Proceed anyway
+                    }
+
+                    Platform.runLater(() -> {
+                        System.out.println("User is Admin. Navigating to Admin Dashboard.");
+                        setView("/view/admin_dashboard.fxml");
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> messageLabel.setText("Error loading view"));
+            }
+        } else {
+            System.out.println("[DEBUG] Checking profile completion...");
+            try {
+                tn.finhub.model.FinancialProfileModel profileModel = new tn.finhub.model.FinancialProfileModel();
+                int userId = user.getInt("id");
+
+                // Ensure profile exists (create with default values if not) - Running on
+                // background thread now
+                profileModel.ensureProfile(userId);
+
+                boolean completed = profileModel.isProfileCompleted(userId);
+                System.out.println("User ID: " + userId + ", Profile Completed: " + completed);
+
+                if (!completed) {
+                    Platform.runLater(() -> {
+                        System.out.println("Redirecting to Complete Profile.");
+                        setView("/view/complete_profile.fxml");
+                    });
+                } else {
+                    Platform.runLater(() -> Message("Fetching your financial data..."));
+
+                    // Pre-fetch Wallet Data for Dashboard - already on background thread, so just
+                    // continue
+                    try {
+                        tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+                        tn.finhub.model.Wallet wallet = walletModel.findByUserId(userId);
+
+                        if (wallet != null) {
+                            // Ensure wallet exists before fetching dependent data
+                            if ("FROZEN".equals(wallet.getStatus())) {
+                                // Handle frozen logic if needed, but mainly just fetch
+                            }
+
+                            // Fetch dependency models
+                            tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                            tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
+
+                            // 1. Fetch Wallet & Dependencies
+                            java.util.List<tn.finhub.model.VirtualCard> cards = cardModel
+                                    .findByWalletId(wallet.getId());
+                            java.util.List<tn.finhub.model.WalletTransaction> transactions = walletModel
+                                    .getTransactionHistory(wallet.getId());
+                            int badTxId = "FROZEN".equals(wallet.getStatus())
+                                    ? walletModel.getTamperedTransactionId(wallet.getId())
+                                    : -1;
+
+                            // 2. Fetch Portfolio & Market Data
+                            java.util.List<tn.finhub.model.PortfolioItem> items = marketModel
+                                    .getPortfolio(userId);
+                            java.util.Map<String, tn.finhub.model.PortfolioItem> portfolioMap = new java.util.HashMap<>();
+
+                            java.math.BigDecimal portValue = java.math.BigDecimal.ZERO;
+                            java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
+
+                            for (tn.finhub.model.PortfolioItem item : items) {
+                                totalInvested = totalInvested
+                                        .add(item.getAverageCost().multiply(item.getQuantity()));
+                                portfolioMap.put(item.getSymbol(), item);
+                            }
+
+                            // 3. Fetch Contacts (For Transactions Page)
+                            tn.finhub.model.SavedContactModel contactModel = new tn.finhub.model.SavedContactModel();
+                            java.util.List<tn.finhub.model.SavedContact> contacts = contactModel
+                                    .getContactsByUserId(userId);
+
+                            // 4. Fetch Profile
+                            tn.finhub.model.FinancialProfileModel fpm = new tn.finhub.model.FinancialProfileModel();
+                            tn.finhub.model.FinancialProfile profile = fpm.findByUserId(userId);
+
+                            // 5. Fetch Support Tickets
+                            tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
+                            java.util.List<tn.finhub.model.SupportTicket> tickets = supportModel
+                                    .getTicketsByUserId(userId);
+
+                            // --- INJECT INTO CACHES ---
+
+                            // Wallet Controller Cache
+                            String bestAsset = "N/A"; // Simplified for pre-fetch
+                            java.math.BigDecimal maxPnlPercent = java.math.BigDecimal.ZERO;
+                            int assetCount = items.size();
+
+                            WalletController.WalletDataPacket walletData = new WalletController.WalletDataPacket(
+                                    wallet, cards, transactions, badTxId, portValue, totalInvested,
+                                    bestAsset,
+                                    maxPnlPercent, assetCount, new java.util.HashMap<>(),
+                                    new java.util.HashMap<>());
+                            WalletController.setCachedData(walletData);
+
+                            // Transactions Controller Cache
+                            boolean isFrozen = "FROZEN".equals(wallet.getStatus());
+                            TransactionsController.TransactionData txData = new TransactionsController.TransactionData(
+                                    userId, transactions, contacts, badTxId, isFrozen,
+                                    new java.util.HashMap<>(), new java.util.HashMap<>());
+                            TransactionsController.setCachedData(txData);
+
+                            // Financial Twin Cache
+                            FinancialTwinController.setCachedPortfolio(portfolioMap);
+
+                            // Profile Cache
+                            if (profile != null) {
+                                ProfileController.setCachedProfile(profile);
+                            }
+
+                            // Support Tickets Cache
+                            SupportTicketsController.setCachedTickets(tickets);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Pre-fetch failed: " + e.getMessage());
+                        // Continue anyway, dashboard will load data itself
+                    }
+
+                    // Navigate after fetch (success or fail)
+                    Platform.runLater(() -> {
+                        System.out.println("Redirecting to User Dashboard.");
+                        setView("/view/user_dashboard.fxml");
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> messageLabel.setText("Error loading profile"));
+            }
+        }
+    }
+
+    @FXML
+    public void handleGoogleLogin() {
+        System.out.println("[DEBUG] Google Login button clicked");
+        Platform.runLater(() -> {
+            messageLabel.setStyle("-fx-text-fill: orange;");
+            messageLabel.setText("Opening browser for Google Sign-In...");
+        });
+
+        OAuthLocalServer oauthServer = new OAuthLocalServer();
+        oauthServer.startAndAuthenticate().thenAccept(idToken -> {
+            Platform.runLater(() -> {
+                messageLabel.setStyle("-fx-text-fill: orange;");
+                messageLabel.setText("Authenticating with server...");
+            });
+
+            try {
+                String json = String.format("{ \"id_token\": \"%s\" }", idToken);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(ApiClient.BASE_URL + "/auth/google"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(json))
+                        .build();
+
+                HttpResponse<String> response = ApiClient.getClient().send(request,
+                        HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() != 200) {
+                    String errorMsg = "Google Login failed";
+                    try {
+                        JSONObject errorBody = new JSONObject(response.body());
+                        if (errorBody.has("detail")) {
+                            errorMsg = errorBody.getString("detail");
+                        }
+                    } catch (Exception e) {
+                    }
+
+                    String finalMsg = errorMsg;
+                    Platform.runLater(() -> {
+                        messageLabel.setStyle("-fx-text-fill: red;");
+                        messageLabel.setText(finalMsg);
+                    });
+                    return;
+                }
+
+                JSONObject body = new JSONObject(response.body());
+                JSONObject userObj = body.getJSONObject("user");
+
+                processLoginSuccess(userObj, body.getString("access_token"));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(
+                        () -> messageLabel.setText(LanguageManager.getInstance().getString("login.server.error")));
+            }
+
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
+            Platform.runLater(() -> {
+                messageLabel.setStyle("-fx-text-fill: red;");
+                messageLabel.setText("Google Sign-In failed or canceled.");
+            });
+            return null;
+        });
     }
 
     private void syncUserLocal(int id, String fullName, String email, String role) throws Exception {
