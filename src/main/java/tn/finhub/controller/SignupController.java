@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import tn.finhub.util.ApiClient;
 import java.net.http.*;
 import java.net.URI;
@@ -11,81 +12,72 @@ import tn.finhub.util.MailClient;
 import tn.finhub.util.ValidationUtils;
 import tn.finhub.util.LanguageManager;
 import org.json.JSONObject;
-
 import tn.finhub.util.SessionManager;
 import tn.finhub.util.DBConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.awt.Desktop;
 import java.net.URLEncoder;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import io.github.cdimascio.dotenv.Dotenv;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
 
 public class SignupController {
 
     private static final Dotenv DOTENV = Dotenv.configure().ignoreIfMissing().load();
-
     private volatile boolean keepPolling = true;
 
-    @FXML
-    private TextField emailField;
+    @FXML private TextField     nameField;
+    @FXML private TextField     emailField;
+    @FXML private PasswordField passwordField;
+    @FXML private PasswordField confirmPasswordField;
+    @FXML private Label         messageLabel;
 
-    @FXML
-    private PasswordField passwordField;
-
-    @FXML
-    private PasswordField confirmPasswordField;
-
-    @FXML
-    private TextField nameField;
-
-    @FXML
-    private Label messageLabel;
-
+    // =========================================================
+    // SIGNUP NORMAL (formulaire)
+    // =========================================================
     @FXML
     public void handleSignup() {
         try {
-            // Input Validation
+            // Validation nom
             if (!ValidationUtils.isValidName(nameField.getText())) {
-                messageLabel.setStyle("-fx-text-fill: red;");
-                messageLabel.setText("Invalid name (min 2 chars, letters only)");
+                showError("Invalid name (min 2 chars, letters only)");
                 return;
             }
-
+            // Validation email
             if (!ValidationUtils.isValidEmail(emailField.getText())) {
-                messageLabel.setStyle("-fx-text-fill: red;");
-                messageLabel.setText("Invalid email format");
+                showError("Invalid email format");
                 return;
             }
-
+            // Validation mot de passe
             String password = passwordField.getText();
             String pwdError = ValidationUtils.getPasswordValidationError(password);
             if (pwdError != null) {
-                messageLabel.setStyle("-fx-text-fill: red;");
-                messageLabel.setText(pwdError);
+                showError(pwdError);
                 return;
             }
-
-            String role = "CLIENT";
+            // Confirmation mot de passe
+            if (!password.equals(confirmPasswordField.getText())) {
+                showError("❌ Passwords do not match");
+                return;
+            }
 
             String json = """
                     {
                       "full_name": "%s",
                       "email": "%s",
                       "password": "%s",
-                      "role": "%s"
+                      "role": "CLIENT"
                     }
-                    """.formatted(
-                    nameField.getText(),
-                    emailField.getText(),
-                    password,
-                    role);
+                    """.formatted(nameField.getText(), emailField.getText(), password);
 
-            messageLabel.setStyle("-fx-text-fill: orange;");
-            messageLabel.setText("Creating account...");
+            showInfo("Creating account...");
 
-            // Run network operations in background thread
             new Thread(() -> {
                 try {
                     HttpRequest request = HttpRequest.newBuilder()
@@ -94,98 +86,401 @@ public class SignupController {
                             .POST(HttpRequest.BodyPublishers.ofString(json))
                             .build();
 
-                    HttpResponse<String> response = ApiClient.getClient().send(request,
-                            HttpResponse.BodyHandlers.ofString());
+                    HttpResponse<String> response = ApiClient.getClient().send(
+                            request, HttpResponse.BodyHandlers.ofString());
 
                     if (response.statusCode() != 200) {
-                        // Try to parse error details from JSON body
-                        String errorMessage = "Signup failed"; // Default
+                        String errorMessage = "Signup failed";
                         try {
                             JSONObject errorBody = new JSONObject(response.body());
-                            if (errorBody.has("detail")) {
+                            if (errorBody.has("detail"))
                                 errorMessage = errorBody.getString("detail");
-                            }
-                        } catch (Exception e) {
-                            // Fallback if body is not JSON or empty
-                        }
+                        } catch (Exception ignored) {}
 
-                        // Handle specific status codes
-                        final String finalErrorMessage;
-                        if (response.statusCode() == 409) {
-                            finalErrorMessage = "Email already exists";
-                        } else if (response.statusCode() == 400) {
-                            // 400 Bad Request could be duplicate email based on user's API
-                            if (errorMessage.toLowerCase().contains("already")) {
-                                finalErrorMessage = "Email already exists";
-                            } else {
-                                finalErrorMessage = errorMessage;
-                            }
+                        final String finalMsg;
+                        if (response.statusCode() == 409 || errorMessage.toLowerCase().contains("already")) {
+                            finalMsg = "Email already exists";
                         } else {
-                            finalErrorMessage = "Signup failed: " + response.statusCode();
+                            finalMsg = "Signup failed: " + response.statusCode();
                         }
-
-                        Platform.runLater(() -> {
-                            messageLabel.setStyle("-fx-text-fill: red;");
-                            messageLabel.setText("❌ " + finalErrorMessage);
-                        });
+                        Platform.runLater(() -> showError("❌ " + finalMsg));
                         return;
                     }
 
                     JSONObject body = new JSONObject(response.body());
                     String verificationLink = body.getString("verification_link");
-
                     boolean emailSent = MailClient.sendVerificationEmail(
-                            emailField.getText(),
-                            verificationLink);
+                            emailField.getText(), verificationLink);
 
                     Platform.runLater(() -> {
                         if (emailSent) {
-                            messageLabel.setStyle("-fx-text-fill: green;");
-                            messageLabel.setText("✅ Account created. Verify email to login...");
+                            showSuccess("✅ Account created. Check your email to verify...");
                         } else {
-                            messageLabel.setStyle("-fx-text-fill: orange;");
-                            messageLabel.setText("⚠️ Account created, but verification email wasn't sent. Use the link in console.");
+                            showInfo("⚠️ Account created, but verification email wasn't sent.");
                         }
                     });
 
-                    System.out.println("📧 Sending verification email to: " + emailField.getText());
+                    System.out.println("📧 Verification email sent to: " + emailField.getText());
                     System.out.println("🔗 Link: " + verificationLink);
 
-                    // Start polling for auto-login
+                    // Polling jusqu'à ce que l'utilisateur clique le lien
                     startPollingForVerification(emailField.getText(), password);
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    Platform.runLater(() -> messageLabel.setText("❌ Error sending request"));
+                    Platform.runLater(() -> showError("❌ Error sending request"));
                 }
             }).start();
 
         } catch (Exception e) {
             e.printStackTrace();
-            messageLabel.setText("❌ Error validating input");
+            showError("❌ Error validating input");
         }
     }
 
+    // =========================================================
+    // GOOGLE SIGNUP — Bouton FXML
+    // =========================================================
+    @FXML
+    public void handleGoogleSignup() {
+        showInfo("🌐 Connecting with Google...");
+        handleGoogleLogin();
+    }
+
+    // =========================================================
+    // GOOGLE OAUTH — Lancement via Task JavaFX
+    // =========================================================
+    private void handleGoogleLogin() {
+        Task<JSONObject> task = new Task<>() {
+            @Override
+            protected JSONObject call() throws Exception {
+                return performGoogleOAuth();
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            JSONObject userInfo = task.getValue();
+            if (userInfo != null) {
+                String email = userInfo.optString("email", "");
+                String name  = userInfo.optString("name", "");
+                handleGoogleUserInfo(email, name);
+            } else {
+                showError("❌ Google sign-in cancelled or failed.");
+            }
+        });
+
+        task.setOnFailed(e ->
+                showError("❌ Google error: " + task.getException().getMessage()));
+
+        new Thread(task).start();
+    }
+
+    // =========================================================
+    // GOOGLE USER INFO — Cœur du flow Google corrigé
+    //
+    // Flow :
+    //   1. Tenter inscription via /signup
+    //   2a. Nouveau compte (200) → vérifier auto via /verify-google
+    //                            → login direct → Dashboard
+    //   2b. Compte existant (409) → login direct via /google-login
+    //                             → Dashboard
+    //   ✅ Jamais de "vérifie ton email" pour Google
+    // =========================================================
+    private void handleGoogleUserInfo(String email, String fullName) {
+        if (email.isBlank()) {
+            Platform.runLater(() -> showError("Unable to retrieve Google email."));
+            return;
+        }
+
+        final String name     = fullName.isBlank() ? email : fullName;
+        final String password = "Gg1!" + UUID.randomUUID(); // password sécurisé généré
+
+        new Thread(() -> {
+            try {
+                // ── ÉTAPE 1 : Tentative d'inscription ──────────────────────
+                String signupJson = """
+                        {
+                          "full_name": "%s",
+                          "email": "%s",
+                          "password": "%s",
+                          "role": "CLIENT"
+                        }
+                        """.formatted(name, email, password);
+
+                HttpRequest signupRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(ApiClient.BASE_URL + "/signup"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(signupJson))
+                        .build();
+
+                HttpResponse<String> signupResponse = ApiClient.getClient().send(
+                        signupRequest, HttpResponse.BodyHandlers.ofString());
+
+                // ── CAS A : Nouveau compte créé ────────────────────────────
+                if (signupResponse.statusCode() == 200) {
+                    Platform.runLater(() -> showInfo("⏳ Finalizing Google login..."));
+
+                    // Vérification automatique (pas besoin d'email pour Google)
+                    String verifyJson = """
+                            { "email": "%s" }
+                            """.formatted(email);
+
+                    HttpRequest verifyRequest = HttpRequest.newBuilder()
+                            .uri(URI.create(ApiClient.BASE_URL + "/verify-google"))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(verifyJson))
+                            .build();
+
+                    HttpResponse<String> verifyResponse = ApiClient.getClient().send(
+                            verifyRequest, HttpResponse.BodyHandlers.ofString());
+
+                    if (verifyResponse.statusCode() != 200) {
+                        Platform.runLater(() -> showError(
+                                "❌ Auto-verification failed: " + verifyResponse.body()));
+                        return;
+                    }
+
+                    // Login direct avec les credentials générés
+                    loginWithCredentials(email, password);
+                    return;
+                }
+
+                // ── CAS B : Compte Google déjà existant ───────────────────
+                if (signupResponse.statusCode() == 409) {
+                    Platform.runLater(() -> showInfo("⏳ Signing in to existing account..."));
+
+                    // Login via endpoint dédié Google (pas besoin du password)
+                    loginWithGoogleEndpoint(email);
+                    return;
+                }
+
+                // ── CAS C : Autre erreur ───────────────────────────────────
+                String errorMsg = "Google signup failed";
+                try {
+                    JSONObject errBody = new JSONObject(signupResponse.body());
+                    if (errBody.has("detail")) errorMsg = errBody.getString("detail");
+                } catch (Exception ignored) {}
+
+                final String finalMsg = errorMsg;
+                Platform.runLater(() -> showError("❌ " + finalMsg));
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showError("❌ Error during Google signup"));
+            }
+        }).start();
+    }
+
+    // =========================================================
+    // LOGIN avec email + password (nouveau compte Google)
+    // =========================================================
+    private void loginWithCredentials(String email, String password) throws Exception {
+        String json = """
+                { "email": "%s", "password": "%s" }
+                """.formatted(email, password);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(ApiClient.BASE_URL + "/login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = ApiClient.getClient().send(
+                request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JSONObject body = new JSONObject(response.body());
+            JSONObject user = body.getJSONObject("user");
+            String token    = body.getString("access_token");
+            handleLoginSuccess(user, token);
+        } else {
+            Platform.runLater(() -> showError("❌ Auto-login failed. Please try logging in manually."));
+        }
+    }
+
+    // =========================================================
+    // LOGIN via endpoint Google dédié (compte existant)
+    // Endpoint backend : POST /google-login { "email": "..." }
+    // =========================================================
+    private void loginWithGoogleEndpoint(String email) throws Exception {
+        String json = """
+                { "email": "%s" }
+                """.formatted(email);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(ApiClient.BASE_URL + "/google-login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+
+        HttpResponse<String> response = ApiClient.getClient().send(
+                request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JSONObject body = new JSONObject(response.body());
+            JSONObject user = body.getJSONObject("user");
+            String token    = body.getString("access_token");
+            handleLoginSuccess(user, token);
+        } else {
+            // Fallback : rediriger vers login manuel
+            Platform.runLater(() -> {
+                showError("❌ Please log in manually with this email.");
+                // Optionnel : naviguer vers login après 2 secondes
+                new Thread(() -> {
+                    try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                    Platform.runLater(() -> navigateTo("/view/login.fxml"));
+                }).start();
+            });
+        }
+    }
+
+    // =========================================================
+    // GOOGLE OAUTH — Authorization Code + localhost callback
+    // =========================================================
+    private JSONObject performGoogleOAuth() throws Exception {
+        String clientId     = DOTENV.get("GOOGLE_CLIENT_ID");
+        String clientSecret = DOTENV.get("GOOGLE_CLIENT_SECRET");
+
+        if (clientId == null || clientId.isBlank())
+            throw new IllegalStateException("GOOGLE_CLIENT_ID missing in .env");
+        if (clientSecret == null || clientSecret.isBlank())
+            throw new IllegalStateException("GOOGLE_CLIENT_SECRET missing in .env");
+
+        int    port        = 8085;
+        String redirectUri = "http://localhost:" + port + "/callback";
+        String state       = UUID.randomUUID().toString();
+
+        String authUrl = "https://accounts.google.com/o/oauth2/v2/auth"
+                + "?client_id="    + URLEncoder.encode(clientId,               StandardCharsets.UTF_8)
+                + "&redirect_uri=" + URLEncoder.encode(redirectUri,            StandardCharsets.UTF_8)
+                + "&response_type=code"
+                + "&scope="        + URLEncoder.encode("openid email profile", StandardCharsets.UTF_8)
+                + "&state="        + URLEncoder.encode(state,                  StandardCharsets.UTF_8)
+                + "&access_type=offline"
+                + "&prompt=select_account";
+
+        Platform.runLater(() -> showInfo("🌐 Opening Google browser..."));
+
+        if (Desktop.isDesktopSupported()) {
+            Desktop.getDesktop().browse(new URI(authUrl));
+        } else {
+            throw new RuntimeException("Cannot open browser on this device.");
+        }
+
+        String code = waitForAuthCode(port, state);
+        if (code == null) return null;
+
+        // Échanger le code contre un access_token
+        HttpClient http = ApiClient.getClient();
+        String tokenBody = "code="          + URLEncoder.encode(code,         StandardCharsets.UTF_8)
+                + "&client_id="     + URLEncoder.encode(clientId,     StandardCharsets.UTF_8)
+                + "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)
+                + "&redirect_uri="  + URLEncoder.encode(redirectUri,  StandardCharsets.UTF_8)
+                + "&grant_type=authorization_code";
+
+        HttpRequest tokenRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://oauth2.googleapis.com/token"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(tokenBody))
+                .build();
+
+        HttpResponse<String> tokenResponse = http.send(tokenRequest, HttpResponse.BodyHandlers.ofString());
+        JSONObject tokenJson = new JSONObject(tokenResponse.body());
+
+        if (!tokenJson.has("access_token")) {
+            throw new RuntimeException("Token refused: " + tokenResponse.body());
+        }
+
+        // Récupérer le profil Google
+        String accessToken = tokenJson.getString("access_token");
+
+        HttpRequest userInfoRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://openidconnect.googleapis.com/v1/userinfo"))
+                .header("Authorization", "Bearer " + accessToken)
+                .GET()
+                .build();
+
+        HttpResponse<String> userInfoResponse = http.send(userInfoRequest, HttpResponse.BodyHandlers.ofString());
+
+        if (userInfoResponse.statusCode() != 200) {
+            throw new RuntimeException("Profile fetch failed: " + userInfoResponse.body());
+        }
+
+        return new JSONObject(userInfoResponse.body());
+    }
+
+    // =========================================================
+    // SERVEUR LOCALHOST — Capture du code OAuth
+    // =========================================================
+    private String waitForAuthCode(int port, String expectedState) throws Exception {
+        Platform.runLater(() -> showInfo("⏳ Waiting for Google authentication..."));
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            serverSocket.setSoTimeout(120_000);
+
+            try (Socket socket = serverSocket.accept()) {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(socket.getInputStream()));
+                String requestLine = reader.readLine();
+
+                String htmlResponse =
+                        "<html><body style='font-family:sans-serif;text-align:center;margin-top:80px'>"
+                                + "<h2 style='color:#7c3aed'>✅ Authentication successful!</h2>"
+                                + "<p style='color:#555'>You can close this tab and return to FinHub.</p>"
+                                + "</body></html>";
+
+                String httpResponse = "HTTP/1.1 200 OK\r\n"
+                        + "Content-Type: text/html; charset=UTF-8\r\n"
+                        + "Connection: close\r\n\r\n"
+                        + htmlResponse;
+
+                socket.getOutputStream().write(httpResponse.getBytes(StandardCharsets.UTF_8));
+                socket.getOutputStream().flush();
+
+                if (requestLine == null || !requestLine.contains("?")) return null;
+
+                String queryString = requestLine.split(" ")[1];
+                if (queryString.contains("error=")) return null;
+
+                String paramsPart = queryString.split("\\?")[1];
+                Map<String, String> params = new HashMap<>();
+                for (String param : paramsPart.split("&")) {
+                    String[] kv = param.split("=", 2);
+                    if (kv.length == 2) {
+                        params.put(kv[0], URLDecoder.decode(kv[1], StandardCharsets.UTF_8));
+                    }
+                }
+
+                if (!expectedState.equals(params.get("state"))) {
+                    throw new SecurityException("Invalid OAuth state — possible CSRF attack");
+                }
+
+                return params.get("code");
+            }
+
+        } catch (java.net.SocketTimeoutException e) {
+            Platform.runLater(() -> showError("❌ Timeout: Google authentication expired."));
+            return null;
+        }
+    }
+
+    // =========================================================
+    // POLLING — Pour signup normal (email/password) uniquement
+    // =========================================================
     private void startPollingForVerification(String email, String password) {
         keepPolling = true;
         Thread pollingThread = new Thread(() -> {
             int attempts = 0;
-            // Poll for 5 minutes (300 seconds / 3 seconds = 100 attempts)
             while (keepPolling && attempts < 100) {
                 try {
-                    Thread.sleep(3000); // Wait 3 seconds
+                    Thread.sleep(3000);
                     attempts++;
+                    if (!keepPolling) break;
 
-                    if (!keepPolling)
-                        break; // Check again after sleep
-
-                    System.out.println("[DEBUG] Polling for verification... Attempt " + attempts);
+                    System.out.println("[DEBUG] Polling attempt " + attempts);
 
                     String json = """
-                            {
-                              "email": "%s",
-                              "password": "%s"
-                            }
+                            { "email": "%s", "password": "%s" }
                             """.formatted(email, password);
 
                     HttpRequest request = HttpRequest.newBuilder()
@@ -194,26 +489,23 @@ public class SignupController {
                             .POST(HttpRequest.BodyPublishers.ofString(json))
                             .build();
 
-                    HttpResponse<String> response = ApiClient.getClient().send(request,
-                            HttpResponse.BodyHandlers.ofString());
+                    HttpResponse<String> response = ApiClient.getClient().send(
+                            request, HttpResponse.BodyHandlers.ofString());
 
                     if (response.statusCode() == 200) {
-                        System.out.println("[DEBUG] Verification confirmed! Logging in.");
+                        System.out.println("[DEBUG] Email verified! Logging in.");
                         keepPolling = false;
                         JSONObject body = new JSONObject(response.body());
                         JSONObject user = body.getJSONObject("user");
-                        String token = body.getString("access_token");
+                        String token    = body.getString("access_token");
                         handleLoginSuccess(user, token);
                         break;
                     } else if (response.statusCode() == 403) {
-                        // Still not verified, continue polling
-                        continue;
+                        continue; // pas encore vérifié, on réessaie
                     } else {
-                        // Other error (e.g. 401 if password somehow changed, or 500), stop polling
-                        System.out.println("[DEBUG] Polling stopped due to error: " + response.statusCode());
+                        System.out.println("[DEBUG] Polling stopped: " + response.statusCode());
                         keepPolling = false;
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                     keepPolling = false;
@@ -224,131 +516,95 @@ public class SignupController {
         pollingThread.start();
     }
 
-    @FXML
-    public void handleGoogleSignup() {
-        messageLabel.setStyle("-fx-text-fill: orange;");
-        messageLabel.setText("Connecting with Google...");
+    // =========================================================
+    // LOGIN SUCCESS — Session + Redirection dashboard
+    // =========================================================
+    private void handleLoginSuccess(JSONObject user, String token) {
+        try {
+            System.out.println("[DEBUG] Login successful, initializing session...");
 
-        new Thread(() -> {
-            try {
-                JSONObject googleUser = performGoogleDeviceFlow();
-                if (googleUser == null) {
-                    Platform.runLater(() -> {
-                        messageLabel.setStyle("-fx-text-fill: red;");
-                        messageLabel.setText("Google sign-in cancelled or failed.");
-                    });
-                    return;
-                }
+            SessionManager.login(
+                    user.getInt("id"),
+                    user.optString("full_name", ""),
+                    user.getString("email"),
+                    user.getString("role"),
+                    token);
 
-                String email = googleUser.optString("email", "");
-                String fullName = googleUser.optString("name", "");
+            syncUserLocal(
+                    user.getInt("id"),
+                    user.optString("full_name", ""),
+                    user.getString("email"),
+                    user.getString("role"));
 
-                if (email.isBlank()) {
-                    Platform.runLater(() -> {
-                        messageLabel.setStyle("-fx-text-fill: red;");
-                        messageLabel.setText("Unable to retrieve Google email.");
-                    });
-                    return;
-                }
+            Platform.runLater(() -> showSuccess("✅ Logged in! Redirecting..."));
 
-                if (fullName.isBlank()) {
-                    fullName = email;
-                }
+            int userId = user.getInt("id");
+            tn.finhub.model.FinancialProfileModel profileModel = new tn.finhub.model.FinancialProfileModel();
+            profileModel.ensureProfile(userId);
+            boolean completed = profileModel.isProfileCompleted(userId);
 
-                // Must satisfy backend password rules (upper/lower/digit/special, min length)
-                String generatedPassword = "Gg1!" + UUID.randomUUID();
+            if (!completed) {
+                // Profil financier incomplet → compléter d'abord
+                Platform.runLater(() -> navigateTo("/view/complete_profile.fxml"));
+            } else {
+                // Pré-chargement du wallet en arrière-plan
+                try {
+                    tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
+                    tn.finhub.model.Wallet wallet = walletModel.findByUserId(userId);
+                    if (wallet != null) {
+                        tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
+                        tn.finhub.model.MarketModel marketModel    = new tn.finhub.model.MarketModel();
+                        var cards        = cardModel.findByWalletId(wallet.getId());
+                        var transactions = walletModel.getTransactionHistory(wallet.getId());
+                        var items        = marketModel.getPortfolio(userId);
 
-                String json = """
-                        {
-                          "full_name": "%s",
-                          "email": "%s",
-                          "password": "%s",
-                          "role": "CLIENT"
+                        java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
+                        for (var item : items) {
+                            totalInvested = totalInvested.add(
+                                    item.getAverageCost().multiply(item.getQuantity()));
                         }
-                        """.formatted(
-                        fullName,
-                        email,
-                        generatedPassword);
 
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(ApiClient.BASE_URL + "/signup"))
-                        .header("Content-Type", "application/json")
-                        .POST(HttpRequest.BodyPublishers.ofString(json))
-                        .build();
-
-                HttpResponse<String> response = ApiClient.getClient().send(request,
-                        HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() != 200) {
-                    String errorMessage = "Signup failed";
-                    try {
-                        JSONObject errorBody = new JSONObject(response.body());
-                        if (errorBody.has("detail")) {
-                            errorMessage = errorBody.getString("detail");
-                        }
-                    } catch (Exception ignored) {
+                        WalletController.WalletDataPacket packet = new WalletController.WalletDataPacket(
+                                wallet, cards, transactions, -1,
+                                java.math.BigDecimal.ZERO, totalInvested, "N/A",
+                                java.math.BigDecimal.ZERO, items.size(),
+                                new java.util.HashMap<>(), new java.util.HashMap<>());
+                        WalletController.setCachedData(packet);
                     }
-
-                    final String finalErrorMessage;
-                    if (response.statusCode() == 409 || errorMessage.toLowerCase().contains("already")) {
-                        finalErrorMessage = "An account with this Google email already exists. Please log in instead.";
-                    } else {
-                        finalErrorMessage = "Google signup failed: " + errorMessage;
-                    }
-
-                    Platform.runLater(() -> {
-                        messageLabel.setStyle("-fx-text-fill: red;");
-                        messageLabel.setText("❌ " + finalErrorMessage);
-                    });
-                    return;
+                } catch (Exception e) {
+                    System.out.println("Pre-fetch failed: " + e.getMessage());
                 }
-
-                JSONObject body = new JSONObject(response.body());
-                String verificationLink = body.getString("verification_link");
-
-                boolean emailSent = MailClient.sendVerificationEmail(
-                        email,
-                        verificationLink);
-
-                Platform.runLater(() -> {
-                    if (emailSent) {
-                        messageLabel.setStyle("-fx-text-fill: green;");
-                        messageLabel.setText("✅ Google account created. Verify email to login...");
-                    } else {
-                        messageLabel.setStyle("-fx-text-fill: orange;");
-                        messageLabel.setText("⚠️ Google account created, but verification email wasn't sent. Use the link in console.");
-                    }
-                });
-
-                System.out.println("📧 Sending verification email to: " + email);
-                System.out.println("🔗 Link: " + verificationLink);
-
-                startPollingForVerification(email, generatedPassword);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> {
-                    messageLabel.setStyle("-fx-text-fill: red;");
-                    messageLabel.setText("❌ Error during Google signup");
-                });
+                Platform.runLater(() -> navigateTo("/view/user_dashboard.fxml"));
             }
-        }).start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Platform.runLater(() -> showError("❌ Error during login"));
+        }
     }
 
+    // =========================================================
+    // NAVIGATION
+    // =========================================================
     @FXML
     public void goToLogin() {
-        keepPolling = false; // Stop auto-login polling
+        keepPolling = false;
+        navigateTo("/view/login.fxml");
+    }
+
+    private void navigateTo(String fxmlPath) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/login.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             loader.setResources(LanguageManager.getInstance().getResourceBundle());
             javafx.scene.Parent newView = loader.load();
-            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameField.getScene()
-                    .lookup("#contentArea");
+
+            javafx.scene.layout.StackPane contentArea =
+                    (javafx.scene.layout.StackPane) nameField.getScene().lookup("#contentArea");
 
             if (!contentArea.getChildren().isEmpty()) {
-                javafx.scene.Node currentView = contentArea.getChildren().get(0);
+                javafx.scene.Node current = contentArea.getChildren().get(0);
                 javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
-                        javafx.util.Duration.millis(300), currentView);
+                        javafx.util.Duration.millis(300), current);
                 fadeOut.setFromValue(1.0);
                 fadeOut.setToValue(0.0);
                 fadeOut.setOnFinished(e -> {
@@ -367,245 +623,48 @@ public class SignupController {
 
     private void fadeIn(javafx.scene.Node node) {
         node.setOpacity(0);
-        javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(javafx.util.Duration.millis(300),
-                node);
-        fadeIn.setFromValue(0.0);
-        fadeIn.setToValue(1.0);
-        fadeIn.play();
+        javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(
+                javafx.util.Duration.millis(300), node);
+        ft.setFromValue(0.0);
+        ft.setToValue(1.0);
+        ft.play();
     }
 
+    // =========================================================
+    // HELPERS UI
+    // =========================================================
+    private void showError(String msg) {
+        messageLabel.setStyle("-fx-text-fill: red;");
+        messageLabel.setText(msg);
+    }
+
+    private void showSuccess(String msg) {
+        messageLabel.setStyle("-fx-text-fill: green;");
+        messageLabel.setText(msg);
+    }
+
+    private void showInfo(String msg) {
+        messageLabel.setStyle("-fx-text-fill: orange;");
+        messageLabel.setText(msg);
+    }
+
+    // =========================================================
+    // DB — Sync local
+    // =========================================================
     private void syncUserLocal(int id, String fullName, String email, String role) throws Exception {
         Connection conn = DBConnection.getInstance();
-
         PreparedStatement ps = conn.prepareStatement("""
                 INSERT INTO users_local (user_id, full_name, email, role)
                 VALUES (?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                   full_name = VALUES(full_name),
-                  email = VALUES(email),
-                  role = VALUES(role)
+                  email     = VALUES(email),
+                  role      = VALUES(role)
                 """);
-
         ps.setInt(1, id);
         ps.setString(2, fullName);
         ps.setString(3, email);
         ps.setString(4, role);
-
         ps.executeUpdate();
-    }
-
-    private void handleLoginSuccess(JSONObject user, String token) {
-        try {
-            System.out.println("[DEBUG] Auto-login successful, initializing session...");
-
-            SessionManager.login(
-                    user.getInt("id"),
-                    user.optString("full_name", ""),
-                    user.getString("email"),
-                    user.getString("role"),
-                    token);
-
-            System.out.println("[DEBUG] Syncing local DB...");
-            syncUserLocal(
-                    user.getInt("id"),
-                    user.optString("full_name", ""),
-                    user.getString("email"),
-                    user.getString("role"));
-
-            Platform.runLater(() -> {
-                messageLabel.setStyle("-fx-text-fill: green;");
-                messageLabel.setText("✅ Verified! Logging in...");
-            });
-
-            // Pre-fetch logic (simplified version of LoginController to avoid code
-            // duplication hell)
-            // We'll rely on Dashboard's own init if data is missing, or minimal pre-fetch
-            // here.
-            // Actually, for best UX, we should fetch core data.
-            int userId = user.getInt("id");
-            tn.finhub.model.FinancialProfileModel profileModel = new tn.finhub.model.FinancialProfileModel();
-
-            // Background thread is already running this, so we can do blocking calls here
-            profileModel.ensureProfile(userId);
-            boolean completed = profileModel.isProfileCompleted(userId);
-
-            if (!completed) {
-                Platform.runLater(() -> {
-                    try {
-                        System.out.println("Redirecting to Complete Profile.");
-                        // Use the existing goToLogin's logic but for complete profile
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/complete_profile.fxml"));
-                        loader.setResources(LanguageManager.getInstance().getResourceBundle());
-                        javafx.scene.Parent newView = loader.load();
-                        javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameField.getScene()
-                                .lookup("#contentArea");
-                        contentArea.getChildren().setAll(newView);
-                        fadeIn(newView);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-            } else {
-                // Fetch Wallet and other data similar to LoginController
-                try {
-                    tn.finhub.model.WalletModel walletModel = new tn.finhub.model.WalletModel();
-                    tn.finhub.model.Wallet wallet = walletModel.findByUserId(userId);
-                    if (wallet != null) {
-                        tn.finhub.model.VirtualCardModel cardModel = new tn.finhub.model.VirtualCardModel();
-                        tn.finhub.model.MarketModel marketModel = new tn.finhub.model.MarketModel();
-
-                        var cards = cardModel.findByWalletId(wallet.getId());
-                        var transactions = walletModel.getTransactionHistory(wallet.getId());
-                        var items = marketModel.getPortfolio(userId);
-
-                        // Populate Wallet Cache
-                        java.math.BigDecimal totalInvested = java.math.BigDecimal.ZERO;
-                        for (var item : items) {
-                            totalInvested = totalInvested.add(item.getAverageCost().multiply(item.getQuantity()));
-                        }
-
-                        tn.finhub.controller.WalletController.WalletDataPacket packet = new tn.finhub.controller.WalletController.WalletDataPacket(
-                                wallet, cards, transactions, -1, java.math.BigDecimal.ZERO, totalInvested, "N/A",
-                                java.math.BigDecimal.ZERO, items.size(), new java.util.HashMap<>(),
-                                new java.util.HashMap<>());
-                        WalletController.setCachedData(packet);
-                    }
-                } catch (Exception e) {
-                    System.out.println("Pre-fetch failed: " + e.getMessage());
-                }
-
-                Platform.runLater(() -> {
-                    try {
-                        System.out.println("Redirecting to User Dashboard.");
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/user_dashboard.fxml"));
-                        loader.setResources(LanguageManager.getInstance().getResourceBundle());
-                        javafx.scene.Parent newView = loader.load();
-                        javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) nameField.getScene()
-                                .lookup("#contentArea");
-                        contentArea.getChildren().setAll(newView);
-                        fadeIn(newView);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Platform.runLater(() -> messageLabel.setText("❌ Error during auto-login"));
-        }
-    }
-
-    /**
-     * Performs Google OAuth 2.0 Device Authorization Grant to obtain the user's
-     * basic profile (email, name).
-     * <p>
-     * Requires valid Google OAuth credentials in the .env file:
-     * GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.
-     */
-    private JSONObject performGoogleDeviceFlow() throws Exception {
-        String clientId = DOTENV.get("GOOGLE_CLIENT_ID");
-        String clientSecret = DOTENV.get("GOOGLE_CLIENT_SECRET");
-        if (clientId == null || clientId.isBlank()) {
-            throw new IllegalStateException("GOOGLE_CLIENT_ID not configured in .env");
-        }
-        if (clientSecret == null || clientSecret.isBlank()) {
-            throw new IllegalStateException("GOOGLE_CLIENT_SECRET not configured in .env");
-        }
-
-        HttpClient client = ApiClient.getClient();
-
-        String deviceRequestBody = "client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8)
-                + "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)
-                + "&scope=" + URLEncoder.encode("openid email profile", StandardCharsets.UTF_8);
-
-        HttpRequest deviceRequest = HttpRequest.newBuilder()
-                .uri(URI.create("https://oauth2.googleapis.com/device/code"))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString(deviceRequestBody))
-                .build();
-
-        HttpResponse<String> deviceResponse = client.send(deviceRequest, HttpResponse.BodyHandlers.ofString());
-
-        if (deviceResponse.statusCode() != 200) {
-            throw new RuntimeException("Failed to start Google device flow: " + deviceResponse.body());
-        }
-
-        JSONObject deviceJson = new JSONObject(deviceResponse.body());
-        String deviceCode = deviceJson.getString("device_code");
-        String userCode = deviceJson.getString("user_code");
-        String verificationUrl = deviceJson.optString("verification_url",
-                deviceJson.optString("verification_uri", "https://www.google.com/device"));
-        int interval = deviceJson.optInt("interval", 5);
-
-        Platform.runLater(() -> {
-            messageLabel.setStyle("-fx-text-fill: orange;");
-            messageLabel.setText("Enter code " + userCode + " at " + verificationUrl);
-        });
-
-        if (Desktop.isDesktopSupported()) {
-            try {
-                Desktop.getDesktop().browse(new URI(verificationUrl));
-            } catch (Exception ignored) {
-            }
-        }
-
-        long startTime = System.currentTimeMillis();
-        long expiresInSeconds = deviceJson.optLong("expires_in", 900);
-
-        while ((System.currentTimeMillis() - startTime) / 1000 < expiresInSeconds) {
-            Thread.sleep(interval * 1000L);
-
-            String tokenRequestBody = "client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8)
-                    + "&client_secret=" + URLEncoder.encode(clientSecret, StandardCharsets.UTF_8)
-                    + "&device_code=" + URLEncoder.encode(deviceCode, StandardCharsets.UTF_8)
-                    + "&grant_type="
-                    + URLEncoder.encode("urn:ietf:params:oauth:grant-type:device_code", StandardCharsets.UTF_8);
-
-            HttpRequest tokenRequest = HttpRequest.newBuilder()
-                    .uri(URI.create("https://oauth2.googleapis.com/token"))
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(tokenRequestBody))
-                    .build();
-
-            HttpResponse<String> tokenResponse = client.send(tokenRequest, HttpResponse.BodyHandlers.ofString());
-
-            JSONObject tokenJson = new JSONObject(tokenResponse.body());
-
-            if (tokenResponse.statusCode() == 200 && tokenJson.has("access_token")) {
-                String accessToken = tokenJson.getString("access_token");
-
-                HttpRequest userInfoRequest = HttpRequest.newBuilder()
-                        .uri(URI.create("https://openidconnect.googleapis.com/v1/userinfo"))
-                        .header("Authorization", "Bearer " + accessToken)
-                        .GET()
-                        .build();
-
-                HttpResponse<String> userInfoResponse = client.send(userInfoRequest,
-                        HttpResponse.BodyHandlers.ofString());
-
-                if (userInfoResponse.statusCode() != 200) {
-                    throw new RuntimeException("Failed to fetch Google user info: " + userInfoResponse.body());
-                }
-
-                return new JSONObject(userInfoResponse.body());
-            }
-
-            String error = tokenJson.optString("error", "");
-            if ("authorization_pending".equals(error)) {
-                continue;
-            }
-            if ("slow_down".equals(error)) {
-                interval += 5;
-                continue;
-            }
-            if ("access_denied".equals(error) || "expired_token".equals(error)) {
-                return null;
-            }
-
-            throw new RuntimeException("Google token error: " + tokenResponse.body());
-        }
-
-        return null;
     }
 }

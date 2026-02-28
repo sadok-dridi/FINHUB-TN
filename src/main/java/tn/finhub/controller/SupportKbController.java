@@ -124,43 +124,59 @@ public class SupportKbController {
     }
 
     private void openArticleDialog(KnowledgeBase article) {
+
         Stage dialog = new Stage();
         dialog.initModality(Modality.WINDOW_MODAL);
+
         if (kbContainer != null && kbContainer.getScene() != null) {
             dialog.initOwner(kbContainer.getScene().getWindow());
         }
+
         dialog.setTitle(article.getTitle());
 
-        VBox root = new VBox(18);
-        root.setStyle("-fx-padding: 24; -fx-background-color: #050816;");
+        VBox root = new VBox(25);
+        root.setAlignment(Pos.TOP_CENTER);
+        root.setStyle("-fx-padding: 30; -fx-background-color: #050816;");
 
+        // ===== TITLE =====
         Label title = new Label(article.getTitle());
+        title.setWrapText(true);
         title.setStyle(
-                "-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -color-primary; -fx-padding: 0 0 6 0;");
+                "-fx-font-size: 22px;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: #38BDF8;"
+        );
 
-        TextArea contentArea = new TextArea(article.getContent());
-        contentArea.setWrapText(true);
-        contentArea.setEditable(false);
-        contentArea.setStyle(
-                "-fx-font-size: 14px; -fx-text-fill: -color-text-primary; -fx-control-inner-background: #020617;");
-        contentArea.setPrefRowCount(9);
-
-        // QR card on the right
-        VBox qrCard = new VBox(10);
+        // ===== QR CARD =====
+        VBox qrCard = new VBox(15);
+        qrCard.setAlignment(Pos.CENTER);
         qrCard.setStyle(
-                "-fx-background-color: rgba(15,23,42,0.95); -fx-background-radius: 16; -fx-padding: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 18, 0, 0, 0);");
-        qrCard.setAlignment(Pos.TOP_CENTER);
+                "-fx-background-color: rgba(15,23,42,0.95);" +
+                        "-fx-background-radius: 18;" +
+                        "-fx-padding: 20;" +
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 20, 0, 0, 0);"
+        );
 
         Label qrTitle = new Label("Visualiser ce sujet en images");
-        qrTitle.setStyle("-fx-text-fill: -color-text-primary; -fx-font-size: 13px; -fx-font-weight: bold;");
+        qrTitle.setStyle(
+                "-fx-text-fill: #E2E8F0;" +
+                        "-fx-font-size: 14px;" +
+                        "-fx-font-weight: bold;"
+        );
 
-        Label qrHint = new Label("Scannez le QR code avec votre téléphone\npour ouvrir Google Images sur ce thème.");
+        Label qrHint = new Label(
+                "Scannez le QR code avec votre téléphone\n" +
+                        "pour ouvrir Google Images sur ce thème."
+        );
         qrHint.setWrapText(true);
-        qrHint.setStyle("-fx-text-fill: -color-text-secondary; -fx-font-size: 11px;");
+        qrHint.setStyle(
+                "-fx-text-fill: #94A3B8;" +
+                        "-fx-font-size: 12px;"
+        );
 
         ImageView qrView = new ImageView();
-        qrView.setFitWidth(200);
-        qrView.setFitHeight(200);
+        qrView.setFitWidth(220);
+        qrView.setFitHeight(220);
 
         try {
             Image qrImage = generateQrImage(article);
@@ -175,15 +191,9 @@ public class SupportKbController {
 
         qrCard.getChildren().addAll(qrTitle, qrHint, qrView, exportPdfBtn);
 
-        HBox contentRow = new HBox(18);
-        contentRow.setAlignment(Pos.TOP_LEFT);
-        contentRow.getChildren().addAll(contentArea, qrCard);
+        root.getChildren().addAll(title, qrCard);
 
-        HBox.setHgrow(contentArea, javafx.scene.layout.Priority.ALWAYS);
-
-        root.getChildren().addAll(title, contentRow);
-
-        Scene scene = new Scene(root, 750, 460);
+        Scene scene = new Scene(root, 520, 520);
         dialog.setScene(scene);
         dialog.show();
     }
