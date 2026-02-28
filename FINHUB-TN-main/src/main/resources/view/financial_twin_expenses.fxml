@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:id="rootStackPane"
+           fx:controller="tn.finhub.controller.ExpenseTrackerController"
+           style="-fx-background-color: transparent;">
+    <!-- Views will be loaded dynamically here -->
+</StackPane>

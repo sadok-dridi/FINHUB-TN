@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.AdminHomeController"
+      style="-fx-padding: 30; -fx-background-color: transparent;" spacing="20">
+    
+    <VBox spacing="5">
+        <Label text="%admin.home.overview" styleClass="header-text"/>
+        <Label text="%admin.home.subtitle" styleClass="sub-header-text"/>
+    </VBox>
+
+    <!-- Stats Grid -->
+    <FlowPane hgap="25" vgap="25" prefWrapLength="1000" alignment="CENTER">
+
+        <!-- Users Card -->
+        <HBox styleClass="card-total" minWidth="260" alignment="CENTER_LEFT" spacing="15">
+            <StackPane styleClass="transaction-icon-bg" prefWidth="50" prefHeight="50">
+                 <javafx.scene.shape.Circle radius="25" fill="#8B5CF620"/>
+                 <javafx.scene.shape.SVGPath content="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#8B5CF6" scaleX="1.2" scaleY="1.2"/>
+            </StackPane>
+            <VBox>
+                <Label text="%admin.home.total.users" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Label fx:id="totalUsersLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 28px; -fx-font-weight: 900;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Pending KYC Card (Amber) -->
+        <HBox styleClass="card-escrow" minWidth="260" alignment="CENTER_LEFT" spacing="15">
+            <StackPane styleClass="transaction-icon-bg" prefWidth="50" prefHeight="50">
+                 <javafx.scene.shape.Circle radius="25" fill="#F59E0B20"/>
+                 <javafx.scene.shape.SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="#F59E0B" scaleX="1.2" scaleY="1.2"/>
+            </StackPane>
+            <VBox>
+                <Label text="%admin.home.pending.kyc" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Label fx:id="pendingKycLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 28px; -fx-font-weight: 900;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Tickets Card (Emerald) -->
+        <HBox styleClass="card-balance" minWidth="260" alignment="CENTER_LEFT" spacing="15">
+            <StackPane styleClass="transaction-icon-bg" prefWidth="50" prefHeight="50">
+                 <javafx.scene.shape.Circle radius="25" fill="#10B98120"/>
+                 <javafx.scene.shape.SVGPath content="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V7h2v3z" fill="#10B981" scaleX="1.2" scaleY="1.2"/>
+            </StackPane>
+            <VBox>
+                <Label text="%admin.home.open.tickets" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Label fx:id="openTicketsLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 28px; -fx-font-weight: 900;"/>
+            </VBox>
+        </HBox>
+
+        <!-- Active Escrow Volume Card (Blue/Indigo) -->
+        <HBox styleClass="card-total" minWidth="260" alignment="CENTER_LEFT" spacing="15">
+            <StackPane styleClass="transaction-icon-bg" prefWidth="50" prefHeight="50">
+                 <javafx.scene.shape.Circle radius="25" fill="#3B82F620"/>
+                 <javafx.scene.shape.SVGPath content="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="#3B82F6" scaleX="1.2" scaleY="1.2"/>
+            </StackPane>
+            <VBox>
+                <Label text="%admin.home.escrow.volume" style="-fx-text-fill: -color-text-secondary; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Label fx:id="activeEscrowLabel" text="%common.loading" style="-fx-text-fill: -color-text-primary; -fx-font-size: 28px; -fx-font-weight: 900;"/>
+            </VBox>
+        </HBox>
+
+    </FlowPane>
+</VBox>

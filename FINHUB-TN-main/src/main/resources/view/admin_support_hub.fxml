@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.AdminSupportHubController"
+      spacing="20" style="-fx-padding: 15;">
+
+    <VBox spacing="5" alignment="CENTER">
+        <Label text="Support &amp; Safety Center" styleClass="page-title"/>
+        <Label text="Manage user support tickets, system alerts, and compliance requests." styleClass="text-muted"/>
+    </VBox>
+
+    <!-- Navigation Tabs -->
+    <HBox alignment="CENTER_LEFT" spacing="15" styleClass="nav-button-container">
+        
+        <ToggleButton fx:id="btnSupport" text="Support Tickets" styleClass="nav-button" selected="true">
+            <graphic>
+                <SVGPath content="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V7h2v3z" styleClass="nav-icon"/>
+            </graphic>
+        </ToggleButton>
+        
+        <ToggleButton fx:id="btnAlerts" text="System Alerts" styleClass="nav-button">
+            <graphic>
+                <SVGPath content="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" styleClass="nav-icon"/>
+            </graphic>
+        </ToggleButton>
+        
+        <ToggleButton fx:id="btnKYC" text="KYC Requests" styleClass="nav-button">
+             <graphic>
+                <SVGPath content="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" styleClass="nav-icon"/>
+            </graphic>
+        </ToggleButton>
+
+        <ToggleButton fx:id="btnKnowledgeBase" text="Knowledge Base" styleClass="nav-button">
+            <graphic>
+                <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" styleClass="nav-icon"/>
+            </graphic>
+        </ToggleButton>
+        
+    </HBox>
+
+    <!-- Content Area -->
+    <StackPane VBox.vgrow="ALWAYS" minWidth="0" minHeight="0" prefWidth="100" prefHeight="100">
+        <fx:include fx:id="viewSupport" source="admin_support.fxml"/>
+        <fx:include fx:id="viewAlerts" source="admin_alerts.fxml" visible="false"/>
+        <fx:include fx:id="viewKYC" source="admin_kyc_requests.fxml" visible="false"/>
+        <fx:include fx:id="viewKnowledgeBase" source="admin_knowledge_base.fxml" visible="false"/>
+    </StackPane>
+</VBox>

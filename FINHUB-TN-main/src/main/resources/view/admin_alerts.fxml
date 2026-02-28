@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.SVGPath?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.finhub.controller.AdminAlertsController"
+            fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;">
+    
+    <VBox spacing="30" style="-fx-padding: 30;" alignment="TOP_CENTER">
+        
+        <VBox spacing="5" alignment="CENTER_LEFT" maxWidth="600">
+            <Label text="%admin.alerts.broadcast" styleClass="header-text"/>
+            <Label text="%admin.alerts.subtitle" styleClass="sub-header-text"/>
+        </VBox>
+        
+        <VBox style="-fx-background-color: -color-card-bg; -fx-padding: 40; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 5);" spacing="25" maxWidth="600">
+            
+            <VBox spacing="10">
+                <Label text="%admin.alerts.severity" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="severityBox" maxWidth="Infinity" styleClass="combo-box"/>
+            </VBox>
+            
+            <VBox spacing="10">
+                <Label text="%admin.alerts.source" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                <TextField fx:id="sourceField" styleClass="text-field"/>
+            </VBox>
+            
+            <VBox spacing="10">
+                <Label text="%admin.alerts.message" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                <TextArea fx:id="messageArea" prefRowCount="5" wrapText="true" styleClass="text-area"/>
+            </VBox>
+            
+            <Region prefHeight="10"/>
+            
+            <Button text="%admin.alerts.send" onAction="#handleBroadcast" styleClass="button-primary" maxWidth="Infinity" style="-fx-padding: 12; -fx-font-size: 14px;"/>
+            
+        </VBox>
+
+        <VBox spacing="15" maxWidth="600" alignment="TOP_CENTER" style="-fx-padding: 20 0 0 0;">
+             <HBox alignment="CENTER_LEFT">
+                <Label text="Active Broadcasts" styleClass="header-text" style="-fx-font-size: 18px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#handleRefresh" styleClass="button-icon">
+                     <graphic>
+                        <SVGPath content="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" style="-fx-fill: -color-text-secondary;"/>
+                     </graphic>
+                </Button>
+            </HBox>
+            <VBox fx:id="broadcastsList" spacing="15"/>
+        </VBox>
+        
+    </VBox>
+</ScrollPane>

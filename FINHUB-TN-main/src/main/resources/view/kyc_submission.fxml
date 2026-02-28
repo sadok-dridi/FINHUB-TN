@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="TOP_CENTER" spacing="20" style="-fx-padding: 30; -fx-background-color: transparent;" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="tn.finhub.controller.KYCSubmissionController">
+    
+    <HBox alignment="CENTER_LEFT">
+        <Button fx:id="backButton" text="← Back to Profile" onAction="#handleBack" styleClass="button-text"/>
+    </HBox>
+
+    <Label text="Identity Verification (KYC)" styleClass="header-text"/>
+    <Label text="Please upload a valid ID card or a short video verification." style="-fx-text-fill: -color-text-secondary;" wrapText="true"/>
+
+    <VBox styleClass="card" spacing="20" maxWidth="600" alignment="CENTER">
+        <GridPane hgap="15" vgap="15">
+            <columnConstraints>
+                <ColumnConstraints minWidth="120" halignment="RIGHT"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            
+            <Label text="Document Type:" style="-fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="documentTypeBox" maxWidth="Infinity" styleClass="combo-box" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            
+            <Label text="File:" style="-fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <HBox spacing="10" alignment="CENTER_LEFT" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                <Button text="Select File" onAction="#handleSelectFile" styleClass="button-outlined"/>
+                <Label fx:id="fileLabel" text="No file selected" style="-fx-text-fill: -color-text-secondary;"/>
+            </HBox>
+        </GridPane>
+        
+        <Label fx:id="statusLabel" visible="false" wrapText="true"/>
+        
+        <Button fx:id="submitButton" text="Submit Verification" onAction="#handleSubmit" styleClass="button-primary" disable="true" prefWidth="200"/>
+    </VBox>
+</VBox>
