@@ -45,6 +45,13 @@ public class SupportModel {
         SupportTicket ticket = new SupportTicket(userId, subject, category, "NORMAL");
         createTicket(ticket);
         createMessage(new SupportMessage(ticket.getId(), "USER", initialMessage));
+
+        // Push ticket to Zendesk API if configured
+        tn.finhub.model.User currentUser = tn.finhub.util.UserSession.getInstance().getUser();
+        if (currentUser != null && currentUser.getId() == userId) {
+            tn.finhub.util.ZendeskUtil.createTicket(subject, initialMessage, currentUser.getFullName(),
+                    currentUser.getEmail(), ticket.getId());
+        }
     }
 
     public List<SupportTicket> getTicketsByUserId(int userId) {

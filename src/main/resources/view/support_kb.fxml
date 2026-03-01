@@ -13,6 +13,11 @@
         <Button text="%common.search" onAction="#handleSearch" styleClass="button-primary"/>
     </HBox>
 
+    <HBox fx:id="loadingIndicator" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
+        <ProgressIndicator prefWidth="20" prefHeight="20"/>
+        <Label text="Fetching web results..." style="-fx-text-fill: -color-text-muted; -fx-font-size: 14px;"/>
+    </HBox>
+
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">
         <VBox fx:id="kbContainer" spacing="15" style="-fx-padding: 5;"/>
     </ScrollPane>
