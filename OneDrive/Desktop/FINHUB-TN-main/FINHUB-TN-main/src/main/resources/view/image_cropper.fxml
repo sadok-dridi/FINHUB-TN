@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.finhub.controller.ImageCropperController"
+            style="-fx-background-color: #1F1D2B; -fx-padding: 20;">
+
+    <top>
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 0 0 20 0;">
+            <Label text="Adjust Profile Photo" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Label text="Drag to position. Use slider to zoom." style="-fx-text-fill: #9CA3AF;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <StackPane style="-fx-background-color: #2D2A40; -fx-background-radius: 8;">
+            <!-- Viewport for Cropping (300x300 Square) -->
+            <ScrollPane fx:id="scrollPane" 
+                        prefWidth="300" prefHeight="300" 
+                        minWidth="300" minHeight="300"
+                        maxWidth="300" maxHeight="300"
+                        pannable="true" 
+                        hbarPolicy="NEVER" vbarPolicy="NEVER"
+                        style="-fx-background: transparent; -fx-background-color: transparent;">
+                <content>
+                    <StackPane fx:id="imageContainer">
+                         <ImageView fx:id="imageView" preserveRatio="true"/>
+                    </StackPane>
+                </content>
+            </ScrollPane>
+            
+            <!-- Overlay to show crop boundaries clearly (Optional visual aid) -->
+            <Rectangle width="300" height="300" fill="transparent" stroke="#10B981" strokeWidth="2" mouseTransparent="true"/>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <VBox spacing="15" style="-fx-padding: 20 0 0 0;">
+            <HBox alignment="CENTER" spacing="10">
+                <Label text="Zoom" style="-fx-text-fill: #9CA3AF;"/>
+                <Slider fx:id="zoomSlider" min="0.5" max="3.0" value="1.0" blockIncrement="0.1" prefWidth="200"/>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="15">
+                <Button text="Cancel" onAction="#handleCancel" 
+                        style="-fx-background-color: transparent; -fx-text-fill: #EF4444; -fx-border-color: #EF4444; -fx-border-radius: 5px; -fx-cursor: hand;"/>
+                <Button text="Save &amp; Crop" onAction="#handleSave" 
+                        style="-fx-background-color: #10B981; -fx-text-fill: white; -fx-background-radius: 5px; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            </HBox>
+        </VBox>
+    </bottom>
+
+</BorderPane>

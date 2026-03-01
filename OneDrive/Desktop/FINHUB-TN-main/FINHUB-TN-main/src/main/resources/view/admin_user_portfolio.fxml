@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.AdminUserPortfolioController"
+      style="-fx-padding: 30; -fx-background-color: transparent;" 
+      spacing="20">
+            
+    <!-- Back Button & Header -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button text="%common.back" onAction="#handleBack" styleClass="button-back"/>
+        <Label text="%admin.portfolio.title" styleClass="header-text"/>
+    </HBox>
+
+    <VBox spacing="20" VBox.vgrow="ALWAYS">
+        
+        <!-- Summary Card -->
+        <HBox spacing="20" alignment="CENTER_LEFT" styleClass="card" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+            <VBox spacing="5">
+                <Label fx:id="userNameLabel" text="%admin.portfolio.user.title" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                <Label text="%admin.portfolio.total.value" style="-fx-text-fill: -color-text-muted;"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="totalValueLabel" text="0.00 TND" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: -color-primary;"/>
+        </HBox>
+
+        <!-- Assets List -->
+        <Label text="%admin.portfolio.assets" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+        
+        <ListView fx:id="assetListView" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-border-width: 0; -fx-control-inner-background: transparent; -fx-control-inner-background-alt: transparent;">
+            <placeholder>
+                <Label text="%admin.portfolio.no.assets" style="-fx-text-fill: -color-text-muted;"/>
+            </placeholder>
+        </ListView>
+
+    </VBox>
+
+</VBox>

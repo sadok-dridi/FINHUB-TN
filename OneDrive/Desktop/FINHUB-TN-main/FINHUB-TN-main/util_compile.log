@@ -1,0 +1,46 @@
+src\main\java\tn\finhub\util\DocuSignUtil.java:56: error: cannot find symbol
+        User sender = userModel.getUserById(getUserIdFromWalletOrElse(escrow.getSenderWalletId(), 1)); // Ideally query
+                               ^
+  symbol:   method getUserById(int)
+  location: variable userModel of type UserModel
+src\main\java\tn\finhub\util\DocuSignUtil.java:58: error: cannot find symbol
+        User receiver = userModel.getUserById(getUserIdFromWalletOrElse(escrow.getReceiverWalletId(), 2));
+                                 ^
+  symbol:   method getUserById(int)
+  location: variable userModel of type UserModel
+src\main\java\tn\finhub\util\DocuSignUtil.java:91: error: cannot find symbol
+            var rs = tn.finhub.util.DBConnection.getInstance().getConnection()
+                                                              ^
+  symbol:   method getConnection()
+  location: interface Connection
+src\main\java\tn\finhub\util\DocuSignUtil.java:110: error: cannot find symbol
+                "<p><strong>Sender:</strong> " + sender.getFirstName() + " " + sender.getLastName() + "</p>" +
+                                                       ^
+  symbol:   method getFirstName()
+  location: variable sender of type User
+src\main\java\tn\finhub\util\DocuSignUtil.java:110: error: cannot find symbol
+                "<p><strong>Sender:</strong> " + sender.getFirstName() + " " + sender.getLastName() + "</p>" +
+                                                                                     ^
+  symbol:   method getLastName()
+  location: variable sender of type User
+src\main\java\tn\finhub\util\DocuSignUtil.java:111: error: cannot find symbol
+                "<p><strong>Receiver:</strong> " + receiver.getFirstName() + " " + receiver.getLastName() + "</p>" +
+                                                           ^
+  symbol:   method getFirstName()
+  location: variable receiver of type User
+src\main\java\tn\finhub\util\DocuSignUtil.java:111: error: cannot find symbol
+                "<p><strong>Receiver:</strong> " + receiver.getFirstName() + " " + receiver.getLastName() + "</p>" +
+                                                                                           ^
+  symbol:   method getLastName()
+  location: variable receiver of type User
+src\main\java\tn\finhub\util\DocuSignUtil.java:124: error: cannot find symbol
+        signer.setName(user.getFirstName() + " " + user.getLastName());
+                           ^
+  symbol:   method getFirstName()
+  location: variable user of type User
+src\main\java\tn\finhub\util\DocuSignUtil.java:124: error: cannot find symbol
+        signer.setName(user.getFirstName() + " " + user.getLastName());
+                                                       ^
+  symbol:   method getLastName()
+  location: variable user of type User
+9 errors
