@@ -4,15 +4,12 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
 import tn.finhub.model.WalletModel;
 import tn.finhub.util.DialogUtil;
 import tn.finhub.util.ViewUtils;
-import tn.finhub.util.PdfExporter;
 
 public class AdminUserDetailsController {
 
@@ -40,7 +37,6 @@ public class AdminUserDetailsController {
 
     private User currentUser;
     private final WalletModel walletModel = new WalletModel();
-    private volatile Wallet latestWalletSnapshot;
 
     @FXML
     public void initialize() {
@@ -96,7 +92,6 @@ public class AdminUserDetailsController {
         }).thenAcceptAsync(wallet -> {
             // Update UI on JavaFX thread
             if (wallet != null) {
-                latestWalletSnapshot = wallet;
                 balanceLabel.setText(wallet.getBalance().toString());
                 currencyLabel.setText(wallet.getCurrency());
 
@@ -116,7 +111,6 @@ public class AdminUserDetailsController {
                 }
                 freezeBtn.setDisable(false);
             } else {
-                latestWalletSnapshot = null;
                 balanceLabel.setText("N/A");
                 currencyLabel.setText("TND");
                 walletStatusLabel.setText("No Wallet");
@@ -226,49 +220,6 @@ public class AdminUserDetailsController {
                 DialogUtil.showError("Deletion Failed", e.getMessage());
             }
         }
-    }
-
-    @FXML
-    private void handleExportProfilePdf() {
-        if (currentUser == null) {
-            DialogUtil.showError("Error", "No user selected.");
-            return;
-        }
-
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Export User Profile as PDF");
-        chooser.getExtensionFilters()
-                .add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
-        chooser.setInitialFileName("FinHub_Profile_User_" + currentUser.getId() + ".pdf");
-
-        Stage stage = (Stage) nameLabel.getScene().getWindow();
-        java.io.File file = chooser.showSaveDialog(stage);
-        if (file == null) {
-            return;
-        }
-
-        final Wallet initialSnapshot = latestWalletSnapshot;
-
-        new Thread(() -> {
-            try {
-                Wallet snapshot = initialSnapshot;
-                // Fallback: fetch fresh wallet if snapshot is not yet available
-                if (snapshot == null && currentUser != null) {
-                    snapshot = walletModel.findByUserId(currentUser.getId());
-                }
-
-                PdfExporter.exportUserProfile(currentUser, snapshot, file);
-
-                Platform.runLater(() -> DialogUtil.showInfo(
-                        "Export Completed",
-                        "User profile PDF saved to:\n" + file.getAbsolutePath()));
-            } catch (Exception e) {
-                e.printStackTrace();
-                Platform.runLater(() -> DialogUtil.showError(
-                        "Export Failed",
-                        "Could not generate PDF.\n" + e.getMessage()));
-            }
-        }).start();
     }
 
     private boolean verifyAdminPassword(String password) {

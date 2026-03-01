@@ -77,15 +77,39 @@ public class TransferController {
             cancelButton.setDisable(true);
             sendButton.setText("Sending Security Code...");
 
-            // 1. Generate OTP
-            String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+            // 1. Generate OTP using an external API (Random.org)
+            String otp;
+            try {
+                java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+                java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create(
+                                "https://www.random.org/integers/?num=1&min=100000&max=999999&col=1&base=10&format=plain&rnd=new"))
+                        .timeout(java.time.Duration.ofSeconds(3)) // 3 second timeout so the UI doesn't hang if the API
+                                                                  // is slow
+                        .build();
+                java.net.http.HttpResponse<String> response = client.send(request,
+                        java.net.http.HttpResponse.BodyHandlers.ofString());
+
+                if (response.statusCode() == 200 && response.body().trim().length() == 6) {
+                    otp = response.body().trim();
+                } else {
+                    throw new RuntimeException("API Response invalid");
+                }
+            } catch (Exception e) {
+                System.out.println("Failed to fetch OTP from API, using secure fallback: " + e.getMessage());
+                // Secure random fallback if the API is down, never use a hardcoded default.
+                otp = String.format("%06d", new java.security.SecureRandom().nextInt(999999));
+            }
+
+            // Create a final copy so lambda can use it
+            final String finalOtp = otp;
 
             // 2. Send Email (Background)
             javafx.concurrent.Task<Void> emailTask = new javafx.concurrent.Task<>() {
                 @Override
                 protected Void call() throws Exception {
                     tn.finhub.model.User user = UserSession.getInstance().getUser();
-                    tn.finhub.util.MailClient.sendOtpEmail(user.getEmail(), otp);
+                    tn.finhub.util.MailClient.sendOtpEmail(user.getEmail(), finalOtp);
                     return null;
                 }
             };
@@ -98,7 +122,7 @@ public class TransferController {
                     javafx.scene.Parent root = loader.load();
 
                     tn.finhub.controller.OtpController otpController = loader.getController();
-                    otpController.setExpectedOtp(otp);
+                    otpController.setExpectedOtp(finalOtp);
 
                     otpController.setOnSuccessCallback(() -> {
                         proceedWithTransfer(currentUserId, email, amount);
@@ -155,6 +179,15 @@ public class TransferController {
             handleCancel();
             javafx.application.Platform.runLater(() -> {
                 DialogUtil.showInfo("Success", "Money sent successfully to " + email);
+
+                // Trigger Webhook Notification
+                tn.finhub.model.User currentUser = UserSession.getInstance().getUser();
+                String senderName = currentUser != null && currentUser.getFullName() != null
+                        ? currentUser.getFullName()
+                        : currentUser.getEmail();
+                String senderEmail = currentUser != null ? currentUser.getEmail() : "Unknown";
+                tn.finhub.util.WebhookUtil.sendTransferNotification(senderName, senderEmail, email, amount.toString());
+
                 if (onSuccessCallback != null) {
                     onSuccessCallback.run();
                 }

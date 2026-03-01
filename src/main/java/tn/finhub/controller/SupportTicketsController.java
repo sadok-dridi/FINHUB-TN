@@ -15,8 +15,6 @@ import tn.finhub.util.UserSession;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class SupportTicketsController {
 
@@ -26,8 +24,6 @@ public class SupportTicketsController {
     private VBox ticketsListParams;
     @FXML
     private VBox ticketsContainer;
-    @FXML
-    private VBox statsContainer;
 
     private final tn.finhub.model.SupportModel supportModel = new tn.finhub.model.SupportModel();
 
@@ -75,35 +71,12 @@ public class SupportTicketsController {
 
     private void updateUI(List<SupportTicket> tickets) {
         ticketsContainer.getChildren().clear();
-        if (statsContainer != null) {
-            statsContainer.getChildren().clear();
-        }
 
         if (tickets.isEmpty()) {
             Label emptyLabel = new Label("No tickets found. Need help? Create a new ticket.");
             emptyLabel.setStyle("-fx-text-fill: -color-text-muted; -fx-font-size: 14px; -fx-padding: 20;");
             ticketsContainer.getChildren().add(emptyLabel);
         } else {
-            // Stats par catégorie
-            if (statsContainer != null) {
-                Map<String, Long> byCategory = tickets.stream()
-                        .collect(Collectors.groupingBy(
-                                t -> t.getCategory() != null ? t.getCategory() : "Uncategorized",
-                                Collectors.counting()));
-
-                HBox row = new HBox(8);
-                row.setAlignment(Pos.CENTER_LEFT);
-
-                for (Map.Entry<String, Long> entry : byCategory.entrySet()) {
-                    Label chip = new Label(entry.getKey() + ": " + entry.getValue());
-                    chip.setStyle(
-                            "-fx-background-color: rgba(55,65,81,0.7); -fx-text-fill: white; -fx-padding: 4 10; -fx-background-radius: 999; -fx-font-size: 11px;");
-                    row.getChildren().add(chip);
-                }
-
-                statsContainer.getChildren().add(row);
-            }
-
             for (SupportTicket ticket : tickets) {
                 ticketsContainer.getChildren().add(createTicketCard(ticket));
             }

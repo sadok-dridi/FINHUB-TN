@@ -100,10 +100,35 @@ public class EscrowDetailsController {
                 secretCodeLabel.setText("Secret Code: " + currentEscrow.getSecretCode());
 
                 if ("QR_CODE".equals(currentEscrow.getEscrowType())) {
-                    String qrData = "https://escrowfinhub.work.gd/escrow/claim_ui?id=" + currentEscrow.getId()
-                            + "&secret=" + currentEscrow.getSecretCode();
-                    loadQrCode(qrData);
-                    startPolling(); // Start listening for remote release
+                    boolean docusignPending = false;
+                    if (currentEscrow.isRequireDocusign() && currentEscrow.getDocusignEnvelopeId() != null) {
+                        try {
+                            String accountId = io.github.cdimascio.dotenv.Dotenv.load().get("DOCUSIGN_API_ACCOUNT_ID");
+                            String dsStatus = tn.finhub.util.DocuSignUtil
+                                    .getEnvelopeStatus(currentEscrow.getDocusignEnvelopeId(), accountId);
+                            if (!"completed".equalsIgnoreCase(dsStatus)) {
+                                docusignPending = true;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if (docusignPending) {
+                        qrCodeImageView.setVisible(false);
+                        qrCodeImageView.setManaged(false);
+                        scanToReleaseLabel.setVisible(false);
+                        scanToReleaseLabel.setManaged(false);
+                        showQrLabel.setVisible(false);
+                        showQrLabel.setManaged(false);
+                        secretCodeLabel.setText("\u270D Waiting for DocuSign Signatures");
+                        secretCodeLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #eab308;");
+                    } else {
+                        String qrData = "https://escrow.finhub.tn/escrow/claim_ui?id=" + currentEscrow.getId()
+                                + "&secret=" + currentEscrow.getSecretCode();
+                        loadQrCode(qrData);
+                        startPolling(); // Start listening for remote release
+                    }
                 } else {
                     // Admin Approval — hide all QR-related elements
                     qrCodeImageView.setVisible(false);

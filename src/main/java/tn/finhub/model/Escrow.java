@@ -16,9 +16,19 @@ public class Escrow {
     private Integer adminApproverId;
     private LocalDateTime expiryDate;
     private boolean isDisputed;
+    private boolean requireDocusign;
+    private String docusignEnvelopeId;
     private String status; // LOCKED, RELEASED, REFUNDED, DISPUTED
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public boolean isRequireDocusign() {
+        return requireDocusign;
+    }
+
+    public void setRequireDocusign(boolean requireDocusign) {
+        this.requireDocusign = requireDocusign;
+    }
 
     public Escrow() {
     }
@@ -145,5 +155,13 @@ public class Escrow {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getDocusignEnvelopeId() {
+        return docusignEnvelopeId;
+    }
+
+    public void setDocusignEnvelopeId(String docusignEnvelopeId) {
+        this.docusignEnvelopeId = docusignEnvelopeId;
     }
 }

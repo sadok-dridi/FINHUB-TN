@@ -7,27 +7,12 @@ import java.io.UnsupportedEncodingException;
 
 public class MailClient {
 
-  private static final String SMTP_HOST = envOrDefault("FINHUB_SMTP_HOST", "smtp.gmail.com");
-  private static final String SMTP_PORT = envOrDefault("FINHUB_SMTP_PORT", "587");
+  private static final String SMTP_HOST = "smtp.gmail.com";
+  private static final String SMTP_PORT = "587";
 
-  // Configure via environment variables (do not hardcode secrets in source).
-  // Example:
-  // - FINHUB_SMTP_FROM="youraddress@gmail.com"
-  // - FINHUB_SMTP_APP_PASSWORD="xxxx xxxx xxxx xxxx" (Gmail App Password)
-  private static final String FROM_EMAIL = envOrDefault("FINHUB_SMTP_FROM", "");
-  private static final String APP_PASSWORD = envOrDefault("FINHUB_SMTP_APP_PASSWORD", "");
-  private static final boolean SMTP_DEBUG = "true".equalsIgnoreCase(envOrDefault("FINHUB_SMTP_DEBUG", "false"));
-
-  private static String envOrDefault(String key, String defaultValue) {
-    String v = System.getenv(key);
-    if (v == null) return defaultValue;
-    v = v.trim();
-    return v.isEmpty() ? defaultValue : v;
-  }
-
-  private static boolean isConfigured() {
-    return !FROM_EMAIL.isBlank() && !APP_PASSWORD.isBlank();
-  }
+  // ⚠️ USE A DEDICATED APP PASSWORD
+  private static final String FROM_EMAIL = "sadok.dridi.engineer@gmail.com";
+  private static final String APP_PASSWORD = "lzmtibuiovhabntn";
 
   private static Session createSession() {
     Properties props = new Properties();
@@ -37,8 +22,7 @@ public class MailClient {
     props.put("mail.smtp.port", SMTP_PORT);
     props.put("mail.smtp.starttls.required", "true");
 
-    Session session =
-        Session.getInstance(
+    return Session.getInstance(
         props,
         new Authenticator() {
           @Override
@@ -46,21 +30,13 @@ public class MailClient {
             return new PasswordAuthentication(FROM_EMAIL, APP_PASSWORD);
           }
         });
-    session.setDebug(SMTP_DEBUG);
-    return session;
   }
 
   // ===============================
   // USER EMAIL VERIFICATION
   // ===============================
-  public static boolean sendVerificationEmail(String to, String link) {
-    if (!isConfigured()) {
-      System.err.println("⚠️ SMTP not configured. Set FINHUB_SMTP_FROM and FINHUB_SMTP_APP_PASSWORD.");
-      System.err.println("🔗 Verification link: " + link);
-      return false;
-    }
-
-    return sendHtmlEmail(
+  public static void sendVerificationEmail(String to, String link) {
+    sendHtmlEmail(
         to,
         "Verify your FINHUB email address",
         buildVerificationHtml(link));
@@ -69,10 +45,8 @@ public class MailClient {
   // ===============================
   // ADMIN INVITATION EMAIL ✅ NEW
   // ===============================
-  public static boolean sendAdminInviteEmail(String to, String link) {
-    if (!isConfigured()) return false;
-
-    return sendHtmlEmail(
+  public static void sendAdminInviteEmail(String to, String link) {
+    sendHtmlEmail(
         to,
         "You have been invited as a FINHUB Administrator",
         buildAdminInviteHtml(link));
@@ -81,10 +55,8 @@ public class MailClient {
   // ===============================
   // OTP EMAIL ✅ NEW
   // ===============================
-  public static boolean sendOtpEmail(String to, String otp) {
-    if (!isConfigured()) return false;
-
-    return sendHtmlEmail(
+  public static void sendOtpEmail(String to, String otp) {
+    sendHtmlEmail(
         to,
         "FINHUB Transaction Verification Code",
         buildOtpHtml(otp));
@@ -93,10 +65,8 @@ public class MailClient {
   // ===============================
   // RESET PASSWORD EMAIL ✅ NEW
   // ===============================
-  public static boolean sendResetPasswordEmail(String to, String link) {
-    if (!isConfigured()) return false;
-
-    return sendHtmlEmail(
+  public static void sendResetPasswordEmail(String to, String link) {
+    sendHtmlEmail(
         to,
         "Reset your FINHUB password",
         buildResetPasswordHtml(link));
@@ -105,7 +75,7 @@ public class MailClient {
   // ===============================
   // CORE EMAIL SENDER
   // ===============================
-  private static boolean sendHtmlEmail(String to, String subject, String html) {
+  private static void sendHtmlEmail(String to, String subject, String html) {
     try {
       Session session = createSession();
 
@@ -117,13 +87,11 @@ public class MailClient {
 
       Transport.send(message);
       System.out.println("✅ Email sent to " + to);
-      return true;
 
     } catch (Exception e) {
       e.printStackTrace();
       // throw new RuntimeException("Email sending failed", e); // Don't throw to
       // avoid crashing flow, just log.
-      return false;
     }
   }
 

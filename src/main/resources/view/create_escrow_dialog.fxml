@@ -42,6 +42,7 @@
             <VBox spacing="5" HBox.hgrow="ALWAYS">
                 <Label text="%escrow.create.release.method" style="-fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
                 <ComboBox fx:id="typeComboBox" maxWidth="Infinity" styleClass="combo-box-modern"/>
+                <CheckBox fx:id="requireDocusignCheckbox" text="Require DocuSign Agreement" style="-fx-text-fill: -color-text-secondary; -fx-padding: 5 0 0 0;"/>
             </VBox>
         </HBox>
 

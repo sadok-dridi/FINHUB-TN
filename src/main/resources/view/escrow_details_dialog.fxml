@@ -76,6 +76,6 @@
                 prefWidth="180"/>
     </HBox>
 
-    <Label fx:id="errorLabel" visible="false" wrapText="true" style="-fx-text-fill: #dc2626;"/>
+    <Label fx:id="errorLabel" visible="false" wrapText="true" maxWidth="400" textAlignment="CENTER" style="-fx-text-fill: #dc2626; -fx-padding: 10;"/>
 
 </VBox>

@@ -11,9 +11,11 @@
     <HBox spacing="10" alignment="CENTER_LEFT">
         <TextField fx:id="searchField" promptText="%support.kb.search" HBox.hgrow="ALWAYS" styleClass="search-field"/>
         <Button text="%common.search" onAction="#handleSearch" styleClass="button-primary"/>
-        <!-- Export PDF for the last article clicked -->
-        <Button fx:id="exportPdfButton" text="Exporter PDF" onAction="#handleExportSelectedArticle"
-                styleClass="button-secondary"/>
+    </HBox>
+
+    <HBox fx:id="loadingIndicator" spacing="10" alignment="CENTER_LEFT" visible="false" managed="false">
+        <ProgressIndicator prefWidth="20" prefHeight="20"/>
+        <Label text="Fetching web results..." style="-fx-text-fill: -color-text-muted; -fx-font-size: 14px;"/>
     </HBox>
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;">

@@ -5,6 +5,9 @@ target/
 .kotlin
 .env
 FINHUB-WEB/
+app.py
+docusign_private.key
+docusign_public.key
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

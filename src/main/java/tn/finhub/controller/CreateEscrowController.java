@@ -23,6 +23,8 @@ public class CreateEscrowController {
     @FXML
     private ComboBox<String> typeComboBox;
     @FXML
+    private CheckBox requireDocusignCheckbox;
+    @FXML
     private TextArea conditionField;
     @FXML
     private Label subtotalLabel;
@@ -49,11 +51,6 @@ public class CreateEscrowController {
         try {
             BigDecimal amount = new BigDecimal(amountField.getText());
             BigDecimal fee = amount.multiply(FEE_PERCENT);
-            // Fee is deducted from RECEIVER upon release, so Sender locks full amount.
-            // Wait, usually Fee is deducted from the payout.
-            // So Total Locked = Amount.
-            // Display: "Seller receives: Amount - Fee".
-            // Let's clarify UI: "Service Fee (1%) (Deducted from Seller)".
 
             subtotalLabel.setText(amount.setScale(3, RoundingMode.HALF_UP) + " TND");
             feeLabel.setText(fee.setScale(3, RoundingMode.HALF_UP) + " TND (Paid by Seller)");
@@ -74,7 +71,12 @@ public class CreateEscrowController {
             String amountStr = amountField.getText();
             String condition = conditionField.getText();
             String typeSelection = typeComboBox.getValue();
-            String type = "QR Code Release".equals(typeSelection) ? "QR_CODE" : "ADMIN_APPROVAL";
+            boolean requireDocusign = requireDocusignCheckbox.isSelected();
+
+            String type = "QR_CODE";
+            if ("Admin Approval".equals(typeSelection)) {
+                type = "ADMIN_APPROVAL";
+            }
 
             if (email.isEmpty() || amountStr.isEmpty() || condition.isEmpty()) {
                 showAlert("Error", "Please fill in all fields.");
@@ -109,7 +111,16 @@ public class CreateEscrowController {
             }
 
             // 3. Create Escrow
-            escrowManager.createEscrow(senderWallet.getId(), receiverWallet.getId(), amount, condition, type);
+            escrowManager.createEscrow(senderWallet.getId(), receiverWallet.getId(), amount, condition, type,
+                    requireDocusign);
+
+            // If it is DocuSign, prompt the user that an email has been sent.
+            if (requireDocusign) {
+                DialogUtil.showInfo("Escrow Created",
+                        "Escrow created with DocuSign requirement! Please check your email and have the receiver check theirs to sign the agreement. Funds will not be released until signed.");
+            } else {
+                DialogUtil.showInfo("Escrow Created", "Escrow successfully created.");
+            }
 
             // 4. Success & Close
             closeDialog();
