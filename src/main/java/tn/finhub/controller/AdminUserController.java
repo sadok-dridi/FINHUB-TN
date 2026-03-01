@@ -303,5 +303,60 @@ public class AdminUserController {
         }
     }
 
+    @FXML
+    public void handleViewStatistics(javafx.event.ActionEvent event) {
+        try {
+            javafx.scene.Node sourceNode = (javafx.scene.Node) event.getSource();
+            javafx.scene.Scene scene = sourceNode.getScene();
+            if (scene == null)
+                return;
+
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) scene
+                    .lookup("#adminContentArea");
+            if (contentArea == null) {
+                tn.finhub.util.DialogUtil.showError("System Error", "Navigation component missing.");
+                return;
+            }
+
+            Runnable loadView = () -> {
+                try {
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                            getClass().getResource("/view/admin_user_statistics.fxml"));
+                    loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+                    javafx.scene.Parent view = loader.load();
+
+                    view.setOpacity(0);
+                    contentArea.getChildren().setAll(view);
+
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(300), view);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    javafx.application.Platform.runLater(() -> tn.finhub.util.DialogUtil.showError("Navigation Error",
+                            "Could not load user statistics view."));
+                }
+            };
+
+            if (!contentArea.getChildren().isEmpty()) {
+                javafx.scene.Node currentView = contentArea.getChildren().get(0);
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(300), currentView);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> loadView.run());
+                fadeOut.play();
+            } else {
+                loadView.run();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     // Navigation Handlers removed - these belong in AdminDashboardController only
 }
