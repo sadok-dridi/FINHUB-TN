@@ -3,6 +3,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
 <?import javafx.geometry.Insets?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
@@ -53,6 +55,18 @@
                                     <Label text="%common.status" style="-fx-text-fill: -color-text-muted;"/>
                                     <Label fx:id="walletStatusLabel" text="%common.loading" style="-fx-font-weight: bold;"/>
                                 </HBox>
+
+                                <!-- Sparkline Chart for Recent Activity -->
+                                <VBox VBox.vgrow="ALWAYS" alignment="BOTTOM_CENTER">
+                                    <LineChart fx:id="activitySparkline" createSymbols="false" horizontalGridLinesVisible="false" verticalGridLinesVisible="false" legendVisible="false" prefHeight="80" style="-fx-padding: 0; -fx-background-color: transparent;">
+                                        <xAxis>
+                                            <NumberAxis visible="false" autoRanging="true"/>
+                                        </xAxis>
+                                        <yAxis>
+                                            <NumberAxis visible="false" autoRanging="true" forceZeroInRange="false"/>
+                                        </yAxis>
+                                    </LineChart>
+                                </VBox>
                             </VBox>
                         </HBox>
 
@@ -60,6 +74,12 @@
                         <HBox spacing="15" alignment="CENTER_LEFT">
                              <Button text="%admin.user.view.portfolio" styleClass="button-primary" onAction="#handleViewPortfolio" style="-fx-background-color: -color-primary; -fx-text-fill: white;"/>
                              <Button fx:id="freezeBtn" text="%admin.user.freeze.wallet" styleClass="button-warning" onAction="#handleFreezeWallet"/>
+                             <Region HBox.hgrow="ALWAYS" />
+                             <Button onAction="#handleExportPDF" styleClass="button-primary" style="-fx-background-color: #fca5a5; -fx-text-fill: #7f1d1d; -fx-border-radius: 6; -fx-background-radius: 6;" text="Export PDF">
+                                <graphic>
+                                    <javafx.scene.shape.SVGPath content="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" style="-fx-fill: #7f1d1d;" scaleX="0.8" scaleY="0.8"/>
+                                </graphic>
+                             </Button>
                         </HBox>
 
 

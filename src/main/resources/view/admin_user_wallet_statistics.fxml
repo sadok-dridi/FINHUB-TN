@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.shape.SVGPath?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.finhub.controller.AdminUserWalletStatisticsController"
+      style="-fx-padding: 15; -fx-background-color: transparent;" 
+      spacing="20">
+
+    <!-- Header Row -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button onAction="#handleBack" styleClass="button-icon" text="Back to Ledger">
+            <graphic>
+                <SVGPath content="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" style="-fx-fill: -color-text-secondary;"/>
+            </graphic>
+        </Button>
+        <Button onAction="#handleExportPDF" styleClass="button-primary" style="-fx-background-color: #fca5a5; -fx-text-fill: #7f1d1d; -fx-border-radius: 6; -fx-background-radius: 6;" text="Export PDF">
+            <graphic>
+                <SVGPath content="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" style="-fx-fill: #7f1d1d;" scaleX="0.8" scaleY="0.8"/>
+            </graphic>
+        </Button>
+        <Region HBox.hgrow="ALWAYS" />
+        <VBox alignment="CENTER_RIGHT" spacing="5">
+            <Label fx:id="headerTitleLabel" text="User Wallet Statistics" styleClass="header-text" />
+            <Label text="Deep dive into transaction patterns &amp; flow" styleClass="sub-header-text" />
+        </VBox>
+    </HBox>
+
+    <Separator style="-fx-opacity: 0.1;" />
+
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent;" VBox.vgrow="ALWAYS">
+        <content>
+            <VBox spacing="20" style="-fx-padding: 10;">
+                
+                <!-- KPI Summary Cards -->
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    <!-- Total Sent -->
+                    <VBox spacing="5" style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <SVGPath content="M16 1L4 12h8v11h4V12h8L16 1z" style="-fx-fill: #ef4444;" scaleX="0.8" scaleY="0.8"/>
+                            <Label text="Total Sent (Outflow)" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                        </HBox>
+                        <Label fx:id="totalSentLabel" text="0.00 TND" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <!-- Total Received -->
+                    <VBox spacing="5" style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <SVGPath content="M16 23L4 12h8V1h4v11h8L16 23z" style="-fx-fill: #10b981;" scaleX="0.8" scaleY="0.8"/>
+                            <Label text="Total Received (Inflow)" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                        </HBox>
+                        <Label fx:id="totalReceivedLabel" text="0.00 TND" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <!-- Transaction Count -->
+                    <VBox spacing="5" style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <SVGPath content="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" style="-fx-fill: #3b82f6;" scaleX="1.0" scaleY="1.0"/>
+                            <Label text="Total Transactions" style="-fx-text-fill: -color-text-secondary; -fx-font-weight: bold;"/>
+                        </HBox>
+                        <Label fx:id="txCountLabel" text="0" style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+                    </VBox>
+                </HBox>
+
+                <!-- Charts Row -->
+                <HBox spacing="20">
+                    <!-- In vs Out Pie Chart -->
+                    <VBox style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+                        <Label text="Income vs. Expenses Flow" styleClass="header-text" style="-fx-font-size: 16px;"/>
+                        <PieChart fx:id="flowPieChart" prefHeight="300" legendSide="BOTTOM" />
+                    </VBox>
+
+                    <!-- Flow Over Time Bar Chart -->
+                    <VBox style="-fx-background-color: rgba(30, 27, 46, 0.85); -fx-border-color: #2E2A45; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 20;" HBox.hgrow="ALWAYS">
+                        <Label text="Recent Transaction Types Count" styleClass="header-text" style="-fx-font-size: 16px;"/>
+                        <BarChart fx:id="typeBarChart" prefHeight="300" legendVisible="false">
+                            <xAxis>
+                                <CategoryAxis fx:id="typeXAxis" label="Transaction Type" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Number of Transactions" />
+                            </yAxis>
+                        </BarChart>
+                    </VBox>
+                </HBox>
+                
+            </VBox>
+        </content>
+    </ScrollPane>
+
+</VBox>

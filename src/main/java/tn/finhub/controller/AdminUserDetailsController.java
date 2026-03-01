@@ -1,9 +1,12 @@
 package tn.finhub.controller;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart;
+import java.util.List;
 
 import tn.finhub.model.User;
 import tn.finhub.model.Wallet;
@@ -30,6 +33,9 @@ public class AdminUserDetailsController {
     private Label currencyLabel;
     @FXML
     private Label walletStatusLabel;
+
+    @FXML
+    private LineChart<Number, Number> activitySparkline;
 
     // Buttons
     @FXML
@@ -110,6 +116,14 @@ public class AdminUserDetailsController {
                     freezeBtn.getStyleClass().add("button-warning");
                 }
                 freezeBtn.setDisable(false);
+
+                // Fetch transactions and populate sparkline
+                java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                    return walletModel.getTransactionHistory(wallet.getId());
+                }).thenAcceptAsync(transactions -> {
+                    populateSparkline(transactions, wallet.getBalance());
+                }, javafx.application.Platform::runLater);
+
             } else {
                 balanceLabel.setText("N/A");
                 currencyLabel.setText("TND");
@@ -124,6 +138,90 @@ public class AdminUserDetailsController {
             });
             return null;
         });
+    }
+
+    private void populateSparkline(List<tn.finhub.model.WalletTransaction> transactions,
+            java.math.BigDecimal currentBalance) {
+        if (activitySparkline == null || transactions == null || currentBalance == null)
+            return;
+
+        activitySparkline.getData().clear();
+
+        if (transactions.isEmpty())
+            return;
+
+        XYChart.Series<Number, Number> series = new XYChart.Series<>();
+
+        // Reverse engineer the balance over the last N transactions (up to 20 for a
+        // clean sparkline)
+        int limit = Math.min(transactions.size(), 20);
+        double runningBalance = currentBalance.doubleValue();
+
+        // We go backwards from the most recent to the older transactions to build the
+        // line
+        for (int i = 0; i < limit; i++) {
+            series.getData().add(0, new XYChart.Data<>(limit - i, runningBalance)); // Add at beginning so X goes left
+                                                                                    // to right
+
+            // Subtract the effect of this transaction to find the *previous* balance
+            tn.finhub.model.WalletTransaction tx = transactions.get(i);
+            if (tx.getType().equals("CREDIT") || tx.getType().equals("DEPOSIT")
+                    || tx.getType().equals("TRANSFER_RECEIVED")) {
+                runningBalance -= tx.getAmount().doubleValue();
+            } else if (tx.getType().equals("DEBIT") || tx.getType().equals("WITHDRAWAL")
+                    || tx.getType().equals("TRANSFER_SENT")) {
+                runningBalance += tx.getAmount().doubleValue();
+            }
+        }
+
+        activitySparkline.getData().add(series);
+
+        // Style the sparkline
+        javafx.scene.Node line = series.getNode().lookup(".chart-series-line");
+        if (line != null) {
+            line.setStyle("-fx-stroke: #8b5cf6; -fx-stroke-width: 2px;");
+        }
+    }
+
+    @FXML
+    public void handleExportPDF() {
+        if (currentUser == null)
+            return;
+
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Save User Details Report");
+        fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+        fileChooser.setInitialFileName("User_Details_" + currentUser.getFullName() + ".pdf");
+
+        java.io.File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            try {
+                javafx.scene.image.WritableImage sparklineSnapshot = null;
+                if (activitySparkline.getData().size() > 0) {
+                    sparklineSnapshot = activitySparkline.snapshot(new javafx.scene.SnapshotParameters(), null);
+                }
+
+                tn.finhub.util.PdfExportUtil.generateUserDetailsReport(
+                        file,
+                        currentUser.getFullName(),
+                        currentUser.getEmail(),
+                        currentUser.getRole(),
+                        String.valueOf(currentUser.getId()),
+                        balanceLabel.getText(),
+                        currencyLabel.getText(),
+                        walletStatusLabel.getText(),
+                        sparklineSnapshot);
+                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+                        javafx.scene.control.Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("PDF Exported Successfully!");
+                alert.showAndWait();
+            } catch (Exception e) {
+                e.printStackTrace();
+                tn.finhub.util.DialogUtil.showError("Export Error", "Failed to export PDF: " + e.getMessage());
+            }
+        }
     }
 
     @FXML

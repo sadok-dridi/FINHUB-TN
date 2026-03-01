@@ -318,4 +318,42 @@ public class AdminUserTransactionsController {
     public void handleGoToUsers() {
         handleBack(); // Since back goes to user list/transactions list
     }
+
+    @FXML
+    public void handleShowStatistics() {
+        if (this.user == null)
+            return;
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/admin_user_wallet_statistics.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+            javafx.scene.Parent view = loader.load();
+
+            AdminUserWalletStatisticsController controller = loader.getController();
+            controller.setUser(this.user);
+
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) transactionsListView.getScene()
+                    .lookup("#adminContentArea");
+
+            if (contentArea != null) {
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(200), contentArea);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    contentArea.getChildren().clear();
+                    contentArea.getChildren().add(view);
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(200), contentArea);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                });
+                fadeOut.play();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            DialogUtil.showError("Navigation Error", "Could not load statistics dashboard.");
+        }
+    }
 }
