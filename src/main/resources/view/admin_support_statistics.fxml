@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="tn.finhub.controller.AdminSupportStatisticsController" 
+      spacing="20" 
+      style="-fx-padding: 30; -fx-background-color: transparent;">
+    
+    <!-- Header Row -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Button onAction="#handleBack" styleClass="button-icon" text="Back to Tickets">
+            <graphic>
+                <SVGPath content="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" style="-fx-fill: -color-text-secondary;"/>
+            </graphic>
+        </Button>
+        <Button onAction="#handleExportPDF" styleClass="button-primary" style="-fx-background-color: #fca5a5; -fx-text-fill: #7f1d1d; -fx-border-radius: 6; -fx-background-radius: 6;" text="Export PDF">
+            <graphic>
+                <SVGPath content="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" style="-fx-fill: #7f1d1d;" scaleX="0.8" scaleY="0.8"/>
+            </graphic>
+        </Button>
+        <Region HBox.hgrow="ALWAYS" />
+        <VBox alignment="CENTER_RIGHT" spacing="5">
+            <Label text="Global Support Statistics" styleClass="header-text" />
+            <Label text="Helpdesk metrics and resolution overview" style="-fx-text-fill: -color-text-muted; -fx-font-size: 13px;" />
+        </VBox>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: transparent; -fx-padding: 0;" VBox.vgrow="ALWAYS">
+        <VBox spacing="20">
+            <!-- KPIs -->
+            <HBox spacing="20">
+                <!-- Total Tickets -->
+                <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane style="-fx-background-color: rgba(56, 189, 248, 0.2); -fx-background-radius: 8; -fx-padding: 10;">
+                            <SVGPath content="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" style="-fx-fill: #38bdf8;" scaleX="1.2" scaleY="1.2"/>
+                        </StackPane>
+                        <Label text="Total Tickets" style="-fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
+                    </HBox>
+                    <Label fx:id="totalTicketsLabel" text="0" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                </VBox>
+
+                <!-- Open Tickets -->
+                <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane style="-fx-background-color: rgba(239, 68, 68, 0.2); -fx-background-radius: 8; -fx-padding: 10;">
+                            <SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" style="-fx-fill: #ef4444;" scaleX="1.2" scaleY="1.2"/>
+                        </StackPane>
+                        <Label text="Open Tickets" style="-fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
+                    </HBox>
+                    <Label fx:id="openTicketsLabel" text="0" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #ef4444;"/>
+                </VBox>
+
+                <!-- Resolved/Closed -->
+                <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <StackPane style="-fx-background-color: rgba(16, 185, 129, 0.2); -fx-background-radius: 8; -fx-padding: 10;">
+                            <SVGPath content="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" style="-fx-fill: #10b981;" scaleX="1.2" scaleY="1.2"/>
+                        </StackPane>
+                        <Label text="Resolved Tickets" style="-fx-font-size: 14px; -fx-text-fill: -color-text-secondary;"/>
+                    </HBox>
+                    <Label fx:id="resolvedTicketsLabel" text="0" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #10b981;"/>
+                </VBox>
+            </HBox>
+
+            <!-- Charts Section -->
+            <HBox spacing="20">
+                <!-- Status Pie Chart -->
+                <VBox styleClass="card" spacing="10" HBox.hgrow="SOMETIMES" prefWidth="400" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                    <Label text="Resolution Status" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                    <Separator />
+                    <PieChart fx:id="statusPieChart" legendSide="BOTTOM" labelsVisible="true" VBox.vgrow="ALWAYS" style="-fx-font-size: 12px;"/>
+                </VBox>
+
+                <!-- Categories Bar Chart -->
+                <VBox styleClass="card" spacing="10" HBox.hgrow="ALWAYS" style="-fx-background-color: -color-card-bg; -fx-padding: 20; -fx-background-radius: 12px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);">
+                    <Label text="Tickets by Category" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: -color-text-primary;"/>
+                    <Separator />
+                    <BarChart fx:id="categoryBarChart" animated="true" legendVisible="false" VBox.vgrow="ALWAYS" style="-fx-font-size: 12px; -fx-bar-fill: -color-primary;">
+                        <xAxis>
+                            <CategoryAxis label="Category"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Ticket Volume"/>
+                        </yAxis>
+                    </BarChart>
+                </VBox>
+            </HBox>
+        </VBox>
+    </ScrollPane>
+</VBox>

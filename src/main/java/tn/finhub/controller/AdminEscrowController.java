@@ -148,12 +148,48 @@ public class AdminEscrowController {
         autoRefreshTimeline = new Timeline(new KeyFrame(Duration.seconds(30), ev -> {
             // Only refresh if we are viewing the list to avoid disturbing details view
             // interaction
-            if (listViewContainer.isVisible()) {
+            if (listViewContainer != null && listViewContainer.isVisible()) {
                 loadData();
             }
         }));
         autoRefreshTimeline.setCycleCount(Timeline.INDEFINITE);
         autoRefreshTimeline.play();
+    }
+
+    @FXML
+    private void handleShowStatistics() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/view/admin_escrow_statistics.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+            javafx.scene.Parent view = loader.load();
+
+            javafx.scene.layout.StackPane contentArea = (javafx.scene.layout.StackPane) listViewContainer.getScene()
+                    .lookup("#adminContentArea");
+
+            if (contentArea != null) {
+                // Fade out current view
+                javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(200), contentArea);
+                fadeOut.setFromValue(1.0);
+                fadeOut.setToValue(0.0);
+                fadeOut.setOnFinished(e -> {
+                    contentArea.getChildren().clear();
+                    contentArea.getChildren().add(view);
+
+                    // Fade in new view
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(200), contentArea);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                });
+                fadeOut.play();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            DialogUtil.showError("Navigation Error", "Could not load Escrow Statistics dashboard.");
+        }
     }
 
     @FXML

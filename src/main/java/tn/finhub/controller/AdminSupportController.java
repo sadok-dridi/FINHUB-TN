@@ -161,4 +161,20 @@ public class AdminSupportController {
     private void handleRefresh() {
         loadTickets();
     }
+
+    @FXML
+    private void handleShowStatistics() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/admin_support_statistics.fxml"));
+            loader.setResources(tn.finhub.util.LanguageManager.getInstance().getResourceBundle());
+            Region statsView = loader.load();
+
+            rootStackPane.getChildren().add(statsView);
+            ticketsListContainer.setVisible(false);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            DialogUtil.showError("Error", "Could not load support statistics dashboard.");
+        }
+    }
 }

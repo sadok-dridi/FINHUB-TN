@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 public class ApiClient {
 
-    public static final String BASE_URL = "https://apifinhub.work.gd";
+    public static final String BASE_URL = "https://api.finhub.tn";
 
     private static final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
