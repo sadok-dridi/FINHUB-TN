@@ -28,20 +28,20 @@
 
 ```mermaid
 graph TD
-    subgraph Client Application
+    subgraph ClientApp ["Client Application"]
         JFX[JavaFX Desktop UI]
         Trader[User/Trader]
         Trader -->|Interact| JFX
     end
 
-    subgraph Core Banking Engine
+    subgraph CoreBanking ["Core Banking Engine"]
         Sym[Symfony REST API]
         DB[(MariaDB Ledger)]
         Sym <-->|Atomic Transactions| DB
         JFX <-->|HTTPS/JSON| Sym
     end
 
-    subgraph Automation & Ops (n8n)
+    subgraph AutomationOps ["Automation & Ops (n8n)"]
         Webhook[n8n Webhook Listener]
         Telegram[Telegram Control Bot]
         
