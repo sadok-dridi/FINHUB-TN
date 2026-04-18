@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    ports:
+      # Expose container port 80 to host port 8082 (since 8000 & 8081 are in use)
+      - "8082:80"
+    environment:
+      APP_ENV: prod
+      # Connection to the MariaDB container on the finhub-net network.
+      # Special characters in the password have been securely URL-encoded and Symfony-escaped
+      DATABASE_URL: "mysql://finhub_crashinburn:%%21JkmVP%%5Egsy%%25yxYe8%%23@finhub-public-db:3306/finhub?serverVersion=mariadb-10.6.12&charset=utf8mb4"
+    networks:
+      - finhub-net
+
+networks:
+  finhub-net:
+    external: true

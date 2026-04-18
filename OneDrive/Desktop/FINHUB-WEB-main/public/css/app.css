@@ -1,0 +1,683 @@
+:root {
+    /* Branding Colors */
+    --color-primary: #8B5CF6;
+    /* Violet 500 */
+    --color-primary-hover: #7C3AED;
+    /* Violet 600 */
+    --color-primary-light: #A78BFA;
+    /* Violet 400 */
+    --color-secondary: #D946EF;
+    /* Fuchsia 500 */
+
+    /* Dark Mode Palette */
+    --color-bg: #0F0E17;
+    /* Deep Dark Violet/Black */
+    --color-card-bg: #1E1B2E;
+    /* Lighter Dark Violet */
+    --color-card-border: #2E2A45;
+    --color-border: #2E2A45;
+
+    /* Text */
+    --color-text-primary: #EDE9FE;
+    /* Very Pale Violet (was F3F4F6) */
+    --color-text-secondary: #C4B5FD;
+    /* Soft Lavender (Distinctly not white) */
+    --color-text-muted: #A78BFA;
+    /* Muted Violet */
+
+    /* ... */
+}
+
+/* Force visibility with color */
+#how-it-works p.text-muted {
+    color: #C4B5FD !important;
+    /* Soft Lavender */
+    opacity: 1;
+    font-size: 1.05rem;
+    font-weight: 400;
+}
+
+/* ... */
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+    /* Violet -> Fuchsia */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    /* White text on colored button */
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 12px 32px;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: auto;
+    min-width: 160px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+}
+
+.btn-primary-custom:hover {
+    background: linear-gradient(135deg, #7C3AED 0%, #C026D3 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+    color: white;
+}
+
+/* States */
+:root {
+    --color-success: #10B981;
+    /* Emerald 500 */
+    --color-warning: #F59E0B;
+    /* Amber 500 */
+    --color-error: #EF4444;
+    /* Red 500 */
+
+    /* Inputs */
+    --input-bg: #1F1D2B;
+    /* Darker input bg */
+    --input-border: #374151;
+    /* Lighter border */
+}
+
+/* Navbar */
+/* Navbar */
+.navbar-custom {
+    background: rgba(15, 14, 23, 0.6) !important;
+    /* Semi-transparent */
+    backdrop-filter: blur(12px);
+    /* Blur effect */
+    padding: 0.8rem 0;
+    /* Minimized height */
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 1.4rem;
+    /* Slightly smaller to match reduced height */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.nav-link-custom {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    /* Bolder */
+    font-size: 1.1rem;
+    margin: 0 1rem;
+    transition: all 0.2s;
+}
+
+.nav-link-custom:hover,
+.nav-link-custom.active {
+    color: white;
+    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Mobile Navbar Styles */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background: rgba(15, 14, 23, 0.95);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-link-custom {
+        margin: 0.5rem 0;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+
+    .nav-link-custom:hover {
+        background: rgba(139, 92, 246, 0.1);
+        transform: translateX(5px);
+    }
+
+    .navbar-nav .btn {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Make Brand Text & Logo larger on mobile */
+    .navbar-brand img {
+        height: 40px !important;
+        /* Slightly smaller for professional topbar */
+    }
+
+    .navbar-brand span {
+        font-size: 1.35rem !important;
+        /* Slightly smaller for professional topbar */
+    }
+
+    /* Global Mobile Scale Down for App-Like Feel */
+    .feature-row {
+        padding: 3rem 0;
+        /* Reduced from 5rem/4rem padding */
+        text-align: center;
+    }
+
+    .feature-row h2 {
+        font-size: 2rem !important;
+        /* Scale down massive section headings */
+        line-height: 1.2;
+        margin-bottom: 1rem;
+    }
+
+    .feature-row p {
+        font-size: 1rem !important;
+        /* Scale down body text */
+        line-height: 1.5;
+        padding: 0 1rem;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        /* Smaller tags */
+        padding: 4px 10px;
+    }
+
+    .feature-list h4 {
+        font-size: 1.15rem;
+        /* Smaller list headers */
+        margin-bottom: 0.25rem;
+    }
+
+    .feature-list p {
+        font-size: 0.9rem !important;
+        /* Smaller text under lists */
+        padding: 0;
+    }
+
+    .step-card {
+        padding: 1.5rem !important;
+        /* Smaller cards */
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .glass-card {
+        padding: 1.5rem !important;
+    }
+}
+
+/* Enhanced Glass Card - Better Visibility */
+.glass-card {
+    background: linear-gradient(135deg, rgba(30, 27, 46, 0.9), rgba(20, 18, 30, 0.95));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Subtle border */
+    border-radius: 24px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--card-color, var(--color-primary));
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+        0 0 0 1px var(--card-color, var(--color-primary)) inset;
+    /* Inner glow */
+}
+
+/* Step/Process Section */
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.step-number:hover {
+    background: var(--color-primary);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+    transform: scale(1.1);
+}
+
+/* Force visibility for How It Works text */
+#how-it-works p.text-muted {
+    color: #E5E7EB !important;
+    /* High contrast light gray */
+    opacity: 0.9;
+    font-size: 1rem;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    /* Drop shadow for legibility */
+}
+
+/* Testimonials */
+.testimonial-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    background-color: var(--input-bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+/* --- ANIMATIONS --- */
+
+/* Base class for all reveals */
+[class*="reveal-"] {
+    opacity: 0;
+    transition: all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform, opacity;
+}
+
+/* 1. Fade Up (Standard) */
+.reveal-fade-up {
+    transform: translateY(50px);
+}
+
+.reveal-fade-up.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 2. Zoom In (Impact) */
+.reveal-zoom {
+    transform: scale(0.85);
+    filter: blur(5px);
+}
+
+.reveal-zoom.active {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+}
+
+/* 3. Slide In Left (for Zig-Zag) */
+.reveal-slide-left {
+    transform: translateX(-50px);
+}
+
+.reveal-slide-left.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 4. Slide In Right (for Zig-Zag) */
+.reveal-slide-right {
+    transform: translateX(50px);
+}
+
+.reveal-slide-right.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 5. Rotate & Scale (for small icons/badges) */
+.reveal-pop {
+    transform: scale(0.5) rotate(-10deg);
+}
+
+.reveal-pop.active {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+}
+
+/* Staggered Delays */
+.delay-100 {
+    transition-delay: 0.1s;
+}
+
+.delay-200 {
+    transition-delay: 0.2s;
+}
+
+.delay-300 {
+    transition-delay: 0.3s;
+}
+
+.delay-400 {
+    transition-delay: 0.4s;
+}
+
+/* Keep existing float/pulse */
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+    }
+}
+
+.animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes gradient-x {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.animate-gradient-text {
+    background-size: 200% auto;
+    animation: gradient-x 3s linear infinite;
+}
+
+/* New Cinematic Animations */
+@keyframes cinematic-reveal {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+        filter: blur(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+.reveal-cinematic {
+    opacity: 0;
+    /* Align with JS handler */
+}
+
+.reveal-cinematic.active {
+    animation: cinematic-reveal 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Staggered Delays using nth-child logic in CSS or utility classes */
+.delay-100 {
+    animation-delay: 0.1s;
+}
+
+.delay-200 {
+    animation-delay: 0.2s;
+}
+
+.delay-300 {
+    animation-delay: 0.3s;
+}
+
+.delay-400 {
+    animation-delay: 0.4s;
+}
+
+/* Feature Deep Dives (Zig-Zag) */
+.feature-row {
+    padding: 6rem 0;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .feature-row {
+        padding: 3rem 0;
+    }
+}
+
+.feature-img-placeholder {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(135deg, rgba(30, 27, 46, 0.8), rgba(20, 18, 30, 0.9));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-img-placeholder::after {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--glow-color, rgba(139, 92, 246, 0.2)) 0%, transparent 70%);
+    top: -50%;
+    left: -50%;
+    animation: rotate-glow 10s linear infinite;
+}
+
+@keyframes rotate-glow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.feature-content h3 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #fff, #9CA3AF);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.feature-list-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+}
+
+.feature-list-icon {
+    min-width: 30px;
+    height: 30px;
+    background: rgba(139, 92, 246, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    margin-right: 1rem;
+    font-size: 0.9rem;
+}
+
+/* FAQ Accordion */
+.accordion-custom .accordion-item {
+    background: transparent;
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.accordion-custom .accordion-button {
+    background: rgba(255, 255, 255, 0.03);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px !important;
+    padding: 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    box-shadow: none;
+    transition: all 0.3s;
+}
+
+.accordion-custom .accordion-button:not(.collapsed) {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.accordion-custom .accordion-button::after {
+    filter: invert(1);
+    opacity: 0.5;
+}
+
+.accordion-custom .accordion-body {
+    background: transparent;
+    color: var(--color-text-secondary);
+    padding: 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    border-top: none;
+}
+
+.card-custom {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-card-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    padding: 30px;
+}
+
+.header-text {
+    font-size: 28px;
+    font-weight: bold;
+    color: #E9D5FF;
+    text-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+}
+
+.sub-header-text {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+}
+
+.form-label {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    color: var(--color-text-primary);
+    padding: 12px;
+}
+
+.form-control:focus {
+    background-color: var(--input-bg);
+    border-color: var(--color-primary);
+    color: var(--color-text-primary);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.25);
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+    /* Classy White/Off-White */
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    color: #0F0E17;
+    /* Dark text for contrast */
+    font-weight: 800;
+    border-radius: 12px;
+    /* Reduced radius */
+    padding: 10px 30px;
+    /* Smaller padding */
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+    /* Subtle white glow */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: auto;
+    min-width: 160px;
+    /* Smaller min-width */
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    /* Slightly smaller text */
+}
+
+.btn-primary-custom:hover {
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+    color: #0F0E17;
+}
+
+a.hyperlink {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a.hyperlink:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+a.hyperlink-accent {
+    color: var(--color-secondary);
+}
+
+/* Center card vertically */
+.full-height-center {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

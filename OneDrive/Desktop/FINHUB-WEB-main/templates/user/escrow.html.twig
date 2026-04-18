@@ -1,0 +1,1847 @@
+{% extends 'user/layout.html.twig' %}
+
+{% block title %}Escrow & Trust - FinHub{% endblock %}
+
+{% block user_stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Headers & Layout */
+    .escrow-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    
+    .escrow-title-container {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .escrow-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #F3F4F6;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+    
+    .escrow-subtitle {
+        font-size: 0.95rem;
+        color: #9CA3AF;
+        margin: 0;
+    }
+
+    .escrow-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    /* Trust Score Badge */
+    .trust-score-badge {
+        background: rgba(20, 18, 35, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .trust-score-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .trust-score-label {
+        font-size: 0.75rem;
+        color: #6B7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .trust-score-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #A78BFA;
+        margin: 0;
+        line-height: 1;
+    }
+
+    /* SVG Circular Progress */
+    .circular-progress {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .circular-progress svg {
+        transform: rotate(-90deg);
+        width: 100%;
+        height: 100%;
+    }
+
+    .circular-progress circle {
+        fill: none;
+        stroke-width: 3;
+        stroke-linecap: round;
+    }
+
+    .circular-progress circle.bg {
+        stroke: rgba(255, 255, 255, 0.1);
+    }
+
+    .circular-progress circle.progress {
+        stroke: #10B981; /* Default to Green for good trust */
+        stroke-dasharray: 100;
+        stroke-dashoffset: 20; /* Example default */
+        transition: stroke-dashoffset 1s ease;
+    }
+
+    .circular-progress .icon {
+        position: absolute;
+        color: #10B981;
+        font-size: 0.9rem;
+    }
+
+    /* Buttons */
+    .escrow-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-add-contact {
+        background: linear-gradient(135deg, #EC4899, #D946EF);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);
+    }
+    .btn-add-contact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+    }
+
+    .btn-new-escrow {
+        background: linear-gradient(135deg, #A855F7, #8B5CF6);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    }
+    .btn-new-escrow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Tabs */
+    .escrow-tabs {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 30px;
+        align-items: center;
+    }
+
+    .tab-link {
+        color: #9CA3AF;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        transition: all 0.2s ease;
+    }
+
+    .tab-link:hover {
+        color: #E5E7EB;
+    }
+
+    .tab-link.active {
+        color: #fff;
+        background: #8B5CF6;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+
+    .tab-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .tab-search-form {
+        flex: 1 1 280px;
+    }
+
+    .tab-search-input {
+        width: 100%;
+        background: rgba(20, 18, 35, 0.6);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 12px 16px;
+        color: #F3F4F6;
+        outline: none;
+    }
+
+    .tab-search-input:focus {
+        border-color: rgba(139, 92, 246, 0.35);
+    }
+
+    .tab-sort-form {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: end;
+    }
+
+    .tab-sort-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .tab-sort-label {
+        color: #9CA3AF;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .tab-sort-select {
+        min-width: 180px;
+        background: rgba(20, 18, 35, 0.6);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 12px 14px;
+        color: #F3F4F6;
+        outline: none;
+    }
+
+    .tab-sort-select:focus {
+        border-color: rgba(139, 92, 246, 0.35);
+    }
+
+    /* Trusted Contact Cards Grid */
+    .trusted-contacts-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .trusted-card {
+        background: rgba(20, 18, 35, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
+        min-width: 320px;
+        max-width: 360px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .trusted-card:hover {
+        background: rgba(255, 255, 255, 0.03);
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Contact Card Avatar Side */
+    .trusted-card-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        width: 80px;
+    }
+
+    .trusted-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 2px solid #A855F7; /* Purple accent ring */
+        background: rgba(168, 85, 247, 0.1);
+        padding: 2px;
+    }
+
+    .trusted-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .trusted-initial {
+        color: #E9D5FF;
+        font-weight: 600;
+        font-size: 1.3rem;
+        letter-spacing: 1px;
+    }
+
+    .trusted-name {
+        color: #F3F4F6;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-align: center;
+        word-break: break-all;
+    }
+
+    /* Contact Card Details Side */
+    .trusted-card-right {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+        padding-left: 20px;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #9CA3AF;
+        font-size: 0.85rem;
+    }
+
+    .detail-row i {
+        color: #8B5CF6;
+        width: 14px;
+        text-align: center;
+    }
+
+    .trust-score-row {
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .score-green { color: #10B981; }
+    .score-yellow { color: #F59E0B; }
+    .score-red { color: #EF4444; }
+
+    .trust-score-row i.score-green { color: #10B981; }
+    .trust-score-row i.score-yellow { color: #F59E0B; }
+    .trust-score-row i.score-red { color: #EF4444; }
+
+    /* ─── CONTACT DETAILS VIEW ─── */
+    #escrowMainView {
+        transition: opacity 0.3s ease;
+    }
+    
+    #contactDetailsView {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .back-btn {
+        background: transparent;
+        border: none;
+        color: #D1D5DB;
+        font-size: 1.1rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 24px;
+        transition: color 0.2s ease;
+        padding: 0;
+    }
+    .back-btn:hover { color: #fff; }
+
+    .contact-details-layout {
+        display: flex;
+        gap: 30px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .contact-sidebar {
+        background: rgba(20, 18, 35, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        width: 380px;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 0 auto 16px;
+        border: 3px solid #8B5CF6;
+        padding: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(139, 92, 246, 0.1);
+        overflow: hidden;
+    }
+    .sidebar-avatar-large img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .sidebar-avatar-large .initial { color: #E9D5FF; font-size: 2.2rem; font-weight: 600; }
+
+    .sidebar-name {
+        text-align: center;
+        color: #fff;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .sidebar-name i { font-size: 0.9rem; color: #8B5CF6; cursor: pointer; }
+
+    .sidebar-info-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .sidebar-info-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .sidebar-info-icon {
+        width: 32px; height: 32px;
+        background: rgba(139, 92, 246, 0.1);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        color: #A855F7;
+        flex-shrink: 0;
+    }
+    .sidebar-info-text { display: flex; flex-direction: column; }
+    .sidebar-info-text small { color: #6B7280; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-info-text span { color: #D1D5DB; font-size: 0.9rem; word-break: break-all; }
+    .sidebar-inline-edit { color: #8B5CF6; cursor: pointer; font-size: 0.85rem; }
+
+    .sidebar-metrics {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+    }
+    .metric-box {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .metric-box small { color: #9CA3AF; font-size: 0.75rem; display: flex; align-items: center; gap: 6px; }
+    .metric-box span { font-size: 1.4rem; font-weight: 700; }
+
+    .btn-block-purple {
+        background: linear-gradient(135deg, #A855F7, #D946EF);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        margin-bottom: 12px;
+        transition: opacity 0.2s;
+    }
+    .btn-block-purple:hover { opacity: 0.9; }
+
+    .btn-block-red-outline {
+        background: transparent;
+        color: #EF4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        padding: 14px;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        width: 100%;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: all 0.2s;
+    }
+    .btn-block-red-outline:hover { background: rgba(239, 68, 68, 0.1); }
+
+    .contact-main {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .contact-main-title {
+        color: #E5E7EB;
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .activity-item {
+        background: rgba(20, 18, 35, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: background 0.2s;
+    }
+    .activity-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+    .activity-icon {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: white;
+        display: flex; align-items: center; justify-content: center;
+        color: #8B5CF6;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .activity-info { display: flex; flex-direction: column; }
+    .activity-info strong { color: #fff; font-size: 0.95rem; }
+    .activity-info span { color: #9CA3AF; font-size: 0.8rem; }
+
+    /* ─── CREATE ESCROW MODAL ─── */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content {
+        background: #151120; border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px; padding: 30px; width: 90%; max-width: 500px;
+        position: relative; transform: translateY(20px); transition: transform 0.3s ease;
+        max-height: 90vh; overflow-y: auto;
+    }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.2s;
+        padding: 0;
+        line-height: 1;
+        width: auto;
+        height: auto;
+    }
+    .modal-close:hover {
+        color: #fff;
+    }
+
+    .modal-header-escrow { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .modal-header-icon { width: 44px; height: 44px; border-radius: 50%; background: rgba(139,92,246,0.15); display: flex; align-items: center; justify-content: center; color: #A855F7; font-size: 1.2rem; }
+    .modal-header-escrow h3 { color: #E9D5FF; font-size: 1.3rem; font-weight: 600; margin: 0 0 4px 0; }
+    .modal-header-escrow p { color: #9CA3AF; font-size: 0.85rem; margin: 0; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; color: #D1D5DB; margin-bottom: 8px; font-size: 0.9rem; }
+    .form-input, .form-select, .form-textarea {
+        width: 100%; background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;
+        padding: 12px 14px; color: #fff; font-size: 0.95rem; outline: none; transition: border-color 0.2s;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #8B5CF6; }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    
+    .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
+    .form-row .form-group { flex: 1; margin-bottom: 0; }
+
+    .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: #8B5CF6; cursor: pointer; }
+    .checkbox-group label { color: #9CA3AF; font-size: 0.85rem; cursor: pointer; }
+
+    .escrow-fee-box {
+        background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 24px;
+        display: flex; flex-direction: column; gap: 10px;
+    }
+    .fee-row { display: flex; justify-content: space-between; color: #9CA3AF; font-size: 0.9rem; }
+    .fee-row.total { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; color: #fff; font-weight: 600; margin-top: 4px; }
+    .fee-row.total span:last-child { color: #A855F7; }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+    .btn-cancel { background: transparent; color: #D1D5DB; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 10px 20px; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+    .btn-submit { background: linear-gradient(135deg, #A855F7, #D946EF); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+    .btn-submit:hover { opacity: 0.9; }
+
+    /* --- Mobile Responsiveness --- */
+    @media (max-width: 768px) {
+        .escrow-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+        .escrow-actions-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+        .escrow-buttons {
+            width: 100%;
+            display: flex;
+        }
+        .escrow-buttons button {
+            flex: 1;
+            justify-content: center;
+        }
+        .trust-score-badge {
+            justify-content: space-between;
+        }
+        
+        /* Tabs horizontal scrolling */
+        .escrow-tabs {
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            /* Hide scrollbar */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .escrow-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .tab-link {
+            white-space: nowrap;
+        }
+
+        /* Card grids & Layouts */
+        .trusted-card {
+            min-width: 100%;
+            max-width: 100%;
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+        }
+        .trusted-card-left {
+            width: 100%;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 16px;
+        }
+        .trusted-card-right {
+            border-left: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-left: 0;
+            padding-top: 12px;
+            width: 100%;
+        }
+        
+        .contact-sidebar {
+            width: 100%;
+            padding: 20px;
+        }
+        
+        /* Activity Items stack */
+        .activity-item {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 12px;
+        }
+        .activity-item > div:first-child {
+            align-items: center;
+            width: 100%;
+        }
+        .activity-item > div:last-child {
+            justify-content: space-between;
+            width: 100%;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Modals & Forms */
+        .modal-content {
+            padding: 20px;
+            width: 95%;
+        }
+        .form-row {
+            flex-direction: column;
+            gap: 16px;
+        }
+        .modal-actions {
+            flex-direction: column-reverse;
+        }
+        .modal-actions button {
+            width: 100%;
+        }
+    }
+
+</style>
+{% endblock %}
+
+{% block user_content %}
+<div class="wallet-container">
+
+    <!-- Header Section -->
+    <div id="escrowMainView">
+        <div class="escrow-header">
+            <div class="escrow-title-container">
+                <h1 class="escrow-title">Escrow & Trust</h1>
+                <p class="escrow-subtitle">Secure payments held until you are satisfied.</p>
+            </div>
+
+            <div class="escrow-actions-group">
+                <!-- Trust Score Badge -->
+                <div class="trust-score-badge">
+                    <div class="trust-score-info">
+                        <span class="trust-score-label">Trust Score</span>
+                        <span class="trust-score-value">{{ trustScore }}</span>
+                    </div>
+                    
+                    <div class="circular-progress">
+                        {% set dashOffset = 100 - (trustScore > 100 ? 100 : trustScore) %}
+                        {% set scoreColor = trustScore >= 70 ? '#10B981' : (trustScore >= 30 ? '#F59E0B' : '#EF4444') %}
+                        
+                        <svg viewBox="0 0 36 36">
+                            <circle class="bg" cx="18" cy="18" r="16"></circle>
+                            <circle class="progress" cx="18" cy="18" r="16" style="stroke: {{ scoreColor }}; stroke-dasharray: 100; stroke-dashoffset: {{ dashOffset }};"></circle>
+                        </svg>
+                        <i class="fas fa-shield-alt icon" style="color: {{ scoreColor }};"></i>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="escrow-buttons">
+                    <button class="btn-add-contact" onclick="promptAddContact()"><i class="fas fa-user-plus"></i> Add Contact</button>
+                    <button class="btn-new-escrow" onclick="openNewEscrowModal()"><i class="fas fa-plus"></i> New Escrow</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="escrow-tabs">
+            <a href="{{ path('app_user_escrow', app.request.query.all|merge({tab: 'contacts'})) }}" class="tab-link {{ activeTab|default('contacts') == 'contacts' ? 'active' : '' }}">Contacts</a>
+            <a href="{{ path('app_user_escrow', app.request.query.all|merge({tab: 'active'})) }}" class="tab-link {{ activeTab|default('contacts') == 'active' ? 'active' : '' }}">Active</a>
+            <a href="{{ path('app_user_escrow', app.request.query.all|merge({tab: 'history'})) }}" class="tab-link {{ activeTab|default('contacts') == 'history' ? 'active' : '' }}">History</a>
+            <a href="{{ path('app_user_escrow', app.request.query.all|merge({tab: 'disputes'})) }}" class="tab-link {{ activeTab|default('contacts') == 'disputes' ? 'active' : '' }}">Disputes</a>
+        </div>
+
+        <div class="tab-toolbar">
+            <form method="get" class="tab-search-form">
+                <input type="hidden" name="tab" value="{{ activeTab|default('contacts') }}">
+                <input type="hidden" name="sort" value="{{ sort|default(activeTab|default('contacts') == 'contacts' ? 'name' : 'created') }}">
+                <input type="hidden" name="direction" value="{{ direction|default('desc') }}">
+                <input type="text" name="search" value="{{ search|default('') }}" class="tab-search-input" placeholder="{% if activeTab|default('contacts') == 'contacts' %}Search contacts by name, email, phone, or trust score...{% else %}Search escrows by id, amount, status, party, or condition...{% endif %}">
+            </form>
+
+            <form method="get" class="tab-sort-form">
+                <input type="hidden" name="tab" value="{{ activeTab|default('contacts') }}">
+                <input type="hidden" name="search" value="{{ search|default('') }}">
+                <div class="tab-sort-group">
+                    <label for="escrowSort" class="tab-sort-label">Sort By</label>
+                    <select id="escrowSort" name="sort" class="tab-sort-select" onchange="this.form.submit()">
+                        {% if activeTab|default('contacts') == 'contacts' %}
+                            <option value="name" {{ sort|default('name') == 'name' ? 'selected' : '' }}>Name</option>
+                            <option value="email" {{ sort|default('name') == 'email' ? 'selected' : '' }}>Email</option>
+                            <option value="trust" {{ sort|default('name') == 'trust' ? 'selected' : '' }}>Trust Score</option>
+                        {% else %}
+                            <option value="created" {{ sort|default('created') == 'created' ? 'selected' : '' }}>Created</option>
+                            <option value="amount" {{ sort|default('created') == 'amount' ? 'selected' : '' }}>Amount</option>
+                            <option value="status" {{ sort|default('created') == 'status' ? 'selected' : '' }}>Status</option>
+                            <option value="party" {{ sort|default('created') == 'party' ? 'selected' : '' }}>Other Party</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="tab-sort-group">
+                    <label for="escrowDirection" class="tab-sort-label">Direction</label>
+                    <select id="escrowDirection" name="direction" class="tab-sort-select" onchange="this.form.submit()">
+                        <option value="desc" {{ direction|default('desc') == 'desc' ? 'selected' : '' }}>Descending</option>
+                        <option value="asc" {{ direction|default('desc') == 'asc' ? 'selected' : '' }}>Ascending</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Trusted Contacts View -->
+        <div id="tabContacts" class="tab-content" style="display: {{ activeTab|default('contacts') == 'contacts' ? 'block' : 'none' }};">
+            <div class="trusted-contacts-grid">
+            {% if contacts is empty %}
+                <div style="color: #9CA3AF; padding: 40px; text-align: center; width: 100%; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px;">
+                    <i class="fas fa-user-shield" style="font-size: 3rem; color: #4B5563; margin-bottom: 16px;"></i>
+                    <p>No trusted contacts found.</p>
+                    <p style="font-size: 0.85rem;">Add a contact to begin secure escrow transactions with them.</p>
+                </div>
+            {% else %}
+                {% for contact in contacts %}
+                    <div class="trusted-card" style="cursor: pointer;" onclick="openContactDetails(this)" 
+                         data-id="{{ contact.contactUserId }}"
+                         data-email="{{ contact.email|escape('html_attr') }}"
+                         data-phone="{{ contact.phone|escape('html_attr') }}"
+                         data-name="{{ contact.displayName|escape('html_attr') }}"
+                         data-initial="{{ contact.initial|escape('html_attr') }}"
+                         data-avatar="{{ contact.avatarUrl|default('')|escape('html_attr') }}"
+                         data-score="{{ contact.trustScore }}"
+                         data-wallet="{{ contact.walletStatus|escape('html_attr') }}"
+                         data-history="{{ contact.history|json_encode|escape('html_attr') }}">
+                        <!-- Avatar & Name -->
+                        <div class="trusted-card-left">
+                            <div class="trusted-avatar">
+                                {% if contact.avatarUrl %}
+                                    <img src="{{ contact.avatarUrl }}" alt="{{ contact.displayName }}">
+                                {% else %}
+                                    <span class="trusted-initial">{{ contact.initial }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="trusted-name">{{ contact.displayName|lower }}</div>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="trusted-card-right">
+                            <div class="detail-row">
+                                <i class="fas fa-envelope"></i>
+                                <span style="word-break: break-all;">{{ contact.email }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>{{ contact.phone|default('N/A') }}</span>
+                            </div>
+                            
+                            {% set contactScoreColorClass = contact.trustScore >= 70 ? 'score-green' : (contact.trustScore >= 30 ? 'score-yellow' : 'score-red') %}
+                            
+                            <div class="trust-score-row {{ contactScoreColorClass }}">
+                                <i class="fas fa-shield-alt"></i>
+                                <span>Trust Score: {{ contact.trustScore }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Escrows View -->
+        <div id="tabActive" class="tab-content" style="display: {{ activeTab|default('contacts') == 'active' ? 'block' : 'none' }};">
+            <div class="activity-list">
+                {% if activeEscrows is empty %}
+                    <div style="color: #9CA3AF; padding: 40px; text-align: center; width: 100%; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px;">
+                        <i class="fas fa-box-open" style="font-size: 3rem; color: #4B5563; margin-bottom: 16px;"></i>
+                        <p>No active escrows found.</p>
+                    </div>
+                {% else %}
+                    {% for escrow in activeEscrows %}
+                        <div class="activity-item" style="justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="activity-icon"><i class="fas fa-expand"></i></div>
+                                <div class="activity-info">
+                                    <strong style="font-size: 1.1rem;">Escrow #{{ escrow.id }}</strong>
+                                    <span>{{ escrow.condition }}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="font-weight: 500; color: #fff; font-size: 1.1rem;">{{ escrow.amount }} TND</div>
+                                {% set statusBadgeStyle = escrow.status == 'LOCKED' ? 'background: #fff7ed; color: #c2410c;' : 'background: #fef2f2; color: #b91c1c;' %}
+                                <span style="font-size: 0.75rem; padding: 6px 14px; border-radius: 20px; font-weight: 700; {{ statusBadgeStyle }}">{{ escrow.status }}</span>
+                                <button class="btn-cancel" style="padding: 8px 16px; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);" 
+                                    onclick='openEscrowDetail({{ escrow|json_encode|raw }})'>View</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- History Escrows View -->
+        <div id="tabHistory" class="tab-content" style="display: {{ activeTab|default('contacts') == 'history' ? 'block' : 'none' }};">
+            <div class="activity-list">
+                {% if historyEscrows is empty %}
+                    <div style="color: #9CA3AF; padding: 40px; text-align: center; width: 100%; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px;">
+                        <i class="fas fa-history" style="font-size: 3rem; color: #4B5563; margin-bottom: 16px;"></i>
+                        <p>No escrow history found.</p>
+                    </div>
+                {% else %}
+                    {% for escrow in historyEscrows %}
+                        <div class="activity-item" style="justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="activity-icon"><i class="fas fa-expand"></i></div>
+                                <div class="activity-info">
+                                    <strong style="font-size: 1.1rem;">Escrow #{{ escrow.id }}</strong>
+                                    <span>{{ escrow.condition }}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="font-weight: 500; color: #fff; font-size: 1.1rem;">{{ escrow.amount }} TND</div>
+                                {% set statusBadgeStyle = escrow.status == 'RELEASED' ? 'background: #dcfce7; color: #047857;' : 'background: #f3f4f6; color: #4b5563;' %}
+                                <span style="font-size: 0.75rem; padding: 6px 14px; border-radius: 20px; font-weight: 700; {{ statusBadgeStyle }}">{{ escrow.status }}</span>
+                                {% if escrow.status in ['RELEASED', 'REFUNDED'] %}
+                                    <button class="btn-block-red-outline" style="margin: 0; padding: 8px 12px; font-size: 0.85rem;" onclick="deleteEscrowItem({{ escrow.id }}, '{{ escrow.status|e('js') }}')" title="Delete {{ escrow.status|lower }} escrow">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                {% endif %}
+                                <button class="btn-cancel" style="padding: 8px 16px; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);" 
+                                    onclick='openEscrowDetail({{ escrow|json_encode|raw }})'>View</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Disputed Escrows View -->
+        <div id="tabDisputes" class="tab-content" style="display: {{ activeTab|default('contacts') == 'disputes' ? 'block' : 'none' }};">
+            <div class="activity-list">
+                {% if disputedEscrows is empty %}
+                    <div style="color: #9CA3AF; padding: 40px; text-align: center; width: 100%; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px;">
+                        <i class="fas fa-gavel" style="font-size: 3rem; color: #4B5563; margin-bottom: 16px;"></i>
+                        <p>No disputed escrows found.</p>
+                    </div>
+                {% else %}
+                    {% for escrow in disputedEscrows %}
+                        <div class="activity-item" style="justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="activity-icon"><i class="fas fa-expand"></i></div>
+                                <div class="activity-info">
+                                    <strong style="font-size: 1.1rem;">Escrow #{{ escrow.id }}</strong>
+                                    <span>{{ escrow.condition }}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="font-weight: 500; color: #fff; font-size: 1.1rem;">{{ escrow.amount }} TND</div>
+                                <span style="font-size: 0.75rem; padding: 6px 14px; border-radius: 20px; font-weight: 700; background: #fef2f2; color: #b91c1c;">{{ escrow.status }}</span>
+                                <button class="btn-cancel" style="padding: 8px 16px; font-size: 0.85rem; border-color: rgba(255,255,255,0.1);" 
+                                    onclick='openEscrowDetail({{ escrow|json_encode|raw }})'>View</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div> <!-- /escrowMainView -->
+
+    <!-- Contact Details Overlay View -->
+    <div id="contactDetailsView">
+        <button class="back-btn" onclick="closeContactDetails()">
+            <i class="fas fa-arrow-left"></i> Contact Details
+        </button>
+
+        <div class="contact-details-layout">
+            <!-- Left Sidebar -->
+            <div class="contact-sidebar">
+                <div class="sidebar-avatar-large" id="cdAvatarWrapper">
+                    <span class="initial" id="cdInitial"></span>
+                    <img id="cdAvatar" style="display:none;" src="" alt="Avatar">
+                </div>
+                
+                <h2 class="sidebar-name" id="cdName">
+                    <!-- name inserted here via JS --> <i class="fas fa-pen"></i>
+                </h2>
+
+                <div class="sidebar-info-box">
+                    <div class="sidebar-info-row">
+                        <div class="sidebar-info-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="sidebar-info-text">
+                            <small>Email</small>
+                            <span id="cdEmail"></span>
+                        </div>
+                    </div>
+                    <div class="sidebar-info-row">
+                        <div class="sidebar-info-icon"><i class="fas fa-phone-alt"></i></div>
+                        <div class="sidebar-info-text">
+                            <small>Phone</small>
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span id="cdPhone"></span>
+                                <i class="fas fa-pen sidebar-inline-edit" onclick="editContactPhone(event)"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-metrics">
+                    <div class="metric-box">
+                        <small><i class="fas fa-shield-alt" style="color:#10B981;"></i> Trust Score</small>
+                        <span id="cdScore" style="color:#10B981;"></span>
+                    </div>
+                    <div class="metric-box">
+                        <small><i class="fas fa-wallet" style="color:#A855F7;"></i> Wallet</small>
+                        <span id="cdWallet" style="color:#10B981; font-size: 1.1rem; letter-spacing: 1px;">ACTIVE</span>
+                    </div>
+                </div>
+
+                <button class="btn-block-purple" onclick="openNewEscrowModalFromContact()">New Escrow Transaction</button>
+                <button class="btn-block-red-outline" id="cdRemoveBtn" onclick="removeContact()"><i class="fas fa-trash"></i> Remove from Contacts</button>
+            </div>
+
+            <!-- Right Main Area -->
+            <div class="contact-main">
+                <h3 class="contact-main-title">Recent Activity with Contact</h3>
+                <div class="activity-list" id="cdActivityList">
+                    <!-- Inserted via JS -->
+                </div>
+            </div>
+        </div>
+    </div> <!-- /contactDetailsView -->
+
+</div>
+
+<!-- Create Secure Escrow Modal -->
+<div id="newEscrowModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModals()">&times;</button>
+        
+        <div class="modal-header-escrow">
+            <div class="modal-header-icon"><i class="fas fa-shield-alt"></i></div>
+            <div>
+                <h3>Create Secure Escrow</h3>
+                <p>Hold funds securely until conditions are met.</p>
+            </div>
+        </div>
+
+        {{ form_start(escrowForm, {'attr': {'id': 'newEscrowForm', 'novalidate': 'novalidate', 'onsubmit': 'submitNewEscrow(event)'}}) }}
+            <div class="form-group">
+                <label class="form-label" for="{{ escrowForm.email.vars.id }}">{{ form_label(escrowForm.email) }}</label>
+                {{ form_widget(escrowForm.email, {'attr': {'class': 'form-input', 'placeholder': "Enter seller's email"}}) }}
+                {{ form_errors(escrowForm.email) }}
+                <small style="color:#6B7280; font-size:0.75rem; margin-top:6px; display:block;">Funds will be held until you release them.</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="{{ escrowForm.amount.vars.id }}">{{ form_label(escrowForm.amount) }}</label>
+                    {{ form_widget(escrowForm.amount, {'attr': {'class': 'form-input', 'placeholder': '0.000', 'oninput': 'calculateEscrowFee()'}}) }}
+                    {{ form_errors(escrowForm.amount) }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="escrowMethod">Release Method</label>
+                    <select id="escrowMethod" class="form-select">
+                        <option value="QR_CODE">QR Code Release</option>
+                        <option value="ADMIN_APPROVAL">Admin Approval</option>
+                    </select>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="escrowDocuSign">
+                        <label for="escrowDocuSign">Require DocuSign Agreement</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="{{ escrowForm.conditions.vars.id }}">{{ form_label(escrowForm.conditions) }}</label>
+                {{ form_widget(escrowForm.conditions, {'attr': {'class': 'form-textarea', 'placeholder': "Describe the terms of the deal (e.g. 'Item delivered in good condition')..."}}) }}
+                {{ form_errors(escrowForm.conditions) }}
+            </div>
+
+                <div class="escrow-fee-box">
+                    <div class="fee-row">
+                        <span>Subtotal</span>
+                        <span id="feeSubtotal">0.000 TND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span>Escrow Fee (1%)</span>
+                        <span id="feeAmount">0.000 TND (Paid by Seller)</span>
+                    </div>
+                    <div class="fee-row total">
+                        <span>Total to Pay</span>
+                        <span id="feeTotal">0.000 TND</span>
+                    </div>
+                </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModals()">Cancel</button>
+                <button type="submit" class="btn-submit" id="btnSubmitEscrow">Create Escrow</button>
+            </div>
+        {{ form_end(escrowForm) }}
+    </div>
+</div>
+
+<!-- Escrow Details Modal -->
+<div id="escrowDetailsModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModals()">&times;</button>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 id="edTitle" style="color: #E9D5FF; font-size: 1.4rem; font-weight: 600; margin: 0;">Escrow #--</h3>
+            <span id="edStatusBadge" style="font-size: 0.8rem; padding: 6px 14px; border-radius: 12px; font-weight: bold; background: #fff7ed; color: #c2410c; text-transform: uppercase;">LOCKED</span>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 8px;">Locked Amount</div>
+            <div id="edAmount" style="font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, #A855F7, #8B5CF6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0.000 TND</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Release Condition</label>
+            <div id="edCondition" class="form-input" style="min-height: 60px; background: rgba(30, 27, 46, 0.6); color: #D1D5DB; font-size: 0.95rem; overflow-wrap: break-word;">
+                --
+            </div>
+        </div>
+
+        <!-- Sender View (QR Code) -->
+        <div id="edSenderView" style="display: none; background: rgba(20, 18, 35, 0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+            <div style="color: #E5E7EB; font-weight: 500; margin-bottom: 16px;">Scan to Release</div>
+            
+            <div id="edQrCodeContainer" style="background: white; padding: 10px; display: inline-block; border-radius: 8px; margin-bottom: 16px;">
+                <img id="edQrCode" src="" alt="QR Code" style="width: 150px; height: 150px; display: block;">
+            </div>
+            
+            <div id="edSecretCode" style="color: #A78BFA; font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; margin-bottom: 12px;">Secret Code: --</div>
+            <div id="edInstruction" style="color: #9CA3AF; font-size: 0.85rem; margin-bottom: 20px;">Show this QR code to the receiver to release funds.</div>
+            
+            <button id="edReleaseBtn" onclick="handleSenderRelease()" style="background: #10B981; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-weight: 600; cursor: pointer; width: 100%; transition: opacity 0.2s;">Release Funds</button>
+            <button id="edRefundBtn" onclick="handleSenderRefund()" style="display:none; background: #3B82F6; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-weight: 600; cursor: pointer; width: 100%; margin-top:10px; transition: opacity 0.2s;">Claim Refund (Expired)</button>
+        </div>
+
+        <!-- Receiver View (Input Code) -->
+        <div id="edReceiverView" style="display: none; background: rgba(20, 18, 35, 0.6); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 24px; text-align: center; margin-bottom: 24px;">
+            <div style="color: #E5E7EB; font-weight: 500; margin-bottom: 16px;">Claim Escrow Funds</div>
+            <p style="color: #9CA3AF; font-size: 0.85rem; margin-bottom: 16px;">Enter the secret code provided by the sender or scan their QR code to claim the funds.</p>
+            
+            <input type="text" id="edCodeInput" class="form-input" placeholder="Enter Secret Code" style="text-align: center; font-family: monospace; font-size: 1.2rem; letter-spacing: 2px; margin-bottom: 16px;">
+            
+            <button onclick="handleReceiverClaim()" style="background: #10B981; color: white; border: none; border-radius: 8px; padding: 12px 24px; font-weight: 600; cursor: pointer; width: 100%; transition: opacity 0.2s;">Claim Funds</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 16px;">
+            <button class="btn-cancel" style="flex: 1;" onclick="closeModals()">Close</button>
+            <button id="edDisputeBtn" onclick="handleDispute()" class="btn-block-red-outline" style="flex: 1; margin: 0; padding: 10px 20px;">Dispute Transaction</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let currentContactId = null;
+    let currentContactName = '';
+    let currentContactPhone = '';
+
+    // Contact Details Navigation Logic
+    function openContactDetails(cardElement) {
+        // Extract data
+        currentContactId = cardElement.dataset.id;
+        const name = cardElement.dataset.name;
+        currentContactName = name;
+        const email = cardElement.dataset.email;
+        const phone = cardElement.dataset.phone;
+        currentContactPhone = phone && phone !== 'N/A' ? phone : '';
+        const score = parseInt(cardElement.dataset.score);
+        const wallet = cardElement.dataset.wallet;
+        const initial = cardElement.dataset.initial;
+        const avatar = cardElement.dataset.avatar;
+        const historyJson = cardElement.dataset.history;
+        
+        let history = [];
+        try { history = JSON.parse(historyJson); } catch(e) {}
+
+        // Populate Left Sidebar
+        document.getElementById('cdName').innerHTML = `${name} <i class="fas fa-pen" onclick="editContactAlias(event)"></i>`;
+        document.getElementById('cdEmail').innerText = email;
+        document.getElementById('cdPhone').innerText = phone || 'N/A';
+        
+        const scoreEl = document.getElementById('cdScore');
+        scoreEl.innerText = score;
+        if(score >= 70) scoreEl.style.color = '#10B981';
+        else if(score >= 30) scoreEl.style.color = '#F59E0B';
+        else scoreEl.style.color = '#EF4444';
+
+        const walletEl = document.getElementById('cdWallet');
+        walletEl.innerText = wallet;
+        walletEl.style.color = wallet === 'ACTIVE' ? '#10B981' : '#EF4444';
+
+        // Avatar logic
+        const cdAvatar = document.getElementById('cdAvatar');
+        const cdInitial = document.getElementById('cdInitial');
+        if (avatar) {
+            cdAvatar.src = avatar;
+            cdAvatar.style.display = 'block';
+            cdInitial.style.display = 'none';
+        } else {
+            cdAvatar.style.display = 'none';
+            cdInitial.innerText = initial;
+            cdInitial.style.display = 'block';
+        }
+
+        // Populate Activity List
+        const listEl = document.getElementById('cdActivityList');
+        listEl.innerHTML = '';
+        if (history.length === 0) {
+            listEl.innerHTML = `<div style="color:#9CA3AF; padding:20px; font-size:0.9rem;">No recent escrow activity.</div>`;
+        } else {
+            history.forEach((h, index) => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                // Using a generic scan/focus icon as in screenshot
+                item.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 16px; width: 100%;">
+                        <div class="activity-icon"><i class="fas fa-expand"></i></div>
+                        <div class="activity-info">
+                            <strong>Escrow #${h.id}</strong>
+                            <span>${h.date} - ${h.amount} TND</span>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        // Swap views instantly
+        document.getElementById('escrowMainView').style.display = 'none';
+        document.getElementById('contactDetailsView').style.display = 'block';
+    }
+
+    function closeContactDetails() {
+        document.getElementById('contactDetailsView').style.display = 'none';
+        document.getElementById('escrowMainView').style.display = 'block';
+        currentContactId = null;
+        currentContactName = '';
+        currentContactPhone = '';
+    }
+
+    function editContactAlias(event) {
+        event.stopPropagation();
+
+        if (!currentContactId) return;
+
+        Swal.fire({
+            title: 'Update Alias',
+            input: 'text',
+            inputValue: currentContactName,
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            background: '#151120',
+            color: '#fff',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) {
+                    return 'Alias cannot be empty.';
+                }
+
+                if (value.trim().length > 255) {
+                    return 'Alias must be 255 characters or less.';
+                }
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            fetch(`/user/escrow/contact/${currentContactId}/alias`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alias: result.value.trim() })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    Swal.fire('Error', data.message || 'Failed to update alias.', 'error');
+                    return;
+                }
+
+                currentContactName = data.alias;
+                document.getElementById('cdName').innerHTML = `${data.alias} <i class="fas fa-pen" onclick="editContactAlias(event)"></i>`;
+                Swal.fire({
+                    title: 'Updated',
+                    text: 'Alias updated successfully.',
+                    icon: 'success',
+                    background: '#151120',
+                    color: '#fff'
+                }).then(() => {
+                    window.location.reload();
+                });
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Network error.', 'error');
+            });
+        });
+    }
+
+    function editContactPhone(event) {
+        event.stopPropagation();
+
+        if (!currentContactId) return;
+
+        Swal.fire({
+            title: 'Update Phone Number',
+            input: 'text',
+            inputValue: currentContactPhone,
+            inputPlaceholder: '+216 12 345 678',
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            background: '#151120',
+            color: '#fff',
+            footer: '<span style="color:#9CA3AF; font-size:0.8rem;">Leave empty to use the phone from the user profile.</span>',
+            inputValidator: (value) => {
+                const trimmed = value.trim();
+
+                if (trimmed === '') {
+                    return undefined;
+                }
+
+                if (trimmed.length > 20) {
+                    return 'Phone number must be 20 characters or less.';
+                }
+
+                if (!/^\+?[0-9 ]{8,20}$/.test(trimmed)) {
+                    return 'Phone number can only contain digits, spaces, and an optional leading +.';
+                }
+            }
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            fetch(`/user/escrow/contact/${currentContactId}/phone`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: result.value.trim() })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    Swal.fire('Error', data.message || 'Failed to update phone number.', 'error');
+                    return;
+                }
+
+                currentContactPhone = data.phone !== 'N/A' ? data.phone : '';
+                document.getElementById('cdPhone').innerText = data.phone;
+                Swal.fire({
+                    title: 'Updated',
+                    text: 'Phone number updated successfully.',
+                    icon: 'success',
+                    background: '#151120',
+                    color: '#fff'
+                }).then(() => {
+                    window.location.reload();
+                });
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Network error.', 'error');
+            });
+        });
+    }
+
+    function removeContact() {
+        if (!currentContactId) return;
+        Swal.fire({
+            title: `Remove from Contacts?`,
+            text: "This action cannot be undone.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            confirmButtonText: 'Yes, remove it!',
+            background: '#151120',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/user/escrow/contact/${currentContactId}/remove`, {
+                    method: 'POST'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Removed!',
+                            text: 'Contact has been removed.',
+                            icon: 'success',
+                            background: '#151120',
+                            color: '#fff'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire('Error', data.message || 'Failed to remove contact.', 'error');
+                    }
+                })
+                .catch(err => {
+                    Swal.fire('Error', 'Network error occurred.', 'error');
+                });
+            }
+        });
+    }
+
+    function promptAddContact() {
+        Swal.fire({
+            title: 'Add Trusted Contact',
+            text: 'Enter the email address of the user you want to add:',
+            input: 'text', // Changed from email to disable client-side browser validation
+            inputPlaceholder: 'user@example.com',
+            showCancelButton: true,
+            confirmButtonText: 'Add Contact',
+            confirmButtonColor: '#10B981',
+            background: '#151120',
+            color: '#fff',
+            showLoaderOnConfirm: true,
+            preConfirm: (email) => {
+                return fetch('/user/escrow/contact/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ email: email })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        if (data.errors && data.errors.email) {
+                            Swal.showValidationMessage(data.errors.email);
+                        } else {
+                            Swal.showValidationMessage(data.message || 'Failed to add contact');
+                        }
+                        return false; // Prevents closing the modal
+                    }
+                    return data;
+                })
+                .catch(error => {
+                    Swal.showValidationMessage('A network error occurred.');
+                    return false;
+                });
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                Swal.fire({
+                    title: 'Added!',
+                    text: result.value.message || 'Contact added successfully.',
+                    icon: 'success',
+                    background: '#151120',
+                    color: '#fff'
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        });
+    }
+
+    // Modal Logic
+    let currentEscrowId = null;
+    let pollingInterval = null;
+
+    function startPolling(escrowId) {
+        stopPolling();
+        pollingInterval = setInterval(() => {
+            fetch(`/user/escrow/${escrowId}/status`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'RELEASED') {
+                    stopPolling();
+                    closeModals();
+                    Swal.fire({
+                        title: 'Funds Released!',
+                        text: 'The receiver has successfully scanned the code. Funds released.',
+                        icon: 'success',
+                        background: '#151120',
+                        color: '#fff'
+                    }).then(() => window.location.reload());
+                }
+            })
+            .catch(err => console.error("Polling error:", err));
+        }, 2000);
+    }
+
+    function stopPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
+    }
+
+    function switchTab(event, tabId) {
+        event.preventDefault();
+        
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Hide all tab contents
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+
+        // Show selected tab content
+        const selectedTab = document.getElementById(tabId);
+        if (selectedTab) {
+            selectedTab.style.display = 'block';
+        }
+    }
+
+    function openEscrowDetail(escrow) {
+        currentEscrowId = escrow.id;
+        
+        // Populate static details
+        document.getElementById('edTitle').innerText = 'Escrow #' + escrow.id;
+        document.getElementById('edAmount').innerText = escrow.amount + ' TND';
+        document.getElementById('edCondition').innerText = escrow.condition;
+        
+        const badge = document.getElementById('edStatusBadge');
+        badge.innerText = escrow.status;
+        if (escrow.status === 'LOCKED') {
+            badge.style.background = '#fff7ed';
+            badge.style.color = '#c2410c';
+        } else if (escrow.status === 'RELEASED') {
+            badge.style.background = '#ecfdf5';
+            badge.style.color = '#047857';
+        } else {
+            badge.style.background = '#fef2f2';
+            badge.style.color = '#b91c1c';
+        }
+
+        // Handle Views based on User Role and Status
+        const senderView = document.getElementById('edSenderView');
+        const receiverView = document.getElementById('edReceiverView');
+        const disputeBtn = document.getElementById('edDisputeBtn');
+        const refundBtn = document.getElementById('edRefundBtn');
+        const secretCode = document.getElementById('edSecretCode');
+        const qrCodeContainer = document.getElementById('edQrCodeContainer');
+        const qrCodeImg = document.getElementById('edQrCode');
+        const instruction = document.getElementById('edInstruction');
+
+        senderView.style.display = 'none';
+        receiverView.style.display = 'none';
+        disputeBtn.style.display = escrow.status === 'LOCKED' ? 'block' : 'none';
+        refundBtn.style.display = 'none';
+
+        if (escrow.status === 'LOCKED') {
+            if (escrow.isSender) {
+                // SENDER UI
+                senderView.style.display = 'block';
+                
+                if (escrow.type === 'QR_CODE') {
+                    if (escrow.requireDocusign && !escrow.docusignEnvelopeId) { // Logic proxy for pending DocuSign
+                        qrCodeContainer.style.display = 'none';
+                        instruction.style.display = 'none';
+                        secretCode.innerHTML = '<span style="color:#F59E0B; font-weight:bold;">✍️ Waiting for DocuSign Signatures</span>';
+                    } else {
+                        qrCodeContainer.style.display = 'inline-block';
+                        instruction.style.display = 'block';
+                        secretCode.innerHTML = 'Secret Code: <span style="font-family:monospace;">' + escrow.secretCode + '</span>';
+                        
+                        // Generate the exact same QR code as the Java App: https://escrow.finhub.tn/escrow/claim_ui?id={id}&secret={secretCode}
+                        const qrData = "https://escrow.finhub.tn/escrow/claim_ui?id=" + escrow.id + "&secret=" + escrow.secretCode;
+                        qrCodeImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(qrData);
+                        
+                        startPolling(escrow.id);
+                        
+                        if (escrow.isExpired) {
+                            refundBtn.style.display = 'block';
+                        }
+                    }
+                } else {
+                    // ADMIN APPROVAL
+                    qrCodeContainer.style.display = 'none';
+                    instruction.style.display = 'none';
+                    secretCode.innerHTML = '<span style="color:#A78BFA; font-weight:bold;">⏳ Waiting for Admin Approval</span>';
+                }
+            } else {
+                // RECEIVER UI
+                receiverView.style.display = 'block';
+            }
+        }
+
+        document.getElementById('escrowDetailsModal').classList.add('active');
+    }
+
+    function handleSenderRelease() {
+        if (!currentEscrowId) return;
+        
+        Swal.fire({
+            title: 'Release Funds?',
+            text: "Are you sure you want to release these funds to the receiver? This action is irreversible.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10B981',
+            confirmButtonText: 'Yes, release funds!',
+            background: '#151120',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                postEscrowAction(`/user/escrow/${currentEscrowId}/release`);
+            }
+        });
+    }
+
+    function handleReceiverClaim() {
+        if (!currentEscrowId) return;
+        
+        const code = document.getElementById('edCodeInput').value.trim();
+        if (!code) {
+            Swal.fire('Error', 'Please enter the secret code.', 'error');
+            return;
+        }
+        
+        postEscrowAction(`/user/escrow/${currentEscrowId}/claim`, { code: code });
+    }
+
+    function handleSenderRefund() {
+        if (!currentEscrowId) return;
+        postEscrowAction(`/user/escrow/${currentEscrowId}/refund`);
+    }
+
+    function handleDispute() {
+        if (!currentEscrowId) return;
+
+        Swal.fire({
+            title: 'Dispute Transaction?',
+            text: "This will lock the transaction until an admin reviews it. Are you sure?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            confirmButtonText: 'Yes, dispute it!',
+            background: '#151120',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                postEscrowAction(`/user/escrow/${currentEscrowId}/dispute`);
+            }
+        });
+    }
+
+    function deleteEscrowItem(escrowId, escrowStatus) {
+        const statusLabel = (escrowStatus || 'escrow').toLowerCase();
+
+        Swal.fire({
+            title: `Delete ${statusLabel} escrow?`,
+            text: 'This will permanently remove it from your history.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            confirmButtonText: 'Delete',
+            background: '#151120',
+            color: '#fff'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            fetch(`/user/escrow/${escrowId}/delete`, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: data.message,
+                        icon: 'success',
+                        background: '#151120',
+                        color: '#fff'
+                    }).then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to delete escrow.', 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Error', 'Network error occurred.', 'error');
+            });
+        });
+    }
+
+    function postEscrowAction(url, bodyData = {}) {
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(bodyData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: data.message,
+                    icon: 'success',
+                    background: '#151120',
+                    color: '#fff'
+                }).then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.message || 'Action failed.', 'error');
+            }
+        })
+        .catch(err => {
+            Swal.fire('Error', 'Network error occurred.', 'error');
+        });
+    }
+    function openNewEscrowModal() {
+        document.getElementById('escrow_email').value = '';
+        document.getElementById('escrow_amount').value = '';
+        document.getElementById('escrow_conditions').value = '';
+        document.getElementById('escrowDocuSign').checked = false;
+        calculateEscrowFee(); // reset to 0
+        document.getElementById('newEscrowModal').classList.add('active');
+        
+        // Remove old errors
+        document.querySelectorAll('.text-danger.form-error').forEach(el => el.remove());
+    }
+
+    function openNewEscrowModalFromContact() {
+        const email = document.getElementById('cdEmail').innerText;
+        openNewEscrowModal();
+        document.getElementById('escrow_email').value = email;
+    }
+
+    function closeModals() {
+        stopPolling();
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+
+    // Live Escrow Fee Calculation
+    function calculateEscrowFee() {
+        const amountInput = document.getElementById('escrow_amount').value;
+        const amount = parseFloat(amountInput) || 0;
+        
+        const fee = amount * 0.01; // 1% Fee
+        const total = amount; // The sender/buyer pays the full amount; fee is taken from the seller
+
+        document.getElementById('feeSubtotal').innerText = amount.toFixed(3) + ' TND';
+        document.getElementById('feeAmount').innerText = fee.toFixed(3) + ' TND (Paid by Seller)';
+        document.getElementById('feeTotal').innerText = total.toFixed(3) + ' TND';
+    }
+
+    function submitNewEscrow(e) {
+        e.preventDefault();
+        
+        // Clear previous errors
+        document.querySelectorAll('.text-danger.form-error').forEach(el => el.remove());
+        
+        const btn = e.target.querySelector('.btn-submit');
+        const email = document.getElementById('escrow_email').value;
+        const amount = document.getElementById('escrow_amount').value;
+        const type = document.getElementById('escrowMethod').value;
+        const requireDocusign = document.getElementById('escrowDocuSign').checked;
+        const conditions = document.getElementById('escrow_conditions').value;
+
+        btn.disabled = true;
+        btn.innerText = 'Creating...';
+
+        fetch('/user/escrow/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                email: email,
+                amount: amount,
+                type: type,
+                requireDocusign: requireDocusign,
+                conditions: conditions
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeModals();
+                Swal.fire({
+                    title: 'Escrow Created!',
+                    text: data.message || 'Your funds have been securely locked in escrow.',
+                    icon: 'success',
+                    background: '#151120',
+                    color: '#fff'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                if (data.errors) {
+                    for (const [field, message] of Object.entries(data.errors)) {
+                        const input = document.getElementById('escrow_' + field);
+                        if (input) {
+                            const errorSpan = document.createElement('span');
+                            errorSpan.className = 'text-danger form-error';
+                            errorSpan.style.color = '#EF4444';
+                            errorSpan.style.fontSize = '0.85rem';
+                            errorSpan.style.marginTop = '4px';
+                            errorSpan.style.display = 'block';
+                            errorSpan.innerText = message;
+                            input.parentNode.appendChild(errorSpan);
+                        } else {
+                            // General error that does not map directly
+                            Swal.fire('Error', message, 'error');
+                        }
+                    }
+                } else {
+                    Swal.fire('Error', data.message || 'Failed to create escrow.', 'error');
+                }
+                btn.disabled = false;
+                btn.innerText = 'Create Escrow';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            Swal.fire('Error', 'A network error occurred.', 'error');
+            btn.disabled = false;
+            btn.innerText = 'Create Escrow';
+        });
+    }
+</script>
+{% endblock %}

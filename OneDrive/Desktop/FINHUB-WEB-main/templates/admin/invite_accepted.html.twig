@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Invitation Accepted{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background-color: transparent !important;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(12,11,22,1) 0%, rgba(30,27,75,1) 100%);
+        }
+        
+        .success-card {
+            background: rgba(23, 21, 39, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.15);
+        }
+        
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: #34D399;
+        }
+
+        .icon-circle svg {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .message {
+            color: #9CA3AF;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+        
+        .btn-dashboard {
+            display: inline-block;
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-dashboard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="success-card">
+        <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        
+        <h1 class="title">Role Updated Successfully</h1>
+        <p class="message">
+            Congratulations, <strong>{{ user.fullName|default(user.email) }}</strong>!<br>
+            You have successfully accepted the invitation and are now a FINHUB Administrator. 
+            You now have access to the admin dashboard and tools.
+        </p>
+        
+        <a href="{{ path('app_admin_dashboard') }}" class="btn-dashboard">Go to Admin Dashboard</a>
+    </div>
+{% endblock %}

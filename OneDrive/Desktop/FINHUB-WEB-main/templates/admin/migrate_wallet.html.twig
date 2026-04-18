@@ -1,0 +1,420 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Wallet Migration Required{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        body {
+            background-color: transparent !important;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(12,11,22,1) 0%, rgba(30,27,75,1) 100%);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        
+        .migration-card {
+            background: rgba(23, 21, 39, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #EF4444;
+        }
+
+        .icon-circle svg {
+            width: 32px;
+            height: 32px;
+        }
+        
+        .title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #9CA3AF;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 20px 0 24px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: #D1D5DB;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(30, 27, 75, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            background: rgba(30, 27, 75, 0.8);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .form-input:disabled {
+            background: rgba(30, 27, 75, 0.3);
+            color: #6B7280;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-migrate {
+            width: 100%;
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-migrate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-migrate:disabled {
+            background: rgba(139, 92, 246, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .footer-text {
+            color: #6B7280;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 24px;
+            font-style: italic;
+        }
+
+        #error-msg {
+            color: #EF4444;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        /* Verification Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-modal {
+            background: #1E1B4B;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .modal-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 2px solid rgba(139, 92, 246, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #A78BFA;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: serif;
+        }
+
+        .modal-title {
+            color: #E9D5FF;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-body {
+            color: #9CA3AF;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .modal-email {
+            color: #A78BFA;
+            font-weight: 500;
+        }
+
+        .btn-modal {
+            background: linear-gradient(135deg, #D946EF, #C026D3);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(217, 70, 239, 0.3);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="migration-card">
+        <div class="icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        
+        <h1 class="title">Wallet Migration Required</h1>
+        <p class="subtitle">Admin accounts cannot directly hold personal assets.</p>
+        
+        <div class="divider"></div>
+
+        <h2 class="section-title">Create Personal Account</h2>
+        
+        <form id="migrationForm">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" id="fullName" class="form-input" placeholder="Full name" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="Enter a new email" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="password" class="form-input" placeholder="Create a secure password" required>
+            </div>
+
+            <div id="error-msg"></div>
+
+            <button type="submit" id="migrateBtn" class="btn-migrate">Create Account & Migrate Wallet</button>
+        </form>
+
+        <p class="footer-text">
+            Your existing wallet and transaction history will be safely transferred to this new account.
+        </p>
+    </div>
+
+    <!-- Verification Modal -->
+    <div class="modal-overlay" id="verifyModal">
+        <div class="custom-modal">
+            <div class="modal-header">
+                <div class="modal-icon">i</div>
+                <h3 class="modal-title">Verification Email Sent</h3>
+            </div>
+            <div class="modal-body">
+                We have sent a verification link to <br>
+                <span class="modal-email" id="modalEmailText"></span>.
+                <br><br>
+                Please check your inbox and verify your account, then click the button below.
+            </div>
+            <button class="btn-modal" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let waitingForVerification = false;
+
+        document.getElementById('migrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('migrateBtn');
+            const errorMsg = document.getElementById('error-msg');
+            const fullNameInput = document.getElementById('fullName');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+
+            const fullName = fullNameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
+
+            if (!waitingForVerification) {
+                // STEP 1: INITIALIZE MIGRATION
+                btn.textContent = 'Processing...';
+
+                fetch('{{ path('app_admin_migrate_wallet_init') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ fullName, email, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        waitingForVerification = true;
+                        
+                        // Disable inputs
+                        fullNameInput.disabled = true;
+                        emailInput.disabled = true;
+                        passwordInput.disabled = true;
+
+                        // Update button text to match Image 2
+                        btn.textContent = 'I Have Verified My Email';
+                        btn.disabled = false;
+
+                        // Show custom Verification modal matching Image 1
+                        document.getElementById('modalEmailText').textContent = email;
+                        document.getElementById('verifyModal').classList.add('active');
+
+                    } else {
+                        errorMsg.textContent = data.message || 'Signup Error.';
+                        errorMsg.style.display = 'block';
+                        btn.disabled = false;
+                        btn.textContent = 'Create Account & Migrate Wallet';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMsg.textContent = 'Network error. Please try again.';
+                    errorMsg.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account & Migrate Wallet';
+                });
+
+            } else {
+                // STEP 2: FINALIZE MIGRATION
+                btn.textContent = 'Migrating...';
+
+                fetch('{{ path('app_admin_migrate_wallet_finalize') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ email, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Migration Successful\n\n' + data.message);
+                        window.location.href = '{{ path('app_admin_dashboard') }}';
+                    } else {
+                        // The user probably didn't verify their email yet. API rejected login.
+                        errorMsg.textContent = data.message || 'An error occurred during migration.';
+                        errorMsg.style.display = 'block';
+                        btn.disabled = false;
+                        btn.textContent = 'I Have Verified My Email';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    errorMsg.textContent = 'Network error. Please try again.';
+                    errorMsg.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'I Have Verified My Email';
+                });
+            }
+        });
+
+        function closeModal() {
+            document.getElementById('verifyModal').classList.remove('active');
+        }
+    </script>
+{% endblock %}

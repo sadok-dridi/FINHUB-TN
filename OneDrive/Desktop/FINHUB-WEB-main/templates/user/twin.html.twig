@@ -1,0 +1,1694 @@
+{% extends 'user/layout.html.twig' %}
+
+{% block title %}Financial Twin & Market Simulation - FinHub{% endblock %}
+
+{% block user_stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Headers & Layout */
+    .twin-header {
+        margin-bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .twin-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #F3F4F6;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+    .twin-subtitle {
+        font-size: 0.95rem;
+        color: #9CA3AF;
+        margin: 0;
+    }
+
+    /* Tabs Navigation */
+    .twin-tabs {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 30px;
+        align-items: center;
+    }
+    .tab-link {
+        color: #9CA3AF;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        padding: 8px 20px;
+        border-radius: 20px;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+    .tab-link:hover {
+        color: #E5E7EB;
+    }
+    .tab-link.active {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.1);
+        background: rgba(30, 27, 46, 0.6);
+        box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.5); /* Purple accent */
+    }
+
+    /* Shared Panel Styles */
+    .panel {
+        background: rgba(20, 18, 35, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 20px;
+    }
+    .panel-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #F3F4F6;
+        margin-bottom: 16px;
+    }
+
+    /* --- Financial Health Tab Layout --- */
+    .fh-layout {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .fh-sidebar {
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .fh-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-width: 400px;
+    }
+
+    /* Scenarios Form */
+    .scenario-group {
+        margin-bottom: 16px;
+    }
+    .scenario-label {
+        display: block;
+        color: #D1D5DB;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+    .scenario-slider {
+        width: 100%;
+        accent-color: #8B5CF6;
+        margin-bottom: 8px;
+    }
+    .scenario-input {
+        width: 100%;
+        background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        color: #fff;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    .scenario-input:focus { border-color: #8B5CF6; }
+
+    .btn-run {
+        background: linear-gradient(135deg, #A855F7, #D946EF);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px;
+        font-weight: 600;
+        width: 100%;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        margin-bottom: 12px;
+    }
+    .btn-run:hover { opacity: 0.9; }
+
+    .btn-reset {
+        background: transparent;
+        color: #9CA3AF;
+        border: none;
+        width: 100%;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    .btn-reset:hover { color: #E5E7EB; text-decoration: underline; }
+
+    /* Health Score Gauge */
+    .health-score-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 20px 0;
+    }
+    .gauge {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.2rem;
+        position: relative;
+    }
+    /* Dynamic colored border via inline style or classes later */
+    .gauge.red { border-top-color: #EF4444; border-right-color: #EF4444; color: #fff; }
+    .gauge.yellow { border-top-color: #F59E0B; border-right-color: #F59E0B; color: #fff; }
+    .gauge.green { border-top-color: #10B981; border-right-color: #10B981; color: #fff; }
+
+    .health-status {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    .status-red { color: #EF4444; }
+    .status-yellow { color: #F59E0B; }
+    .status-green { color: #10B981; }
+
+    /* Chart & Feedback */
+    .chart-container {
+        height: 300px;
+        width: 100%;
+    }
+    
+    .feedback-box {
+        background: rgba(30, 27, 46, 0.4);
+        padding: 16px;
+        border-radius: 8px;
+        color: #D1D5DB;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .feedback-box strong { color: #E9D5FF; }
+
+    /* --- Market Simulator Tab Layout --- */
+    .ms-layout {
+        display: flex;
+        gap: 20px;
+        height: 600px;
+    }
+    .ms-assets {
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .asset-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .asset-item:hover, .asset-item.active { background: rgba(255, 255, 255, 0.05); }
+    .asset-item.active { border-left: 3px solid #10B981; }
+    .asset-icon {
+        width: 32px; height: 32px; border-radius: 50%; background: white;
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .asset-icon img { width: 100%; height: 100%; object-fit: contain; }
+    .asset-name { color: #F3F4F6; font-size: 0.95rem; }
+
+    .ms-chart {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+    .ms-chart-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .chart-symbol { font-size: 1.2rem; font-weight: 600; color: #fff; }
+    .chart-price { font-size: 1.2rem; color: #D1D5DB; }
+    .chart-change { font-size: 0.9rem; font-weight: 500; }
+    .change-up { color: #10B981; }
+    .change-down { color: #EF4444; }
+
+    .ai-badge {
+        position: absolute;
+        top: 0; right: 0;
+        background: rgba(30, 27, 46, 0.8);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #A78BFA;
+    }
+
+    #lightweight-chart {
+        flex: 1;
+        width: 100%;
+        min-height: 450px;
+        background: #151120;
+    }
+
+    .ms-trade {
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .trade-tabs { display: flex; gap: 10px; margin-bottom: 10px; }
+    .btn-trade {
+        flex: 1; padding: 8px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white;
+    }
+    .btn-trade.buy { background: #10B981; }
+    .btn-trade.buy:hover { opacity: 0.9; }
+    .btn-trade.sell { background: #EF4444; }
+    .btn-trade.sell:hover { opacity: 0.9; }
+    .btn-trade.inactive { background: rgba(255,255,255,0.1); color: #9CA3AF; }
+
+    .trade-field {
+        background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .trade-field input {
+        background: transparent; border: none; color: #fff; outline: none; width: 60%; font-size: 0.95rem;
+    }
+    .trade-field span { color: #6B7280; font-size: 0.8rem; }
+    
+    .trade-info-row { display: flex; justify-content: space-between; color: #9CA3AF; font-size: 0.85rem; margin-top: 4px; }
+    .trade-info-val { color: #D1D5DB; }
+
+    .wallet-box {
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: auto;
+    }
+    .wallet-box-title { color: #10B981; font-size: 0.8rem; margin-bottom: 4px; }
+    .wallet-box-val { color: #fff; font-size: 1.1rem; font-weight: 600; }
+
+    /* --- Expense Tracker Tab Layout --- */
+    .et-top-boxes {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    .et-box {
+        flex: 1;
+        background: rgba(20, 18, 35, 0.6);
+        border: 1px solid #8B5CF6; /* Purple border exactly like image */
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .et-box-title { color: #9CA3AF; font-size: 0.85rem; margin-bottom: 8px; }
+    .et-box-val { color: #F3F4F6; font-size: 1.6rem; font-weight: 500; }
+
+    .et-scans-header {
+        font-size: 0.9rem;
+        color: #D1D5DB;
+        margin-bottom: 12px;
+    }
+
+    .et-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .et-search-box {
+        flex: 1 1 280px;
+    }
+
+    .et-search-input {
+        width: 100%;
+        background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        color: #F3F4F6;
+        padding: 12px 14px;
+        outline: none;
+    }
+
+    .et-search-input:focus {
+        border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .et-sort-controls {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .et-sort-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .et-sort-label {
+        color: #9CA3AF;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .et-sort-select {
+        min-width: 180px;
+        background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        color: #F3F4F6;
+        padding: 12px 14px;
+        outline: none;
+    }
+
+    .et-no-results {
+        color: #9CA3AF;
+        padding: 24px;
+        text-align: center;
+        border: 1px dashed rgba(255,255,255,0.1);
+        border-radius: 12px;
+        display: none;
+    }
+
+    .et-scan-item {
+        background: rgba(30, 27, 46, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .et-scan-left { display: flex; align-items: center; gap: 16px; flex: 1; }
+    .et-scan-icon {
+        width: 40px; height: 40px; border-radius: 50%; background: #fff;
+        display: flex; align-items: center; justify-content: center; color: #8B5CF6; font-size: 1.2rem;
+    }
+    .et-scan-info { display: flex; flex-direction: column; }
+    .et-scan-name { color: #F3F4F6; font-weight: 600; font-size: 0.95rem; }
+    .et-scan-date { color: #6B7280; font-size: 0.8rem; }
+    
+    .et-scan-right { display: flex; align-items: center; gap: 16px; }
+    .et-scan-amount { color: #D1D5DB; font-weight: 500; }
+    .et-scan-badge {
+        background: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Mobile Responsive Overrides */
+    @media (max-width: 768px) {
+        .twin-header {
+            text-align: center;
+        }
+        .twin-title {
+            font-size: 1.5rem;
+        }
+        .twin-tabs {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .fh-layout {
+            flex-direction: column;
+        }
+        .fh-sidebar {
+            width: 100%;
+        }
+        .fh-main {
+            min-width: auto;
+            width: 100%;
+        }
+        .ms-layout {
+            flex-direction: column;
+            height: auto;
+        }
+        .ms-assets {
+            width: 100%;
+            height: 250px;
+            max-height: 30vh;
+        }
+        .ms-chart {
+            width: 100%;
+            height: 400px;
+            min-height: 40vh;
+            padding: 8px;
+        }
+        #lightweight-chart {
+            min-height: 300px;
+        }
+        .ms-trade {
+            width: 100%;
+        }
+        .et-top-boxes {
+            flex-direction: column;
+        }
+        .et-scan-item > div {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 12px;
+        }
+        .et-scan-right {
+            align-self: stretch;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .et-scans-header {
+            flex-direction: column;
+            align-items: stretch !important;
+            gap: 12px;
+        }
+        .chart-container {
+            height: 250px;
+        }
+    }
+
+</style>
+{% endblock %}
+
+{% block user_content %}
+<div class="twin-header">
+    <h1 class="twin-title">Financial Twin & Market Simulation</h1>
+    <p class="twin-subtitle">Analyze your financial health and practice trading with AI assistance.</p>
+</div>
+
+<div class="twin-tabs">
+    <a href="#" class="tab-link active" onclick="switchTab(event, 'tabHealth')">Financial Health</a>
+    <a href="#" class="tab-link" onclick="switchTab(event, 'tabMarket')">Market Simulator</a>
+    <a href="#" class="tab-link" onclick="switchTab(event, 'tabExpense')">Expense Tracker</a>
+</div>
+
+<!-- Financial Health Tab -->
+<div id="tabHealth" class="tab-content" style="display: block;">
+    <div class="fh-layout">
+        <!-- Sidebar -->
+        <div class="fh-sidebar">
+            <div class="panel">
+                <div class="panel-title">What-If Scenarios</div>
+                <div class="scenario-group">
+                    <label class="scenario-label">Monthly Income (TND)</label>
+                    <input type="range" class="scenario-slider" id="incomeSlider" min="0" max="10000" step="50" value="{{ income }}">
+                    <input type="number" class="scenario-input" id="incomeInput" value="{{ income }}">
+                </div>
+                <div class="scenario-group">
+                    <label class="scenario-label">Monthly Expenses (TND)</label>
+                    <input type="range" class="scenario-slider" id="expenseSlider" min="0" max="10000" step="50" value="{{ expenses }}">
+                    <input type="number" class="scenario-input" id="expenseInput" value="{{ expenses }}">
+                </div>
+                <div class="scenario-group">
+                    <label class="scenario-label">Savings Goal (TND)</label>
+                    <input type="number" class="scenario-input" id="goalInput" value="{{ goal }}">
+                </div>
+                <button class="btn-run" onclick="runSimulation()">Run Simulation</button>
+                <button class="btn-reset" onclick="resetScenarios()">Reset to Profile</button>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title" style="text-align: center;">Financial Health Score</div>
+                <div class="health-score-container">
+                    <div class="gauge red" id="healthGauge">
+                        <span id="healthScore">20%</span>
+                    </div>
+                    <div class="health-status status-red" id="healthStatusText">High Risk</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main -->
+        <div class="fh-main">
+            <div class="panel">
+                <div class="panel-title" style="font-size: 0.9rem; font-weight: normal; color: #D1D5DB; margin-bottom: 8px;">12-Month Projection</div>
+                <div style="font-size: 0.75rem; transform: rotate(-90deg); transform-origin: left top; position: absolute; margin-top: 150px; color: #9CA3AF;">Projected Savings (TND)</div>
+                <div class="chart-container" id="projectionChartContainer">
+                    <canvas id="projectionChart"></canvas>
+                </div>
+                <div style="text-align: center; color: #9CA3AF; font-size: 0.8rem; margin-top: -10px;">Month</div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Twin Feedback</div>
+                <div class="feedback-box" id="twinFeedback">
+                    **Financial Twin Analysis**<br><br>
+                    **Good Savings Habit**: You are saving <span id="savePercent">20.0</span>% of your income. Keep it up!<br><br>
+                    **Goal Within Reach**: You can reach your savings goal in approx. <span id="goalMonths">34</span> months.<br><br>
+                    **Tip**: Your recurring expenses are quite high (<span id="expensePercent">80</span>%). Review your subscriptions and rent/utilities to find potential savings.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Market Simulator Tab -->
+<div id="tabMarket" class="tab-content" style="display: none;">
+    <!-- Intelligent Alerts Panel -->
+    {% if marketAlerts|length > 0 %}
+    <div style="display: flex; gap: 15px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px;">
+        {% for alert in marketAlerts %}
+            {% set bgColor = alert.type == 'BUY' ? 'rgba(16, 185, 129, 0.1)' : (alert.type == 'SELL' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(156, 163, 175, 0.1)') %}
+            {% set brColor = alert.type == 'BUY' ? 'rgba(16, 185, 129, 0.3)' : (alert.type == 'SELL' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(156, 163, 175, 0.3)') %}
+            {% set txtColor = alert.type == 'BUY' ? '#10B981' : (alert.type == 'SELL' ? '#EF4444' : '#9CA3AF') %}
+            
+            <div style="min-width: 300px; max-width: 300px; background: {{ bgColor }}; border: 1px solid {{ brColor }}; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="display:flex; justify-content: space-between; align-items: top;">
+                   <div>
+                       <div style="font-weight: 600; color: #F3F4F6;">{{ alert.name }} ({{ alert.symbol }})</div>
+                       <div style="font-size: 0.75rem; color: #9CA3AF; margin-top: 2px;">{{ alert.description }}</div>
+                   </div>
+                   <div style="font-weight: bold; color: {{ txtColor }}; font-size: 0.7rem; padding: 3px 8px; border-radius: 4px; background: rgba(0,0,0,0.2);">{{ alert.type }} SIGNAL</div>
+                </div>
+                
+                <div style="font-size: 0.85rem; color: #D1D5DB; line-height: 1.4; flex-grow: 1;">
+                    {{ alert.recommendation }} <span style="color: {{ txtColor }};">({{ alert.change }}% in 24h)</span>
+                </div>
+                
+                <button onclick="selectAsset('{{ alert.id }}', '{{ alert.name }}', '{{ alert.symbol }}', '{{ alert.price }}', '{{ alert.change }}')" style="background: transparent; color: {{ txtColor }}; border: 1px solid {{ brColor }}; border-radius: 6px; padding: 6px 12px; font-weight: 600; font-size: 0.8rem; cursor: pointer; align-self: flex-start; transition: all 0.2s;" onmouseover="this.style.background='{{ bgColor }}'" onmouseout="this.style.background='transparent'">
+                    <i class="fas fa-bolt"></i> Trader {{ alert.symbol }}
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="ms-layout">
+        <!-- Assets List -->
+        <div class="panel ms-assets" style="padding: 12px;">
+            <div style="color: #9CA3AF; font-size: 0.8rem; margin-bottom: 10px; padding: 0 8px;">Assets</div>
+            
+            {% for asset in marketAssets %}
+                <div class="asset-item {% if loop.first %}active{% endif %}" onclick="selectAsset('{{ asset.id }}', '{{ asset.name }}', '{{ asset.symbol }}', '{{ asset.price }}', '{{ asset.change }}')">
+                    <div class="asset-icon"><img src="https://assets.coincap.io/assets/icons/{{ asset.symbol|lower }}@2x.png" alt="{{ asset.symbol }}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%238B5CF6\'><circle cx=\'12\' cy=\'12\' r=\'10\'/></svg>'"></div>
+                    <div class="asset-name">{{ asset.name }}</div>
+                </div>
+            {% endfor %}
+
+            <button style="background: transparent; color: #9CA3AF; border: none; padding: 10px; text-align: left; font-size: 0.8rem; margin-top: auto; cursor: pointer;">Refresh</button>
+        </div>
+
+        <!-- Chart -->
+        <div class="panel ms-chart" style="padding: 16px;">
+            <div class="ms-chart-header">
+                <div class="chart-symbol" id="chartSymbol">bitcoin</div>
+                <div style="color: #9CA3AF;">|</div>
+                <div class="chart-price" id="chartPrice">196337.36 TND <span style="font-size: 0.7rem;">USD</span></div>
+                <div class="chart-change change-down" id="chartChange">-0.26%</div>
+            </div>
+            <div class="ai-badge">AI: HOLD</div>
+            <div id="lightweight-chart"></div>
+        </div>
+
+        <!-- Trade -->
+        <div class="panel ms-trade">
+            <div style="color: #D1D5DB; font-size: 0.9rem; font-weight: 500; margin-bottom: 12px;">Trade</div>
+            
+            <div style="color: #9CA3AF; font-size: 0.8rem;">Amount</div>
+            <div class="trade-field">
+                <input type="number" value="0.0" step="0.1" min="0" id="tradeAmount" oninput="updateTradeEst()">
+                <span>UNITS</span>
+            </div>
+            
+            <div class="trade-info-row">
+                <span>Max Buy:</span>
+                <span class="trade-info-val" id="tradeAvailBuy">0.000000 Units</span>
+            </div>
+            <div class="trade-info-row">
+                <span>Est. Cost:</span>
+                <span class="trade-info-val" id="tradeEst">0.00 TND</span>
+            </div>
+
+            <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+                <div style="color: #9CA3AF; font-size: 0.8rem; margin-bottom: 8px;">Position</div>
+                <div class="trade-info-row">
+                    <span>Owned:</span>
+                    <span class="trade-info-val" id="posOwned">0</span>
+                </div>
+                <div class="trade-info-row">
+                    <span>Avg Cost:</span>
+                    <span class="trade-info-val" id="posAvg">0.00 USD</span>
+                </div>
+            </div>
+
+            <div class="wallet-box">
+                <div class="wallet-box-title">Wallet</div>
+                <div class="wallet-box-val" id="walletBalanceDisplay">{{ walletBalance|number_format(2, '.', '') }} TND</div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <button id="btnBuyAction" class="btn-trade buy" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="executeTrade('buy', this)">BUY</button>
+                <button id="btnSellAction" class="btn-trade sell" style="flex: 1; padding: 12px; font-size: 1rem;" onclick="executeTrade('sell', this)">SELL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expense Tracker Tab -->
+<div id="tabExpense" class="tab-content" style="display: none;">
+    <div class="et-top-boxes">
+        <div class="et-box">
+            <div class="et-box-title">Total Expenses</div>
+            <div class="et-box-val" id="totalExpensesVal">{{ totalExpenses|number_format(2, '.', '') }} TND</div>
+        </div>
+        <div class="et-box">
+            <div class="et-box-title">Recent Activity</div>
+            <div class="et-box-val">Last 30 Days</div>
+        </div>
+    </div>
+
+    <div class="et-scans-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span>Recent Scans</span>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="openEmailModal()" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #A78BFA; padding: 6px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 20px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='rgba(139, 92, 246, 0.5)';" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.3)';">
+                <i class="fas fa-envelope" style="font-size: 0.75rem;"></i> Send by email
+            </button>
+            <button onclick="openExpenseModal()" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); color: #818CF8; padding: 6px 14px; font-size: 0.85rem; font-weight: 600; border-radius: 20px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(99, 102, 241, 0.2)'; this.style.borderColor='rgba(99, 102, 241, 0.5)';" onmouseout="this.style.background='rgba(99, 102, 241, 0.1)'; this.style.borderColor='rgba(99, 102, 241, 0.3)';">
+                <i class="fas fa-plus" style="font-size: 0.75rem;"></i> Add
+            </button>
+        </div>
+    </div>
+
+    <div class="et-toolbar">
+        <div class="et-search-box">
+            <input type="text" id="expenseSearchInput" class="et-search-input" placeholder="Search by merchant, amount, or date...">
+        </div>
+        <div class="et-sort-controls">
+            <div class="et-sort-group">
+                <label for="expenseSort" class="et-sort-label">Sort By</label>
+                <select id="expenseSort" class="et-sort-select">
+                    <option value="date">Date</option>
+                    <option value="merchant">Merchant</option>
+                    <option value="amount">Amount</option>
+                </select>
+            </div>
+            <div class="et-sort-group">
+                <label for="expenseDirection" class="et-sort-label">Direction</label>
+                <select id="expenseDirection" class="et-sort-select">
+                    <option value="desc">Descending</option>
+                    <option value="asc">Ascending</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div id="expenseList">
+        {% for exp in expensesList %}
+            <div class="et-scan-item" id="expense-row-{{ exp.id }}" data-merchant="{{ exp.merchant|lower|escape('html_attr') }}" data-amount="{{ exp.amount }}" data-date="{{ exp.date|escape('html_attr') }}" style="cursor: pointer;" onclick="toggleExpenseDetails({{ exp.id }})">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="et-scan-left">
+                        <div class="et-scan-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="et-scan-info">
+                            <div class="et-scan-name">{{ exp.merchant }}</div>
+                            <div class="et-scan-date">{{ exp.date }}</div>
+                        </div>
+                    </div>
+                    <div class="et-scan-right" style="display: flex; gap: 8px; align-items: center;">
+                        <div class="et-scan-amount">{{ exp.amount|number_format(2, '.', '') }} TND</div>
+                        <button class="btn-trade buy" style="padding: 6px 12px; font-size: 0.8rem; width: auto; background: rgba(16, 185, 129, 0.2); color: #10B981;" onclick="event.stopPropagation(); openEditExpenseModal({{ exp.id }})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-trade sell" style="padding: 6px 12px; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #EF4444;" onclick="event.stopPropagation(); deleteExpense({{ exp.id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Details Dropdown -->
+                <div class="expense-details" id="expense-details-{{ exp.id }}" style="display: none; width: 100%; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: #9CA3AF; font-size: 0.85rem; margin-bottom: 8px;">Items (${{ exp.items|length }})</div>
+                    {% if exp.items is empty %}
+                        <div style="color: #6B7280; font-size: 0.8rem;">- No individual items found.</div>
+                    {% else %}
+                        {% for item in exp.items %}
+                            <div class="expense-item-row" data-name="{{ item.name }}" data-price="{{ item.price|number_format(2, '.', '') }}" style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; color: #D1D5DB;">
+                                <span>- {{ item.name }}</span>
+                                <span>{{ item.price|number_format(2, '.', '') }} TND</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div id="expenseNoResults" class="et-no-results">No expenses match your search.</div>
+</div>
+
+<!-- Expense Modal -->
+<div id="expenseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div style="background: #1E1B2E; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 400px; max-width: 90%; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 id="modalTitle" style="margin: 0; color: white; font-size: 1.2rem;">Add New Expense</h3>
+            <button onclick="closeExpenseModal()" style="background: none; border: none; color: #9CA3AF; cursor: pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div style="margin-bottom: 16px;">
+            <label style="color: #9CA3AF; font-size: 0.85rem; display: block; margin-bottom: 6px;">Merchant Name</label>
+            <input type="text" id="modalMerchant" placeholder="e.g., Carrefour" style="width: 100%; padding: 10px; border-radius: 6px; background: #151120; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="color: #9CA3AF; font-size: 0.85rem; display: block; margin-bottom: 6px;">Total Amount (TND)</label>
+            <input type="number" id="modalTotalAmount" placeholder="0.00" step="0.01" style="width: 100%; padding: 10px; border-radius: 6px; background: #151120; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <label style="color: #9CA3AF; font-size: 0.85rem;">Items</label>
+                <button type="button" onclick="addModalItemRow()" style="background: none; border: none; color: #10B981; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px;"><i class="fas fa-plus"></i> Add Item</button>
+            </div>
+            <div id="modalItemsContainer" style="max-height: 150px; overflow-y: auto; overflow-x: hidden; padding-right: 5px; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Dynamic Item Rows -->
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button onclick="closeExpenseModal()" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Cancel</button>
+            <button onclick="submitExpenseModal()" id="btnSubmitExpense" class="btn-trade buy" style="width: auto; padding: 10px 24px; font-size: 0.9rem;">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Email Modal -->
+<div id="emailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div style="background: #1E1B2E; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 400px; max-width: 90%; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: white; font-size: 1.2rem;">Send Expenses by Email</h3>
+            <button onclick="closeEmailModal()" style="background: none; border: none; color: #9CA3AF; cursor: pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div style="margin-bottom: 16px;">
+            <label style="color: #9CA3AF; font-size: 0.85rem; display: block; margin-bottom: 6px;">Email Address</label>
+            <input type="email" id="emailModalAddress" placeholder="e.g., mail@example.com" value="{{ app.user.email|default('') }}" style="width: 100%; padding: 10px; border-radius: 6px; background: #151120; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box;">
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="color: #9CA3AF; font-size: 0.85rem; display: block; margin-bottom: 6px;">Custom Message</label>
+            <textarea id="emailModalMessage" rows="3" placeholder="Write a short message to include in the email..." style="width: 100%; padding: 10px; border-radius: 6px; background: #151120; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; resize: vertical;"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button onclick="closeEmailModal()" style="background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">Cancel</button>
+            <button onclick="submitEmailModal()" id="btnSubmitEmail" class="btn-trade buy" style="width: auto; padding: 10px 24px; font-size: 0.9rem;">Send</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block user_javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+<script>
+    // Tab Switching
+    function switchTab(event, tabId) {
+        event.preventDefault();
+        document.querySelectorAll('.tab-link').forEach(link => link.classList.remove('active'));
+        event.target.classList.add('active');
+
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+
+        document.getElementById(tabId).style.display = 'block';
+
+        if (tabId === 'tabMarket' && !chartInitialized) {
+            chartInitialized = true;
+            setTimeout(() => {
+                initMarketChart();
+            }, 300); // Increased timeout to ensure container is fully rendered and sized
+        } else if (tabId === 'tabMarket' && chartInitialized && lwChart) {
+            // Force a resize calculation when tabbing back to it
+            setTimeout(() => {
+                const container = document.getElementById('lightweight-chart');
+                if (container && container.clientWidth > 0) {
+                    lwChart.resize(container.clientWidth, container.clientHeight);
+                    lwChart.timeScale().fitContent();
+                }
+            }, 300);
+        }
+    }
+
+    // Define elements
+    let incomeSlider, incomeInput, expenseSlider, expenseInput, goalInput;
+    let projectionChartInstance = null;
+    let chartInitialized = false;
+    let lwChart = null;
+    let candleSeries = null;
+    let currentAssetPrice = 67396.47;
+    let currentAssetSymbol = 'BTC';
+    let currentAssetId = 'bitcoin';
+    let currentChartData = [];
+    
+    // Inject Portfolio data
+    let userPortfolio = {{ portfolio|json_encode|raw }};
+    let userWalletBalance = {{ walletBalance|number_format(2, '.', '') }};
+    let usdToTndRate = {{ usdToTndRate }};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Financial Health Logic ---
+        incomeSlider = document.getElementById('incomeSlider');
+        incomeInput = document.getElementById('incomeInput');
+        expenseSlider = document.getElementById('expenseSlider');
+        expenseInput = document.getElementById('expenseInput');
+        goalInput = document.getElementById('goalInput');
+
+        function syncInputs() {
+            if (!incomeSlider) return;
+            incomeSlider.addEventListener('input', () => {
+                incomeInput.value = incomeSlider.value;
+                runSimulation();
+            });
+            incomeInput.addEventListener('input', () => {
+                incomeSlider.value = incomeInput.value;
+                runSimulation();
+            });
+            expenseSlider.addEventListener('input', () => {
+                expenseInput.value = expenseSlider.value;
+                runSimulation();
+            });
+            expenseInput.addEventListener('input', () => {
+                expenseSlider.value = expenseInput.value;
+                runSimulation();
+            });
+            goalInput.addEventListener('input', () => {
+                runSimulation();
+            });
+        }
+        
+        syncInputs();
+        // Initial Run
+        runSimulation();
+        updateTradePanel();
+    });
+
+    function resetScenarios() {
+        incomeSlider.value = {{ income|default(1500) }};
+        incomeInput.value = {{ income|default(1500) }};
+        expenseSlider.value = {{ expenses|default(1200) }};
+        expenseInput.value = {{ expenses|default(1200) }};
+        goalInput.value = {{ goal|default(10000) }};
+        runSimulation();
+    }
+
+    function runSimulation() {
+        if (!incomeInput) return;
+        const inc = parseFloat(incomeInput.value) || 0;
+        const exp = parseFloat(expenseInput.value) || 0;
+        const goal = parseFloat(goalInput.value) || 0;
+
+        // 1. Calculate Score (Java Logic: calculateHealthScore)
+        let score = 0;
+        if (inc > 0) {
+            let savings = inc - exp;
+            if (savings >= 0) {
+                score = Math.floor((savings / inc) * 100);
+                if (exp < (inc * 0.5)) {
+                    score += 10;
+                }
+                score = Math.min(score, 100);
+            }
+        }
+
+        const gauge = document.getElementById('healthGauge');
+        const scoreSpan = document.getElementById('healthScore');
+        const statusText = document.getElementById('healthStatusText');
+        
+        if (scoreSpan) scoreSpan.innerText = score + '%';
+        if (gauge) gauge.className = 'gauge';
+        if (statusText) statusText.className = 'health-status';
+
+        // Java Logic: getHealthStatus & getHealthColor
+        if (score >= 60) {
+            if (gauge) gauge.classList.add('green');
+            if (statusText) { statusText.classList.add('status-green'); statusText.innerText = 'Healthy'; }
+        } else if (score >= 30) {
+            if (gauge) gauge.classList.add('yellow');
+            if (statusText) { statusText.classList.add('status-yellow'); statusText.innerText = 'Medium Risk'; }
+        } else {
+            if (gauge) gauge.classList.add('red');
+            if (statusText) { statusText.classList.add('status-red'); statusText.innerText = 'High Risk'; }
+        }
+
+        // 2. Generate Chart Data (Java Logic: runSimulation)
+        const net = inc - exp;
+        const labels = [];
+        const data = [];
+        let currentMonth = new Date();
+        let currentSavings = 0; 
+
+        for (let i = 0; i < 12; i++) {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            labels.push(currentMonth.toLocaleString('default', { month: 'short' }));
+            currentSavings += net; 
+            data.push(currentSavings);
+        }
+
+        updateProjectionChart(labels, data);
+
+        // 3. Update Feedback Text (Java Logic: generateKeyInsights)
+        let insightHtml = '🧠 **Financial Twin Analysis**<br><br>';
+        
+        let savingsRatio = (inc > 0) ? (net / inc) * 100 : 0;
+        
+        if (net <= 0) {
+            insightHtml += '⚠️ **Critical Warning**: You are spending more than you earn. Immediate action required: Reduce discretionary spending or find new income sources.<br><br>';
+        } else if (savingsRatio < 20) {
+            insightHtml += `⚠️ **Low Savings Rate**: You're saving only ${savingsRatio.toFixed(1)}% of your income. Try to aim for at least 20% by cutting small daily expenses.<br><br>`;
+        } else {
+            insightHtml += `✅ **Good Savings Habit**: You are saving ${savingsRatio.toFixed(1)}% of your income. Keep it up!<br><br>`;
+        }
+
+        if (goal > 0 && net > 0) {
+            let monthsToGoal = Math.ceil(goal / net);
+            if (monthsToGoal > 60) {
+                insightHtml += `📉 **Long Road Ahead**: At this rate, it will take ${monthsToGoal} months to reach your goal. Consider adjusting your goal or increasing your monthly savings.<br><br>`;
+            } else {
+                insightHtml += `🎯 **Goal Within Reach**: You can reach your savings goal in approx. ${monthsToGoal} months.<br><br>`;
+            }
+        }
+
+        if (exp > (inc * 0.7)) {
+            let expPct = Math.floor((exp / inc) * 100);
+            insightHtml += `💡 **Tip**: Your recurring expenses are quite high (${expPct}%). Review your subscriptions and rent/utilities to find potential savings.`;
+        } else {
+            insightHtml += '💡 **Tip**: Your expense management is solid. Consider investing your surplus savings for better growth.';
+        }
+
+        // Format asterisks as bold tags
+        insightHtml = insightHtml.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        let feedbackEl = document.getElementById('twinFeedback');
+        if (feedbackEl) feedbackEl.innerHTML = insightHtml;
+    }
+
+    function updateProjectionChart(labels, data) {
+        const canvas = document.getElementById('projectionChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        if (projectionChartInstance) {
+            projectionChartInstance.destroy();
+        }
+
+        projectionChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Projected Savings',
+                    data: data,
+                    borderColor: '#F97316', // Orange line
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#9CA3AF', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#9CA3AF', font: { size: 10 } },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // --- Market Simulator Logic ---
+    function initMarketChart() {
+        const container = document.getElementById('lightweight-chart');
+        if (!container) return;
+        
+        lwChart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: container.clientHeight,
+            layout: {
+                background: { type: 'solid', color: '#151120' },
+                textColor: '#9CA3AF',
+            },
+            grid: {
+                vertLines: { color: 'rgba(255,255,255,0.05)' },
+                horzLines: { color: 'rgba(255,255,255,0.05)' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            rightPriceScale: {
+                borderColor: 'rgba(255,255,255,0.1)',
+            },
+            timeScale: {
+                borderColor: 'rgba(255,255,255,0.1)',
+                timeVisible: true,
+            },
+        });
+
+        candleSeries = lwChart.addCandlestickSeries({
+            upColor: '#10B981',
+            downColor: '#EF4444',
+            borderDownColor: '#EF4444',
+            borderUpColor: '#10B981',
+            wickDownColor: '#EF4444',
+            wickUpColor: '#10B981',
+        });
+
+        if (currentChartData.length > 0) {
+            if (candleSeries) {
+                candleSeries.setData(currentChartData);
+                setTimeout(() => {
+                    if (lwChart && lwChart.timeScale) {
+                        lwChart.timeScale().fitContent();
+                    }
+                }, 50);
+            }
+        } else if (currentAssetId) {
+            fetchAndRenderChartData(currentAssetId);
+        }
+
+        new ResizeObserver(entries => {
+            if (entries.length === 0 || entries[0].target !== container) { return; }
+            const newRect = entries[0].contentRect;
+            // Prevent resize crash if dimensions are 0
+            if (newRect.width > 0 && newRect.height > 0) {
+                lwChart.resize(newRect.width, newRect.height);
+            }
+        }).observe(container);
+    }
+
+    function selectAsset(id, name, symbol, price, change, iconSrc) {
+        // Update UI
+        document.querySelectorAll('.asset-item').forEach(el => el.classList.remove('active'));
+        if (window.event && window.event.currentTarget) {
+            window.event.currentTarget.classList.add('active');
+        }
+
+        document.getElementById('chartSymbol').innerText = name.toLowerCase();
+        document.getElementById('chartPrice').innerHTML = price + ' TND <span style="font-size: 0.7rem;">USD</span>';
+        
+        const changeEl = document.getElementById('chartChange');
+        changeEl.innerText = change + '%';
+        if (change.startsWith('+')) {
+            changeEl.className = 'chart-change change-up';
+        } else {
+            changeEl.className = 'chart-change change-down';
+        }
+
+        currentAssetPrice = parseFloat(price.toString().replace(/,/g, ''));
+        currentAssetSymbol = symbol;
+        currentAssetId = id;
+        updateTradePanel();
+        updateTradeEst();
+
+        if (chartInitialized && candleSeries) {
+            fetchAndRenderChartData(id);
+        }
+    }
+
+    async function fetchAndRenderChartData(assetId) {
+        try {
+            let symbol = currentAssetSymbol.toUpperCase();
+
+            // Fetch real OHLC data from CryptoCompare (1h candles, up to 200 hours)
+            const response = await fetch(`https://min-api.cryptocompare.com/data/v2/histohour?fsym=${symbol}&tsym=USD&limit=200`);
+            
+            if (!response.ok) {
+                console.error("Failed to fetch data for:", symbol);
+                return;
+            }
+            
+            const payload = await response.json();
+            
+            if (payload.Response !== 'Success' || !payload.Data || !payload.Data.Data) {
+                console.error("CryptoCompare API Error:", payload.Message);
+                // Fallback for unsupported assets on this API
+                generateFallbackData();
+                return;
+            }
+            
+            const formattedData = payload.Data.Data.map(item => {
+                return {
+                    time: item.time, // CryptoCompare returns time in seconds
+                    open: parseFloat(item.open),
+                    high: parseFloat(item.high),
+                    low: parseFloat(item.low),
+                    close: parseFloat(item.close)
+                };
+            }).filter(item => !isNaN(item.open) && !isNaN(item.high) && !isNaN(item.low) && !isNaN(item.close) && !isNaN(item.time));
+
+            if (formattedData.length === 0) {
+                console.error("No valid chart data returned");
+                generateFallbackData();
+                return;
+            }
+
+            // Make sure array is sorted by time and strictly increasing
+            formattedData.sort((a, b) => a.time - b.time);
+            
+            // Remove duplicates
+            const uniqueData = [];
+            formattedData.forEach((item, index) => {
+                if (index === 0 || item.time > formattedData[index - 1].time) {
+                    uniqueData.push(item);
+                }
+            });
+
+            currentChartData = uniqueData;
+
+            if (candleSeries) {
+                candleSeries.setData(uniqueData);
+                // Adjust scale
+                setTimeout(() => {
+                    if (lwChart && lwChart.timeScale) {
+                        lwChart.timeScale().fitContent();
+                    }
+                }, 50);
+            }
+        } catch (e) {
+            console.error("Failed to fetch chart data:", e);
+            generateFallbackData();
+        }
+    }
+
+    function generateFallbackData() {
+        if (!candleSeries) return;
+        const fallbackData = [];
+        let time = Math.floor(Date.now() / 1000) - (200 * 3600);
+        let lastClose = currentAssetPrice * 0.95; 
+
+        for (let i = 0; i < 200; i++) {
+            const volatility = currentAssetPrice * 0.005;
+            const open = lastClose + (Math.random() * volatility - volatility/2);
+            const close = open + (Math.random() * volatility - volatility/2);
+            const high = Math.max(open, close) + (Math.random() * (volatility/2));
+            const low = Math.min(open, close) - (Math.random() * (volatility/2));
+            
+            fallbackData.push({ time: time, open: open, high: high, low: low, close: close });
+            lastClose = close;
+            time += 3600;
+        }
+
+        currentChartData = fallbackData;
+        if (candleSeries) {
+            candleSeries.setData(fallbackData);
+            setTimeout(() => {
+                if (lwChart && lwChart.timeScale) {
+                    lwChart.timeScale().fitContent();
+                }
+            }, 50);
+        }
+    }
+
+
+    function updateTradePanel() {
+        const ownedElement = document.getElementById('posOwned');
+        const avgElement = document.getElementById('posAvg');
+        const availBuyElement = document.getElementById('tradeAvailBuy');
+        const walletDisplay = document.getElementById('walletBalanceDisplay');
+
+        walletDisplay.innerText = userWalletBalance.toFixed(2) + ' TND';
+
+        let ownedQty = 0;
+        let avgCost = 0;
+        if (userPortfolio[currentAssetId]) {
+            ownedQty = userPortfolio[currentAssetId].quantity;
+            avgCost = userPortfolio[currentAssetId].averageCost;
+        }
+
+        ownedElement.innerText = ownedQty.toFixed(6) + ' Units';
+        avgElement.innerText = avgCost.toFixed(2) + ' USD';
+
+        // How many units they can buy with current balance
+        const maxBuy = userWalletBalance / (currentAssetPrice * usdToTndRate);
+        availBuyElement.innerText = maxBuy.toFixed(6) + ' Units';
+
+        updateTradeEst();
+    }
+
+    function updateTradeEst() {
+        const amt = parseFloat(document.getElementById('tradeAmount').value) || 0;
+        const est = amt * currentAssetPrice * usdToTndRate;
+        document.getElementById('tradeEst').innerText = est.toFixed(2) + ' TND';
+    }
+
+    async function executeTrade(mode, btnElement) {
+        const amount = parseFloat(document.getElementById('tradeAmount').value) || 0;
+        if (amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+
+        const originalText = btnElement.innerText;
+        btnElement.innerText = 'Processing...';
+        btnElement.disabled = true;
+
+        try {
+            const response = await fetch('/user/twin/trade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    symbol: currentAssetId,
+                    type: mode.toUpperCase(),
+                    amount: amount,
+                    price: currentAssetPrice
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert(data.message);
+                // Update local state
+                userWalletBalance = parseFloat(data.newBalance);
+                if (data.portfolio) {
+                    userPortfolio[currentAssetId] = data.portfolio;
+                } else {
+                    delete userPortfolio[currentAssetId];
+                }
+                
+                // Reset amount
+                document.getElementById('tradeAmount').value = '0.0';
+                
+                // Update UI
+                updateTradePanel();
+            } else {
+                alert('Trade failed: ' + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('An error occurred during the trade.');
+        } finally {
+            btnElement.innerText = originalText;
+            btnElement.disabled = false;
+        }
+    }
+
+    // --- Expense Tracker Logic ---
+    let currentExpenseId = null;
+
+    function applyExpenseFilters() {
+        const list = document.getElementById('expenseList');
+        const rows = Array.from(list.querySelectorAll('.et-scan-item'));
+        const searchInput = document.getElementById('expenseSearchInput');
+        const sortSelect = document.getElementById('expenseSort');
+        const directionSelect = document.getElementById('expenseDirection');
+        const noResults = document.getElementById('expenseNoResults');
+
+        if (!list || !searchInput || !sortSelect || !directionSelect || rows.length === 0) {
+            return;
+        }
+
+        const search = searchInput.value.trim().toLowerCase();
+        const sort = sortSelect.value;
+        const direction = directionSelect.value;
+
+        const filteredRows = rows.filter((row) => {
+            const merchant = row.dataset.merchant || '';
+            const amount = row.dataset.amount || '';
+            const date = row.dataset.date || '';
+            const haystack = `${merchant} ${amount} ${date}`.toLowerCase();
+            const match = haystack.includes(search);
+
+            row.style.display = match ? 'flex' : 'none';
+            return match;
+        });
+
+        filteredRows.sort((a, b) => {
+            let comparison = 0;
+
+            if (sort === 'merchant') {
+                comparison = (a.dataset.merchant || '').localeCompare(b.dataset.merchant || '');
+            } else if (sort === 'amount') {
+                comparison = parseFloat(a.dataset.amount || '0') - parseFloat(b.dataset.amount || '0');
+            } else {
+                comparison = (a.dataset.date || '').localeCompare(b.dataset.date || '');
+            }
+
+            return direction === 'asc' ? comparison : -comparison;
+        });
+
+        filteredRows.forEach((row) => list.appendChild(row));
+        noResults.style.display = filteredRows.length === 0 ? 'block' : 'none';
+    }
+
+    document.getElementById('expenseSearchInput')?.addEventListener('input', applyExpenseFilters);
+    document.getElementById('expenseSort')?.addEventListener('change', applyExpenseFilters);
+    document.getElementById('expenseDirection')?.addEventListener('change', applyExpenseFilters);
+    document.addEventListener('DOMContentLoaded', applyExpenseFilters);
+
+    function openExpenseModal() {
+        currentExpenseId = null;
+        document.querySelectorAll('.text-danger.form-error').forEach(el => el.remove());
+        document.getElementById('modalTitle').innerText = 'Add New Expense';
+        document.getElementById('modalMerchant').value = '';
+        document.getElementById('modalTotalAmount').value = '';
+        document.getElementById('modalItemsContainer').innerHTML = '';
+        addModalItemRow();
+        document.getElementById('expenseModal').style.display = 'flex';
+    }
+
+    function openEditExpenseModal(id) {
+        currentExpenseId = id;
+        document.querySelectorAll('.text-danger.form-error').forEach(el => el.remove());
+        document.getElementById('modalTitle').innerText = 'Edit Expense';
+        
+        // Find expense data from DOM
+        const row = document.getElementById('expense-row-' + id);
+        if (!row) return;
+
+        const merchant = row.querySelector('.et-scan-name').innerText;
+        const amountText = row.querySelector('.et-scan-amount').innerText;
+        const amount = parseFloat(amountText);
+
+        document.getElementById('modalMerchant').value = merchant;
+        document.getElementById('modalTotalAmount').value = amount.toFixed(2);
+        
+        const container = document.getElementById('modalItemsContainer');
+        container.innerHTML = '';
+
+        const itemElements = row.querySelectorAll('.expense-item-row');
+        if (itemElements.length > 0) {
+            itemElements.forEach(el => {
+                const name = el.getAttribute('data-name');
+                const price = parseFloat(el.getAttribute('data-price'));
+                addModalItemRow(name, price);
+            });
+        } else {
+            addModalItemRow();
+        }
+
+        document.getElementById('expenseModal').style.display = 'flex';
+    }
+
+    function closeExpenseModal() {
+        document.getElementById('expenseModal').style.display = 'none';
+        currentExpenseId = null;
+    }
+
+    function addModalItemRow(name = '', price = '') {
+        const container = document.getElementById('modalItemsContainer');
+        const rowId = 'item-row-' + Date.now() + Math.floor(Math.random() * 100);
+        const priceVal = price !== '' ? parseFloat(price).toFixed(2) : '';
+        const rowHtml = `
+            <div id="${rowId}" style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" class="modal-item-name" placeholder="Item Name" value="${name}" style="flex: 1; padding: 8px; border-radius: 6px; background: #151120; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; font-size: 0.85rem;">
+                <input type="number" class="modal-item-price" placeholder="Price" step="0.01" value="${priceVal}" style="width: 80px; padding: 8px; border-radius: 6px; background: #151120; color: white; border: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; font-size: 0.85rem;" oninput="updateModalTotal()">
+                <button type="button" onclick="document.getElementById('${rowId}').remove(); updateModalTotal();" style="background: none; border: none; color: #EF4444; cursor: pointer; padding: 8px;"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', rowHtml);
+    }
+
+    function updateModalTotal() {
+        const prices = document.querySelectorAll('.modal-item-price');
+        let total = 0;
+        prices.forEach(p => {
+            const val = parseFloat(p.value);
+            if (!isNaN(val)) total += val;
+        });
+        if (total > 0) {
+            document.getElementById('modalTotalAmount').value = total.toFixed(2);
+        }
+    }
+
+    async function submitExpenseModal() {
+        const merchantInput = document.getElementById('modalMerchant');
+        const amountInput = document.getElementById('modalTotalAmount');
+        const merchant = merchantInput.value.trim();
+        const amountVal = amountInput.value.trim();
+        const amount = amountVal === '' ? null : parseFloat(amountVal);
+
+        // Clear previous errors
+        document.querySelectorAll('.text-danger.form-error').forEach(el => el.remove());
+        
+        const items = [];
+        const itemRows = document.getElementById('modalItemsContainer').children;
+        for (let row of itemRows) {
+            if (!row.id || !row.id.startsWith('item-row-')) continue;
+            const nameInput = row.querySelector('.modal-item-name');
+            const priceInput = row.querySelector('.modal-item-price');
+            if (!nameInput || !priceInput) continue;
+            const name = nameInput.value.trim();
+            const priceVal = priceInput.value.trim();
+            const price = priceVal === '' ? null : parseFloat(priceVal);
+            items.push({ name, price: price, rowId: row.id });
+        }
+
+        const btn = document.getElementById('btnSubmitExpense');
+        const originalText = btn.innerText;
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
+
+        try {
+            let endpoint = '/user/twin/expense/add';
+            let method = 'POST';
+            if (currentExpenseId) {
+                endpoint = '/user/twin/expense/edit/' + currentExpenseId;
+                method = 'PUT';
+            }
+
+            const response = await fetch(endpoint, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ merchant, amount, items: items.map(i => ({ name: i.name, price: i.price })) })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else {
+                if (data.errors) {
+                    for (const [field, message] of Object.entries(data.errors)) {
+                        if (field === 'merchant') {
+                            const errorSpan = document.createElement('span');
+                            errorSpan.className = 'text-danger form-error';
+                            errorSpan.style.color = '#EF4444';
+                            errorSpan.style.fontSize = '0.85rem';
+                            errorSpan.style.marginTop = '4px';
+                            errorSpan.style.display = 'block';
+                            errorSpan.innerText = message;
+                            merchantInput.parentNode.appendChild(errorSpan);
+                        } else if (field === 'amount') {
+                            const errorSpan = document.createElement('span');
+                            errorSpan.className = 'text-danger form-error';
+                            errorSpan.style.color = '#EF4444';
+                            errorSpan.style.fontSize = '0.85rem';
+                            errorSpan.style.marginTop = '4px';
+                            errorSpan.style.display = 'block';
+                            errorSpan.innerText = message;
+                            amountInput.parentNode.appendChild(errorSpan);
+                        } else if (field.startsWith('items.')) {
+                                // field is something like "items.0.name"
+                                const parts = field.split('.');
+                                const index = parseInt(parts[1]);
+                                const subfield = parts[2];
+                                
+                                const itemRows = Array.from(document.getElementById('modalItemsContainer').children).filter(child => !child.classList.contains('form-error'));
+                                if (index >= 0 && index < itemRows.length) {
+                                    const row = itemRows[index];
+                                    const targetInput = subfield === 'name' ? row.querySelector('.modal-item-name') : row.querySelector('.modal-item-price');
+                                    if (targetInput) {
+                                        targetInput.style.border = '1px solid #EF4444';
+                                        
+                                        const rowError = document.createElement('div');
+                                        rowError.className = 'text-danger form-error';
+                                        rowError.style.color = '#EF4444';
+                                        rowError.style.fontSize = '0.75rem';
+                                        rowError.style.marginTop = '2px';
+                                        rowError.style.marginLeft = '4px';
+                                        rowError.innerText = message;
+                                        row.insertAdjacentElement('afterend', rowError);
+                                    }
+                                }
+                        }
+                    }
+                } else {
+                    alert(data.message || 'An error occurred.');
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            alert('A network error occurred.');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function deleteExpense(id) {
+        if (!confirm('Are you sure you want to delete this expense?')) return;
+
+        try {
+            const response = await fetch('/user/twin/expense/' + id, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                const row = document.getElementById('expense-row-' + id);
+                if (row) {
+                    const amountText = row.querySelector('.et-scan-amount').innerText;
+                    const amount = parseFloat(amountText);
+                    updateTotalExpenses(amount, false);
+                    row.remove();
+                    applyExpenseFilters();
+                }
+            } else {
+                alert('Error deleting expense: ' + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error deleting expense');
+        }
+    }
+
+    function toggleExpenseDetails(id) {
+        const detailsDiv = document.getElementById('expense-details-' + id);
+        if (detailsDiv) {
+            detailsDiv.style.display = detailsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+
+    function appendExpenseRow(exp) {
+        const list = document.getElementById('expenseList');
+        const formattedAmount = parseFloat(exp.amount).toFixed(2);
+        const items = exp.items || [];
+        
+        let itemsHtml = '';
+        if (items.length === 0) {
+            itemsHtml = `<div style="color: #6B7280; font-size: 0.8rem;">- No individual items found.</div>`;
+        } else {
+            items.forEach(item => {
+                itemsHtml += `
+                    <div class="expense-item-row" data-name="${item.name}" data-price="${parseFloat(item.price).toFixed(2)}" style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; color: #D1D5DB;">
+                        <span>- ${item.name}</span>
+                        <span>${parseFloat(item.price).toFixed(2)} TND</span>
+                    </div>
+                `;
+            });
+        }
+
+        const html = `
+            <div class="et-scan-item" id="expense-row-${exp.id}" data-merchant="${String(exp.merchant).toLowerCase()}" data-amount="${exp.amount}" data-date="${exp.date}" style="cursor: pointer;" onclick="toggleExpenseDetails(${exp.id})">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <div class="et-scan-left">
+                        <div class="et-scan-icon"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="et-scan-info">
+                            <div class="et-scan-name">${exp.merchant}</div>
+                            <div class="et-scan-date">${exp.date}</div>
+                        </div>
+                    </div>
+                    <div class="et-scan-right" style="display: flex; gap: 8px; align-items: center;">
+                        <div class="et-scan-amount">${formattedAmount} TND</div>
+                        <button class="btn-trade buy" style="padding: 6px 12px; font-size: 0.8rem; width: auto; background: rgba(16, 185, 129, 0.2); color: #10B981;" onclick="event.stopPropagation(); openEditExpenseModal(${exp.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-trade sell" style="padding: 6px 12px; font-size: 0.8rem; width: auto; background: rgba(239, 68, 68, 0.2); color: #EF4444;" onclick="event.stopPropagation(); deleteExpense(${exp.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="expense-details" id="expense-details-${exp.id}" style="display: none; width: 100%; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <div style="color: #9CA3AF; font-size: 0.85rem; margin-bottom: 8px;">Items (${items.length})</div>
+                    ${itemsHtml}
+                </div>
+            </div>
+        `;
+        list.insertAdjacentHTML('afterbegin', html);
+        applyExpenseFilters();
+    }
+
+    function updateTotalExpenses(amount, isAdding) {
+        const titleEl = document.getElementById('totalExpensesVal');
+        if (titleEl) {
+            let current = parseFloat(titleEl.innerText) || 0;
+            current = isAdding ? current + parseFloat(amount) : current - parseFloat(amount);
+            if (current < 0) current = 0;
+            titleEl.innerText = current.toFixed(2) + ' TND';
+        }
+    }
+
+    function openEmailModal() {
+        document.getElementById('emailModalAddress').value = '{{ app.user.email|default('') }}';
+        document.getElementById('emailModalMessage').value = '';
+        document.getElementById('emailModal').style.display = 'flex';
+    }
+
+    function closeEmailModal() {
+        document.getElementById('emailModal').style.display = 'none';
+        document.getElementById('btnSubmitEmail').innerText = 'Send';
+        document.getElementById('btnSubmitEmail').disabled = false;
+    }
+
+    async function submitEmailModal() {
+        const email = document.getElementById('emailModalAddress').value;
+        const msg = document.getElementById('emailModalMessage').value;
+        
+        if(!email) {
+            alert('Please enter an email address');
+            return;
+        }
+
+        const btn = document.getElementById('btnSubmitEmail');
+        btn.innerText = 'Sending...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('{{ path('app_user_twin_expense_email') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, message: msg })
+            });
+            const data = await response.json();
+            if(data.success) {
+                alert(data.message);
+                closeEmailModal();
+            } else {
+                alert('Error: ' + data.message);
+                btn.innerText = 'Send';
+                btn.disabled = false;
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Error sending email');
+            btn.innerText = 'Send';
+            btn.disabled = false;
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,551 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Escrow Details - FINHUB{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-back {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-back:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .title-box {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .page-title {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #E5E7EB;
+    }
+    
+    .escrow-id-label {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+        margin-top: 0.2rem;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn-toggle-view {
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: background 0.2s;
+    }
+
+    .btn-toggle-view:hover {
+        background: rgba(255,255,255,0.05);
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+    }
+
+    .status-RELEASED { background: rgba(16, 185, 129, 0.15); color: #10B981; border-color: rgba(16, 185, 129, 0.3); }
+    .status-LOCKED { background: rgba(59, 130, 246, 0.15); color: #3B82F6; border-color: rgba(59, 130, 246, 0.3); }
+    .status-DISPUTED { background: rgba(239, 68, 68, 0.15); color: #EF4444; border-color: rgba(239, 68, 68, 0.3); }
+    .status-REFUNDED { background: rgba(107, 114, 128, 0.15); color: #9CA3AF; border-color: rgba(107, 114, 128, 0.3); }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 1.5rem;
+    }
+
+    .panel {
+        background: rgba(30, 27, 50, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .panel-title {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #8B5CF6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        gap: 3rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .info-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        color: #E5E7EB;
+    }
+    
+    .info-value.amount {
+        color: #8B5CF6;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .condition-box {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 1rem;
+        color: #E5E7EB;
+        font-size: 0.9rem;
+        min-height: 80px;
+        margin-bottom: 2rem;
+    }
+
+    .participants-flow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .participant {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        flex: 1;
+    }
+
+    .participant-role {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+    }
+
+    .participant-name {
+        font-size: 1rem;
+        color: #6B7280;
+    }
+
+    .flow-arrow {
+        color: #6B7280;
+        margin: 0 2rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        color: white;
+        transition: opacity 0.2s;
+    }
+
+    .btn-action:hover {
+        opacity: 0.9;
+    }
+    
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-release {
+        background: #8B5CF6;
+    }
+
+    .btn-refund {
+        background: #EF4444;
+    }
+    
+    .metadata-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .metadata-label {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+        margin-bottom: 0.3rem;
+    }
+    
+    .metadata-value {
+        font-size: 0.9rem;
+        color: #6B7280;
+    }
+    
+    .hash-value {
+        font-family: monospace;
+        color: #8B5CF6;
+        word-break: break-all;
+    }
+    
+    .btn-blockchain {
+        margin-top: auto;
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.2);
+        color: #9CA3AF;
+        padding: 0.6rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .btn-blockchain:hover {
+        background: rgba(255,255,255,0.05);
+        color: #E5E7EB;
+    }
+
+    /* Profiles View (Hidden by default) */
+    .profiles-grid {
+        display: none;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .profile-card {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #2D2A40;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+    }
+    
+    .profile-name {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #E5E7EB;
+        margin-bottom: 0.2rem;
+    }
+    
+    .profile-email {
+        font-size: 0.9rem;
+        color: #9CA3AF;
+    }
+
+    @media (max-width: 991px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+        .profiles-grid {
+            grid-template-columns: 1fr;
+        }
+        .info-row {
+            gap: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-container">
+    <div class="page-header">
+        <div class="header-left">
+            <button onclick="window.location.href='{{ path('app_admin_escrow') }}'" class="btn-back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <div class="title-box">
+                <h1 class="page-title">Escrow Details</h1>
+                <span class="escrow-id-label">#{{ escrow.id }}</span>
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <button id="toggleViewBtn" class="btn-toggle-view" onclick="toggleView()">View Profiles</button>
+            <span class="status-badge status-{{ escrow.status|default('LOCKED') }}">{{ escrow.status|default('LOCKED') }}</span>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <!-- Left Panel: Transaction / Profiles -->
+        <div class="panel" id="mainPanel">
+            <!-- Transaction View -->
+            <div id="transactionView">
+                <h2 class="panel-title">Transaction Information</h2>
+                
+                <div class="info-row">
+                    <div class="info-group">
+                        <span class="info-label">Amount</span>
+                        <span class="info-value amount">{{ escrow.amount|number_format(3, '.', '') }} TND</span>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Type</span>
+                        <span class="info-value" style="color: #6B7280; font-size: 0.9rem;">{{ escrow.escrowType|default('QR_CODE') }}</span>
+                    </div>
+                </div>
+
+                <div class="info-group" style="margin-bottom: 0.5rem;">
+                    <span class="info-label">Condition</span>
+                </div>
+                <div class="condition-box">
+                    {{ escrow.conditionText|default('No condition specified') }}
+                </div>
+
+                <div class="participants-flow">
+                    <div class="participant">
+                        <span class="participant-role">From (Sender)</span>
+                        <span class="participant-name">
+                            {% if escrow.senderWallet and escrow.senderWallet.user %}
+                                {{ escrow.senderWallet.user.fullName|default(escrow.senderWallet.user.email|split('@')[0]) }}
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </span>
+                    </div>
+                    <svg class="flow-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <div class="participant">
+                        <span class="participant-role">To (Receiver)</span>
+                        <span class="participant-name">
+                            {% if escrow.receiverWallet and escrow.receiverWallet.user %}
+                                {{ escrow.receiverWallet.user.fullName|default(escrow.receiverWallet.user.email|split('@')[0]) }}
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-group" style="margin-bottom: 0.5rem;">
+                    <span class="panel-title" style="margin-bottom: 0;">Administrative Actions</span>
+                </div>
+                <div class="action-buttons">
+                    {% set isActive = (escrow.status == 'LOCKED' or escrow.status == 'DISPUTED') %}
+                    <button class="btn-action btn-release" {{ isActive ? '' : 'disabled' }} onclick="executeAction('{{ path('app_admin_escrow_force_release', {'id': escrow.id}) }}', 'Are you sure you want to FORCE RELEASE these funds to the receiver?')">Release Funds</button>
+                    <button class="btn-action btn-refund" {{ isActive ? '' : 'disabled' }} onclick="executeAction('{{ path('app_admin_escrow_force_refund', {'id': escrow.id}) }}', 'Are you sure you want to FORCE REFUND these funds back to the sender?')">Refund to Sender</button>
+                </div>
+            </div>
+
+            <!-- Profiles View (Hidden initially) -->
+            <div id="profilesView" class="profiles-grid">
+                <!-- Sender Profile -->
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        {% if escrow.senderWallet and escrow.senderWallet.user %}
+                            {{ escrow.senderWallet.user.fullName|default(escrow.senderWallet.user.email)|slice(0,1)|upper }}
+                        {% else %}
+                            ?
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="profile-name">
+                            {% if escrow.senderWallet and escrow.senderWallet.user %}
+                                {{ escrow.senderWallet.user.fullName|default('Unknown') }}
+                            {% else %}
+                                Unknown Sender
+                            {% endif %}
+                        </div>
+                        <div class="profile-email">
+                            {{ escrow.senderWallet and escrow.senderWallet.user ? escrow.senderWallet.user.email : 'N/A' }}
+                        </div>
+                    </div>
+                    <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; display: flex; justify-content: space-around;">
+                        <div class="info-group" style="align-items: center;">
+                            <span class="info-label">Trust Score</span>
+                            <span class="info-value" style="color: #3B82F6;">{{ escrow.senderWallet and escrow.senderWallet.user ? escrow.senderWallet.user.trustScore : '0' }}</span>
+                        </div>
+                        <div class="info-group" style="align-items: center;">
+                            <span class="info-label">Wallet</span>
+                            <span class="info-value" style="color: {{ escrow.senderWallet and escrow.senderWallet.status == 'ACTIVE' ? '#10B981' : '#EF4444' }};">
+                                {{ escrow.senderWallet ? escrow.senderWallet.status : 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Receiver Profile -->
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        {% if escrow.receiverWallet and escrow.receiverWallet.user %}
+                            {{ escrow.receiverWallet.user.fullName|default(escrow.receiverWallet.user.email)|slice(0,1)|upper }}
+                        {% else %}
+                            ?
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="profile-name">
+                            {% if escrow.receiverWallet and escrow.receiverWallet.user %}
+                                {{ escrow.receiverWallet.user.fullName|default('Unknown') }}
+                            {% else %}
+                                Unknown Receiver
+                            {% endif %}
+                        </div>
+                        <div class="profile-email">
+                            {{ escrow.receiverWallet and escrow.receiverWallet.user ? escrow.receiverWallet.user.email : 'N/A' }}
+                        </div>
+                    </div>
+                    <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; display: flex; justify-content: space-around;">
+                        <div class="info-group" style="align-items: center;">
+                            <span class="info-label">Trust Score</span>
+                            <span class="info-value" style="color: #3B82F6;">{{ escrow.receiverWallet and escrow.receiverWallet.user ? escrow.receiverWallet.user.trustScore : '0' }}</span>
+                        </div>
+                        <div class="info-group" style="align-items: center;">
+                            <span class="info-label">Wallet</span>
+                            <span class="info-value" style="color: {{ escrow.receiverWallet and escrow.receiverWallet.status == 'ACTIVE' ? '#10B981' : '#EF4444' }};">
+                                {{ escrow.receiverWallet ? escrow.receiverWallet.status : 'N/A' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Metadata -->
+        <div class="panel">
+            <h2 class="panel-title" style="margin-bottom: 1.5rem;">Metadata</h2>
+            
+            <div class="metadata-group">
+                <div class="metadata-label">Created At</div>
+                <div class="metadata-value">{{ escrow.createdAt|date('Y-m-d H:i:s') }}</div>
+            </div>
+
+            <div class="metadata-group">
+                <div class="metadata-label">Blockchain Hash</div>
+                <div class="metadata-value hash-value">
+                    {% set pseudoHash = "0x" ~ escrow.id|number_format ~ "abcdef1234567890" %}
+                    {{ pseudoHash|slice(0, 4) }}...{{ pseudoHash|slice(-3) }}
+                </div>
+            </div>
+
+            <button class="btn-blockchain" onclick="showBlockchain()">View Blockchain Record</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+<script>
+    let isProfileView = false;
+    
+    function toggleView() {
+        isProfileView = !isProfileView;
+        
+        const txView = document.getElementById('transactionView');
+        const profView = document.getElementById('profilesView');
+        const btn = document.getElementById('toggleViewBtn');
+        
+        if (isProfileView) {
+            txView.style.display = 'none';
+            profView.style.display = 'grid';
+            btn.innerText = 'View Transaction';
+        } else {
+            txView.style.display = 'block';
+            profView.style.display = 'none';
+            btn.innerText = 'View Profiles';
+        }
+    }
+
+    function showBlockchain() {
+        const txHash = "0x" + ({{ escrow.id }} * 123456789).toString(16).toUpperCase() + "ABCDEF1234567890";
+        const blockHeight = 100000 + {{ escrow.id }};
+        const timestamp = "{{ escrow.createdAt|date('Y-m-d H:i:s') }}";
+
+        alert("Blockchain Record\n\nTransaction Hash:\n" + txHash + "\n\nBlock Height: " + blockHeight + "\nTimestamp: " + timestamp + "\nStatus: CONFIRMED");
+    }
+
+    async function executeAction(url, confirmMessage) {
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Success: ' + data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while processing the request.');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,472 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Ticket Details - FINHUB{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    /* Support Center Header (Consistent with index) */
+    .support-header-container {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    
+    .support-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #E5E7EB;
+        margin-bottom: 0.5rem;
+    }
+    
+    .support-subtitle {
+        font-size: 0.95rem;
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+    }
+    
+    .support-nav {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .support-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #9CA3AF;
+        background: transparent;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .support-tab:hover {
+        color: #E5E7EB;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .support-tab.active {
+        background: rgba(139, 92, 246, 0.2);
+        color: #E5E7EB;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    /* Ticket Header */
+    .ticket-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .ticket-header-left {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-back:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(-2px);
+    }
+
+    .ticket-title-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .ticket-subject {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #E9D5FF;
+        margin: 0;
+    }
+
+    .ticket-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-badge.OPEN {
+        background: #8B5CF6;
+        color: white;
+    }
+
+    .status-badge.RESOLVED, .status-badge.CLOSED {
+        background: #10B981;
+        color: white;
+    }
+
+    .user-id-label {
+        font-size: 0.8rem;
+        color: #9CA3AF;
+    }
+
+    .btn-resolve {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10B981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-resolve:hover:not(:disabled) {
+        background: #10B981;
+        color: white;
+    }
+
+    .btn-resolve:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Chat Area */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 400px);
+        min-height: 400px;
+    }
+
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        /* Custom Scrollbar for messages */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
+    }
+
+    .messages-area::-webkit-scrollbar {
+        width: 6px;
+    }
+    .messages-area::-webkit-scrollbar-thumb {
+        background-color: rgba(139, 92, 246, 0.3);
+        border-radius: 10px;
+    }
+
+    .message-row {
+        display: flex;
+        width: 100%;
+    }
+
+    .message-row.user {
+        justify-content: flex-start;
+    }
+
+    .message-row.admin {
+        justify-content: flex-end;
+    }
+
+    .message-content {
+        display: flex;
+        flex-direction: column;
+        max-width: 70%;
+        gap: 0.25rem;
+    }
+
+    .message-row.user .message-content {
+        align-items: flex-start;
+    }
+
+    .message-row.admin .message-content {
+        align-items: flex-end;
+    }
+
+    .message-bubble {
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    .message-row.user .message-bubble {
+        background: rgba(30, 27, 50, 0.8);
+        color: #E5E7EB;
+        border-radius: 16px 16px 16px 0;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .message-row.admin .message-bubble {
+        background: #8B5CF6;
+        color: white;
+        border-radius: 16px 16px 0 16px;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    }
+
+    .message-time {
+        font-size: 0.7rem;
+        color: #6B7280;
+    }
+
+    /* Input Area */
+    .input-area {
+        margin-top: 1rem;
+        background: rgba(20, 18, 35, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .input-field {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        outline: none;
+    }
+
+    .input-field::placeholder {
+        color: #6B7280;
+    }
+
+    .input-field:disabled {
+        cursor: not-allowed;
+    }
+
+    .btn-send {
+        background: #A855F7;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background 0.2s ease;
+    }
+
+    .btn-send:hover:not(:disabled) {
+        background: #9333EA;
+    }
+
+    .btn-send:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .message-image {
+        max-width: 100%;
+        max-height: 200px;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        cursor: pointer;
+    }
+    @media (max-width: 768px) {
+        .support-nav { gap: 0.5rem; }
+        .support-tab { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+        .ticket-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        .ticket-header-left { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+        .message-content { max-width: 90%; }
+        .btn-resolve { width: 100%; justify-content: center; }
+        .input-area { flex-direction: column; align-items: stretch; }
+        .btn-send { justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-container">
+
+    <!-- Header Section (Same as Support Index) -->
+    <div class="support-header-container">
+        <h1 class="support-title">Support & Safety Center</h1>
+        <p class="support-subtitle">Manage user support tickets, system alerts, and compliance requests.</p>
+        
+        <div class="support-nav">
+            <a href="{{ path('app_admin_support') }}" class="support-tab active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Support Tickets
+            </a>
+            <a href="{{ path('app_admin_support_alerts') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                System Alerts
+            </a>
+            <a href="{{ path('app_admin_support_kyc') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                KYC Requests
+            </a>
+            <a href="{{ path('app_admin_support_kb') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Knowledge Base
+            </a>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Header -->
+    <div class="ticket-header">
+        <div class="ticket-header-left">
+            <button class="btn-back" onclick="window.location.href='{{ path('app_admin_support') }}'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <div class="ticket-title-container">
+                <h2 class="ticket-subject">{{ ticket.subject|default('No Subject') }}</h2>
+                <div class="ticket-meta-row">
+                    <span class="status-badge {{ ticket.status }}">{{ ticket.status }}</span>
+                    <span class="user-id-label">User ID: {{ ticket.user ? ticket.user.id : 'Unknown' }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% set isClosed = (ticket.status == 'CLOSED' or ticket.status == 'RESOLVED') %}
+        <button class="btn-resolve" onclick="resolveTicket()" {{ isClosed ? 'disabled' : '' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            Resolve Ticket
+        </button>
+    </div>
+
+    <!-- Chat Interface -->
+    <div class="chat-container">
+        <div class="messages-area" id="messagesArea">
+            {% for message in messages %}
+                {% set isAdmin = (message.senderRole != 'USER') %}
+                <div class="message-row {{ isAdmin ? 'admin' : 'user' }}">
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            {{ message.message }}
+                            {% if message.attachmentPath %}
+                                <!-- Adjust attachment path rendering depending on your public directory structure -->
+                                <img src="{{ asset('uploads/support/' ~ message.attachmentPath) }}" alt="Attachment" class="message-image" onerror="this.style.display='none'">
+                            {% endif %}
+                        </div>
+                        <div class="message-time">{{ message.createdAt|date('H:i') }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% if messages is empty %}
+                <div style="text-align: center; color: #6B7280; margin-top: 2rem;">No messages in this ticket yet.</div>
+            {% endif %}
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area">
+            <input type="text" id="replyInput" class="input-field" placeholder="Reply as Admin..." {{ isClosed ? 'disabled' : '' }} onkeypress="if(event.key === 'Enter') sendReply()">
+            <button class="btn-send" onclick="sendReply()" {{ isClosed ? 'disabled' : '' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Send
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+<script>
+    // Scroll to bottom of messages area on load
+    document.addEventListener("DOMContentLoaded", function() {
+        const messagesArea = document.getElementById("messagesArea");
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    });
+
+    async function sendReply() {
+        const input = document.getElementById('replyInput');
+        const text = input.value.trim();
+        
+        if (!text) return;
+
+        input.disabled = true;
+
+        try {
+            const response = await fetch('{{ path('app_admin_support_reply', {'id': ticket.id}) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ message: text })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+                input.disabled = false;
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while sending the reply.');
+            input.disabled = false;
+        }
+    }
+
+    async function resolveTicket() {
+        if (!confirm('Mark this ticket as resolved?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ path('app_admin_support_resolve', {'id': ticket.id}) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while resolving the ticket.');
+        }
+    }
+</script>
+{% endblock %}

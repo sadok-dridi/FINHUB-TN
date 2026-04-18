@@ -1,0 +1,148 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Admin Dashboard - FinHub{% endblock %}
+
+{% block admin_stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            margin-bottom: 30px;
+        }
+        .page-title {
+            font-size: 2rem;
+            color: #E9D5FF;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .page-subtitle {
+            color: #9CA3AF;
+            font-size: 0.95rem;
+        }
+
+        /* Stat Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: rgba(23, 21, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* Specific borders matching image */
+        .card-purple {
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
+        }
+        .card-orange {
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.1);
+        }
+        .card-green {
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+        }
+        .card-blue {
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        
+        .icon-purple { background: rgba(139, 92, 246, 0.2); color: #A855F7; }
+        .icon-orange { background: rgba(245, 158, 11, 0.2); color: #FBBF24; }
+        .icon-green { background: rgba(16, 185, 129, 0.2); color: #34D399; }
+        .icon-blue { background: rgba(59, 130, 246, 0.2); color: #60A5FA; }
+
+        .stat-details {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-label {
+            color: #9CA3AF;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            color: #FFFFFF;
+            font-size: 1.75rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <div class="page-header">
+        <h1 class="page-title">Overview</h1>
+        <p class="page-subtitle">Key system metrics and status</p>
+    </div>
+
+    <div class="stats-grid">
+        
+        <!-- Total Users -->
+        <div class="stat-card card-purple">
+            <div class="stat-icon icon-purple">
+                👤
+            </div>
+            <div class="stat-details">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-value">{{ stats.totalUsers }}</span>
+            </div>
+        </div>
+
+        <!-- Pending Verifications -->
+        <div class="stat-card card-orange">
+            <div class="stat-icon icon-orange">
+                🛡️
+            </div>
+            <div class="stat-details">
+                <span class="stat-label">Pending Verifications</span>
+                <span class="stat-value">{{ stats.pendingVerifications }}</span>
+            </div>
+        </div>
+
+        <!-- Open Support Tickets -->
+        <div class="stat-card card-green">
+            <div class="stat-icon icon-green">
+                💬
+            </div>
+            <div class="stat-details">
+                <span class="stat-label">Open Support Tickets</span>
+                <span class="stat-value">{{ stats.openTickets }}</span>
+            </div>
+        </div>
+
+        <!-- Active Escrow Volume -->
+        <div class="stat-card card-blue">
+            <div class="stat-icon icon-blue">
+                $
+            </div>
+            <div class="stat-details">
+                <span class="stat-label">Active Escrow Volume</span>
+                <span class="stat-value">{{ stats.escrowVolume }}</span>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

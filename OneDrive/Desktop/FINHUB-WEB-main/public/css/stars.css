@@ -1,0 +1,179 @@
+/* Starfield Animation */
+.star-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle var(--duration) ease-in-out infinite;
+    animation-delay: var(--delay);
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+}
+
+/* Shooting Star */
+.shooting-star {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: #e8dcc8;
+    /* slightly dimmer golden core */
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(220, 190, 150, 0.1),
+        0 0 5px rgba(200, 140, 90, 0.2),
+        0 0 15px rgba(220, 190, 150, 0.3),
+        0 0 30px rgba(200, 140, 90, 0.2);
+    opacity: 0;
+}
+
+.shooting-star.rtl {
+    animation: animate-rtl 3s linear forwards;
+}
+
+.shooting-star.ltr {
+    animation: animate-ltr 5s linear forwards;
+}
+
+.shooting-star::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 400px;
+    height: 6px;
+    /* Matches the head height */
+    border-radius: 6px 0 0 6px;
+    /* Start round, end flat to taper */
+    background: linear-gradient(90deg, #e8dcc8, rgba(220, 170, 110, 0.4) 30%, rgba(180, 110, 60, 0.2) 60%, transparent);
+    clip-path: polygon(0 0, 100% 40%, 100% 60%, 0 100%);
+    /* Force a tapered shape */
+}
+
+@keyframes animate-rtl {
+    0% {
+        transform: rotate(315deg) translateX(0);
+        opacity: 0;
+    }
+
+    30% {
+        /* Delays full brightness so it fades in much slower */
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: rotate(315deg) translateX(-1000px);
+        opacity: 0;
+    }
+}
+
+@keyframes animate-ltr {
+    0% {
+        transform: rotate(225deg) translateX(0);
+        opacity: 0;
+    }
+
+    30% {
+        /* Delays full brightness so it fades in much slower */
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: rotate(225deg) translateX(-1000px);
+        opacity: 0;
+    }
+}
+
+/* Mobile Adjustments for Shooting Stars */
+@media (max-width: 768px) {
+    .shooting-star {
+        width: 3px;
+        height: 3px;
+        box-shadow: 0 0 0 1px rgba(220, 190, 150, 0.1),
+            0 0 3px rgba(200, 140, 90, 0.2),
+            0 0 8px rgba(220, 190, 150, 0.3),
+            0 0 15px rgba(200, 140, 90, 0.2);
+    }
+
+    .shooting-star::before {
+        width: 200px;
+        height: 3px;
+    }
+
+    /* Make them move slower on mobile by covering less distance overall */
+    @keyframes animate-rtl {
+        0% {
+            transform: rotate(315deg) translateX(0);
+            opacity: 0;
+        }
+
+        30% {
+            opacity: 1;
+        }
+
+        70% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: rotate(315deg) translateX(-500px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes animate-ltr {
+        0% {
+            transform: rotate(225deg) translateX(0);
+            opacity: 0;
+        }
+
+        30% {
+            opacity: 1;
+        }
+
+        70% {
+            opacity: 1;
+        }
+
+        100% {
+            transform: rotate(225deg) translateX(-500px);
+            opacity: 0;
+        }
+    }
+}

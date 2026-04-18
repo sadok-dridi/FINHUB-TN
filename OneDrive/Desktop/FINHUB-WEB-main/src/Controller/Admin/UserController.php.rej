@@ -1,0 +1,11 @@
+--- src/Controller/Admin/UserController.php
++++ src/Controller/Admin/UserController.php
+@@ -10,6 +10,8 @@
+ use Doctrine\ORM\EntityManagerInterface;
+ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+ use Symfony\Component\HttpFoundation\Response;
++use Symfony\Component\HttpFoundation\Request;
+ use Symfony\Component\Routing\Annotation\Route;
++use App\Service\MarketService;
+ 
+ #[Route('/admin/users', name: 'admin_users_')]

@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Check Your Email - FinHub{% endblock %}
+
+{% block body %}
+<div class="full-height-center" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 6rem 1rem 2rem 1rem;">
+    <!-- Main Card -->
+    <div class="card-custom p-4 p-sm-5 text-center" style="
+        width: 100%; 
+        max-width: 440px; 
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important;
+    ">
+        
+        <div class="mb-4" style="display: flex; justify-content: center;">
+            <div style="width: 80px; height: 80px; background: rgba(52, 211, 153, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(52, 211, 153, 0.3);">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+            </div>
+        </div>
+
+        <h2 class="header-text mb-3" style="
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            font-weight: 700; 
+            font-size: 28px;
+            color: #FFFFFF;
+        ">Check your inbox</h2>
+        
+        <p class="sub-header-text mb-4" style="color: #9CA3AF; font-size: 15px; line-height: 1.6;">
+            We've sent a verification link to<br>
+            <strong style="color: #F3F4F6;">{{ email }}</strong><br>
+            Please click the link in the email to activate your account.
+        </p>
+
+        <p style="color: #6B7280; font-size: 14px; margin-bottom: 2rem;">
+            Link expires in 24 hours. Don't see it? Check your spam folder.
+        </p>
+
+        <a href="{{ path('app_login') }}" class="btn w-100" style="
+            background: rgba(139, 92, 246, 0.1);
+            color: #D8B4FE;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            font-weight: 600;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.color='#FFFFFF';" onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.color='#D8B4FE';">
+            Return to Login
+        </a>
+    </div>
+</div>
+{% endblock %}

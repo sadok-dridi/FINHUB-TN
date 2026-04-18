@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}Welcome!{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        {% block stylesheets %}
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+            <link rel="stylesheet" href="{{ asset('css/stars.css') }}?v=2.3">
+            <style>
+                /* Modern Floating Navbar Styles */
+                .navbar-floating-wrapper {
+                    position: fixed;
+                    top: 1.5rem;
+                    left: 0;
+                    right: 0;
+                    display: flex;
+                    justify-content: center;
+                    z-index: 1030;
+                    pointer-events: none; /* Let clicks pass through the wrapper */
+                }
+
+                .navbar-glass-pill {
+                    pointer-events: auto; /* Re-enable clicks on the actual navbar */
+                    background: rgba(15, 14, 23, 0.5) !important;
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    border-radius: 50px;
+                    padding: 0.5rem 1rem 0.5rem 1.5rem !important;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    width: 90%;
+                    max-width: 600px;
+                    transition: all 0.3s ease;
+                }
+
+                /* Beta Badge */
+                .badge-beta {
+                    background: rgba(59, 130, 246, 0.15);
+                    color: #60A5FA;
+                    border: 1px solid rgba(59, 130, 246, 0.3);
+                    font-size: 0.65rem;
+                    letter-spacing: 1px;
+                    padding: 3px 8px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    margin-left: 12px;
+                }
+
+                @media (max-width: 576px) {
+                    .navbar-glass-pill {
+                        width: 95%;
+                        padding: 0.4rem 0.8rem 0.4rem 1rem !important;
+                    }
+                    .navbar-brand span {
+                        font-size: 0.85rem !important;
+                        letter-spacing: 1px !important;
+                    }
+                    .badge-beta {
+                        font-size: 0.55rem;
+                        padding: 2px 6px;
+                        margin-left: 8px;
+                    }
+                    .mobile-nav-gap {
+                        gap: 0.5rem !important;
+                    }
+                    .nav-action-text {
+                        font-size: 0.8rem !important;
+                    }
+                    .nav-action-btn {
+                        font-size: 0.8rem !important;
+                        padding: 5px 12px !important;
+                    }
+                    .user-profile-toggle {
+                        padding: 2px 8px 2px 2px !important;
+                    }
+                    .user-avatar {
+                        width: 24px !important;
+                        height: 24px !important;
+                        font-size: 0.7rem !important;
+                    }
+                }
+
+                .nav-link-custom {
+                    color: #D1D5DB !important;
+                    font-weight: 500;
+                    transition: color 0.3s ease;
+                    padding: 0.5rem 1rem !important;
+                }
+                .nav-link-custom:hover {
+                    color: #fff !important;
+                }
+
+                /* User Profile Dropdown */
+                .user-profile-toggle {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 30px;
+                    padding: 4px 16px 4px 4px;
+                    color: #fff;
+                    text-decoration: none;
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                }
+                .user-profile-toggle:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: #fff;
+                }
+                .user-avatar {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #8B5CF6, #D946EF);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 0.9rem;
+                    color: white;
+                }
+
+                .dropdown-menu-glass {
+                    background: rgba(30, 27, 46, 0.95);
+                    backdrop-filter: blur(16px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                    margin-top: 10px;
+                    padding: 8px;
+                }
+                .dropdown-item-glass {
+                    color: #D1D5DB;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    transition: all 0.2s ease;
+                }
+                .dropdown-item-glass:hover, .dropdown-item-glass:focus {
+                    background: rgba(139, 92, 246, 0.15);
+                    color: #fff;
+                }
+                .dropdown-divider-glass {
+                    border-top: 1px solid rgba(255, 255, 255, 0.05);
+                    margin: 8px 0;
+                }
+            </style>
+        {% endblock %}
+
+        {% block javascripts %}
+            <script src="{{ asset('js/stars.js') }}?v=2.3" defer></script>
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body style="background-color: transparent !important;">
+        <!-- Global Navbar Wrapper -->
+        <div class="navbar-floating-wrapper">
+            <nav class="navbar navbar-expand navbar-dark navbar-glass-pill public-navbar">
+                <!-- Left Side: Logo & Badge -->
+                <div class="d-flex align-items-center">
+                    <a class="navbar-brand d-flex align-items-center gap-2 m-0 p-0" href="{{ path('app_home') }}">
+                        <div style="width: 8px; height: 8px; background-color: #34D399; border-radius: 50%; box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);"></div>
+                        <span style="font-weight: 700; font-size: 0.95rem; letter-spacing: 2px; color: #FFFFFF; margin-left: 4px;">FINHUB</span>
+                    </a>
+                    <span class="badge-beta">BETA</span>
+                </div>
+
+                <!-- Right Side: Actions / Profile -->
+                <div class="d-flex align-items-center gap-3 mobile-nav-gap">
+                    {% if app.user %}
+                        <div class="nav-item dropdown">
+                            <a class="user-profile-toggle dropdown-toggle m-0" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 2px 12px 2px 2px; border-radius: 20px;">
+                                <div class="user-avatar" style="width: 28px; height: 28px; font-size: 0.8rem;">
+                                    {{ app.user.fullName|default('U')|slice(0, 1)|upper }}
+                                </div>
+                                <span class="d-none d-sm-inline" style="font-size: 0.85rem;">{{ app.user.fullName|default('User') }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-glass mt-2" aria-labelledby="navbarDropdown">
+                                <li>
+                                    <div class="px-3 py-2">
+                                        <small class="text-muted d-block">Signed in as</small>
+                                        <strong class="text-white">{{ app.user.email }}</strong>
+                                    </div>
+                                </li>
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_admin_dashboard') }}">
+                                        <span style="font-size: 1.1rem;">📊</span> Admin Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_admin_users') }}">
+                                        <span style="font-size: 1.1rem;">👥</span> Users
+                                    </a></li>
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_admin_transactions') }}">
+                                        <span style="font-size: 1.1rem;">🧾</span> Transactions
+                                    </a></li>
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_admin_support') }}">
+                                        <span style="font-size: 1.1rem;">🛡️</span> Support & Safety
+                                    </a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_user_dashboard') }}">
+                                        <span style="font-size: 1.1rem;">📊</span> Dashboard
+                                    </a></li>
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_user_transactions') }}">
+                                        <span style="font-size: 1.1rem;">💳</span> Transactions
+                                    </a></li>
+                                    <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2" href="{{ path('app_user_my_profile') }}">
+                                        <span style="font-size: 1.1rem;">⚙️</span> Profile
+                                    </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider dropdown-divider-glass"></li>
+                                <li><a class="dropdown-item dropdown-item-glass d-flex align-items-center gap-2 text-danger" href="{{ path('app_logout') }}" data-turbo="false">
+                                    <span style="font-size: 1.1rem;">🚪</span> Sign out
+                                </a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ path('app_login') }}" class="nav-action-text" style="color: #9CA3AF; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.3s ease;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#9CA3AF'">
+                            Sign In
+                        </a>
+                        <a href="{{ path('app_register') }}" class="btn btn-sm nav-action-btn" style="background-color: #ffffff; color: #111827; border-radius: 20px; font-weight: 600; font-size: 0.85rem; padding: 6px 18px; border: none; box-shadow: 0 0 10px rgba(255,255,255,0.2); transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#f3f4f6'" onmouseout="this.style.backgroundColor='#ffffff'">
+                            Get Started
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+
+        {% block body %}{% endblock %}
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>

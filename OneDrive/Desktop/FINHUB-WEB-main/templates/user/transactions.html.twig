@@ -1,0 +1,1032 @@
+{% extends 'user/layout.html.twig' %}
+
+{% block title %}Transactions - FinHub{% endblock %}
+
+{% block user_stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Quick Send Section */
+    .quick-send-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .quick-send-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #F3F4F6;
+        margin: 0;
+    }
+
+    .quick-send-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-qr {
+        background: transparent;
+        color: #D8B4FE;
+        border: 1px solid rgba(139, 92, 246, 0.5);
+        border-radius: 12px;
+        padding: 8px 16px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .btn-qr:hover {
+        background: rgba(139, 92, 246, 0.1);
+        color: #fff;
+    }
+
+    .btn-new-contact {
+        background: transparent;
+        color: #34D399;
+        border: 1px solid rgba(52, 211, 153, 0.5);
+        border-radius: 12px;
+        padding: 8px 16px;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .btn-new-contact:hover {
+        background: rgba(52, 211, 153, 0.1);
+        color: #fff;
+    }
+
+    /* Modal Form Action Buttons */
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+    }
+    .btn-cancel {
+        background: transparent;
+        color: #D1D5DB;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+    }
+    .btn-save {
+        background: #10B981;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-save:hover {
+        opacity: 0.9;
+    }
+    .btn-save:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .contacts-row {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 12px;
+        margin-bottom: 30px;
+        scrollbar-width: thin;
+    }
+    .contacts-row::-webkit-scrollbar {
+        height: 6px;
+    }
+    .contacts-row::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .contacts-row::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .contact-card {
+        background: rgba(20, 18, 35, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 16px;
+        min-width: 100px;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .contact-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-2px);
+    }
+    .contact-actions {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    .contact-card:hover .contact-actions {
+        opacity: 1;
+    }
+    .contact-action-btn {
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 0.75rem;
+        transition: background 0.2s;
+    }
+    .contact-action-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    .contact-action-btn.edit:hover { color: #34D399; }
+    .contact-action-btn.delete:hover { color: #EF4444; }
+
+    /* Modals CSS */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .modal-content {
+        background: #1A1625;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 30px;
+        width: 90%;
+        max-width: 400px;
+        position: relative;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+    .modal-overlay.active .modal-content {
+        transform: translateY(0);
+    }
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: #9CA3AF;
+        font-size: 1.5rem;
+        cursor: pointer;
+        line-height: 1;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal-title {
+        color: #F3F4F6;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-label {
+        display: block;
+        color: #D1D5DB;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+    .form-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 12px 16px;
+        color: #fff;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .form-input:focus {
+        border-color: #8B5CF6;
+    }
+    .btn-primary {
+        width: 100%;
+        background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    .btn-primary:hover {
+        opacity: 0.9;
+    }
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .contact-info-display {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    .contact-info-display .avatar {
+        width: 40px; height: 40px;
+        border-radius: 50%;
+        background: rgba(139,92,246,0.2);
+        display: flex; align-items: center; justify-content: center;
+        color: #E9D5FF; font-weight: 600;
+        overflow: hidden;
+    }
+    .contact-info-display .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .contact-info-display .details { display: flex; flex-direction: column; }
+    .contact-info-display .details strong { color: #fff; font-size: 0.95rem; }
+    .contact-info-display .details span { color: #9CA3AF; font-size: 0.8rem; }
+
+    .contact-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(217,70,239,0.2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #E9D5FF;
+        font-weight: 600;
+        font-size: 1.1rem;
+        overflow: hidden;
+    }
+    .contact-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .contact-name {
+        font-size: 0.8rem;
+        color: #D1D5DB;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 90%;
+        text-align: center;
+    }
+
+    /* History Section */
+    .history-header {
+        margin-bottom: 16px;
+    }
+    
+    .history-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #F3F4F6;
+        margin: 0;
+    }
+
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .history-item {
+        background: rgba(20, 18, 35, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 16px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s ease;
+    }
+    .history-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .history-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .history-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        border: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #9CA3AF;
+        font-weight: 600;
+        font-size: 1.2rem;
+        overflow: hidden;
+    }
+    .history-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .history-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .history-name {
+        color: #F3F4F6;
+        font-weight: 500;
+        font-size: 1rem;
+        margin: 0;
+    }
+    .history-type {
+        color: #9CA3AF;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    .history-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+    }
+    .history-amount {
+        font-weight: 600;
+        font-size: 1.05rem;
+        margin: 0;
+    }
+    .amount-negative {
+        color: #F59E0B; /* Orange for outflow */
+    }
+    .amount-positive {
+        color: #10B981; /* Green for inflow */
+    }
+    .history-date {
+        color: #9CA3AF;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    .history-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .history-search-form {
+        flex: 1 1 280px;
+    }
+    .history-search-input {
+        width: 100%;
+        background: rgba(20, 18, 35, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 12px 16px;
+        color: #fff;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    .history-search-input:focus {
+        border-color: rgba(139, 92, 246, 0.4);
+    }
+    .history-sort-form {
+        display: flex;
+        align-items: end;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .history-sort-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .history-sort-label {
+        color: #9CA3AF;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .history-sort-select {
+        min-width: 190px;
+        background: rgba(20, 18, 35, 0.6);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 12px 14px;
+        color: white;
+        outline: none;
+    }
+    .history-apply-btn {
+        background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 24px;
+        padding-bottom: 20px;
+    }
+    .page-link {
+        background: rgba(20, 18, 35, 0.6);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        color: #D1D5DB;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .page-link:hover {
+        background: rgba(139, 92, 246, 0.15);
+        border-color: rgba(139, 92, 246, 0.3);
+        color: #fff;
+    }
+    .page-link.active {
+        background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+        border-color: transparent;
+        color: #fff;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+    }
+    .page-link.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block user_content %}
+<div class="wallet-container">
+    
+    <!-- Quick Send Section -->
+    <div class="quick-send-header">
+        <h1 class="quick-send-title">Quick Send</h1>
+        <div class="quick-send-actions">
+            <button class="btn-qr" onclick="openQrModal()">Receive QR</button>
+            <button class="btn-new-contact" onclick="document.getElementById('newContactModal').classList.add('active')">+ New Contact</button>
+        </div>
+    </div>
+
+    <div class="contacts-row">
+        {% if contacts is empty %}
+            <div style="color: #9CA3AF; padding: 20px 0; font-size: 0.9rem;">
+                No contacts yet. Click "+ New Contact" to add one.
+            </div>
+        {% else %}
+            {% for item in contacts %}
+                <div class="contact-card" onclick="openTransferModal({{ item.id }}, '{{ item.name|escape('js') }}', '{{ item.email|escape('js') }}', '{{ item.avatarUrl|default('')|escape('js') }}', '{{ item.initial|escape('js') }}')">
+                    <div class="contact-actions" onclick="event.stopPropagation()">
+                        <button type="button" class="contact-action-btn edit" onclick="openEditContactModal({{ item.id }}, '{{ item.name|escape('js') }}', '{{ item.phone|default('')|escape('js') }}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="contact-action-btn delete" onclick="deleteContact({{ item.id }}, '{{ item.name|escape('js') }}')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="contact-avatar">
+                        {% if item.avatarUrl %}
+                            <img src="{{ item.avatarUrl }}" alt="{{ item.name }}">
+                        {% else %}
+                            {{ item.initial }}
+                        {% endif %}
+                    </div>
+                    <div class="contact-name">{{ item.name }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Transaction History Section -->
+    <div class="history-header">
+        <h2 class="history-title">Transaction History</h2>
+    </div>
+
+    <div class="history-toolbar">
+        <form method="get" class="history-search-form">
+            <input type="hidden" name="sort" value="{{ sort|default('date_desc') }}">
+            <input type="text" name="search" value="{{ search|default('') }}" class="history-search-input" placeholder="Search by reference, type, or amount...">
+        </form>
+
+        <form method="get" class="history-sort-form">
+            <input type="hidden" name="search" value="{{ search|default('') }}">
+            <div class="history-sort-group">
+                <label for="historySort" class="history-sort-label">Sort By</label>
+                <select id="historySort" name="sort" class="history-sort-select">
+                    <option value="date_desc" {{ sort|default('date_desc') == 'date_desc' ? 'selected' : '' }}>Newest first</option>
+                    <option value="date_asc" {{ sort|default('date_desc') == 'date_asc' ? 'selected' : '' }}>Oldest first</option>
+                    <option value="amount_desc" {{ sort|default('date_desc') == 'amount_desc' ? 'selected' : '' }}>Amount high to low</option>
+                    <option value="amount_asc" {{ sort|default('date_desc') == 'amount_asc' ? 'selected' : '' }}>Amount low to high</option>
+                    <option value="type_asc" {{ sort|default('date_desc') == 'type_asc' ? 'selected' : '' }}>Type A to Z</option>
+                    <option value="type_desc" {{ sort|default('date_desc') == 'type_desc' ? 'selected' : '' }}>Type Z to A</option>
+                </select>
+            </div>
+            <button type="submit" class="history-apply-btn">Apply</button>
+        </form>
+    </div>
+    
+    <div class="history-list">
+        {% for item in recentTransactions|default([]) %}
+            <div class="history-item" {% if item.isTampered %}style="border: 1px solid #EF4444; background: rgba(239, 68, 68, 0.05);"{% endif %}>
+                <div class="history-left">
+                    <div class="history-avatar">
+                        {% if item.avatarUrl %}
+                            <img src="{{ item.avatarUrl }}" alt="{{ item.displayName }}">
+                        {% else %}
+                            {{ item.displayName|slice(0, 1)|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="history-info">
+                        <p class="history-name">{{ item.displayName }}</p>
+                        <p class="history-type">
+                            {{ item.tx.type|replace({'_': ' '})|title }}
+                            {% if item.isTampered %}
+                                <br><span style="color: #EF4444; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.5px; text-transform: uppercase;">TAMPER DETECTED</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="history-right">
+                    <p class="history-amount {{ item.isOutflow ? 'amount-negative' : 'amount-positive' }}">
+                        {{ item.isOutflow ? '-' : '+' }} TND {{ item.tx.amount|number_format(3, '.', ',') }}
+                    </p>
+                    <p class="history-date">{{ item.tx.createdAt|date('M d, H:i') }}</p>
+                </div>
+            </div>
+        {% else %}
+            <!-- Placeholders for when DB is empty to match the design -->
+            <div style="color: #9CA3AF; padding: 20px 0; text-align: center; font-size: 0.95rem;">
+                No transactions found in your history.
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination Controls -->
+    {% if totalPages is defined and totalPages > 1 %}
+    <div class="pagination">
+        {% if currentPage > 1 %}
+            <a href="{{ path('app_user_transactions', app.request.query.all|merge({page: currentPage - 1})) }}" class="page-link" title="Previous"><i class="fas fa-chevron-left"></i></a>
+        {% else %}
+            <span class="page-link disabled"><i class="fas fa-chevron-left"></i></span>
+        {% endif %}
+
+        {% for p in 1..totalPages %}
+            {% if p == currentPage %}
+                <span class="page-link active">{{ p }}</span>
+            {% elseif p == 1 or p == totalPages or (p >= currentPage - 1 and p <= currentPage + 1) %}
+                <a href="{{ path('app_user_transactions', app.request.query.all|merge({page: p})) }}" class="page-link">{{ p }}</a>
+            {% elseif p == currentPage - 2 or p == currentPage + 2 %}
+                <span class="page-link" style="border:none; background:transparent; pointer-events:none;">...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if currentPage < totalPages %}
+            <a href="{{ path('app_user_transactions', app.request.query.all|merge({page: currentPage + 1})) }}" class="page-link" title="Next"><i class="fas fa-chevron-right"></i></a>
+        {% else %}
+            <span class="page-link disabled"><i class="fas fa-chevron-right"></i></span>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- New Contact Modal -->
+<div id="newContactModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background: #1C2331; border: 1px solid rgba(255,255,255,0.05); max-width: 450px;">
+        <button type="button" class="modal-close" onclick="closeModals()">&times;</button>
+        <h3 class="modal-title" style="text-align: left; margin-bottom: 24px;">Add New Contact</h3>
+        {{ form_start(contactForm, {'attr': {'id': 'newContactForm', 'novalidate': 'novalidate', 'onsubmit': 'addContact(event)'}}) }}
+            <div class="form-group" style="margin-bottom: 0;">
+                {{ form_label(contactForm.email, null, {'label_attr': {'class': 'form-label', 'style': 'color: #9CA3AF;'}}) }}
+                {{ form_widget(contactForm.email, {'attr': {'class': 'form-control', 'placeholder': '', 'style': 'background: #2A303F; border: none; padding: 14px; width: 100%; color: white; border-radius: 12px;'}}) }}
+                {{ form_errors(contactForm.email) }}
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModals()">Cancel</button>
+                <button type="submit" class="btn-save" id="btnSaveContact" style="background-color: #22c55e; color: white;">Save Contact</button>
+            </div>
+        {{ form_end(contactForm) }}
+    </div>
+</div>
+
+<!-- Edit Contact Modal -->
+<div id="editContactModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()" style="background: #1C2331; border: 1px solid rgba(255,255,255,0.05); max-width: 450px;">
+        <button type="button" class="modal-close" onclick="closeModals()">&times;</button>
+        <h3 class="modal-title" style="text-align: left; margin-bottom: 24px;">Edit Contact</h3>
+        {{ form_start(editContactForm, {'attr': {'id': 'editContactForm', 'novalidate': 'novalidate', 'onsubmit': 'submitEditContact(event)'}}) }}
+            <input type="hidden" id="editContactId">
+            <div class="form-group">
+                {{ form_label(editContactForm.name, null, {'label_attr': {'class': 'form-label', 'style': 'color: #9CA3AF;'}}) }}
+                {{ form_widget(editContactForm.name, {'attr': {'class': 'form-control', 'style': 'background: #2A303F; border: none; padding: 14px; width: 100%; color: white; border-radius: 12px;'}}) }}
+                <div id="editContactNameError" class="contact-error" style="display: none; color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;"></div>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+                {{ form_label(editContactForm.phone, null, {'label_attr': {'class': 'form-label', 'style': 'color: #9CA3AF;'}}) }}
+                {{ form_widget(editContactForm.phone, {'attr': {'class': 'form-control', 'style': 'background: #2A303F; border: none; padding: 14px; width: 100%; color: white; border-radius: 12px;'}}) }}
+                <div id="editContactPhoneError" class="contact-error" style="display: none; color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModals()">Cancel</button>
+                <button type="submit" class="btn-save" id="btnUpdateContact" style="background-color: #22c55e; color: white;">Update Contact</button>
+            </div>
+        {{ form_end(editContactForm) }}
+    </div>
+</div>
+
+<!-- Transfer Modal -->
+<div id="transferModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModals()">&times;</button>
+        <h3 class="modal-title">Send Money</h3>
+        <div class="contact-info-display">
+            <div class="avatar" id="modalContactAvatar"></div>
+            <div class="details">
+                <strong id="modalContactName"></strong>
+                <span id="modalContactEmail"></span>
+            </div>
+        </div>
+        <form id="transferForm" onsubmit="initTransfer(event)">
+            <input type="hidden" id="transferRecipientEmail">
+            <div class="form-group">
+                <label class="form-label" for="transferAmount">Amount (TND)</label>
+                <input type="number" id="transferAmount" class="form-input" step="0.001" min="0.1" required placeholder="0.000">
+            </div>
+            <button type="submit" class="btn-primary" id="btnInitTransfer">Continue to Verify</button>
+        </form>
+    </div>
+</div>
+
+<!-- OTP Modal -->
+<div id="otpModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="modal-close" onclick="closeModals()">&times;</button>
+        <h3 class="modal-title">Verify Transaction</h3>
+        <p style="color: #9CA3AF; font-size: 0.9rem; text-align: center; margin-bottom: 20px;">Enter the 6-digit code sent to your email.</p>
+        <form id="otpForm" onsubmit="confirmTransfer(event)">
+            <div class="form-group">
+                <label class="form-label" for="otpCode">Verification Code</label>
+                <input type="text" id="otpCode" class="form-input" required maxlength="6" pattern="[0-9]{6}" placeholder="------" style="text-align: center; font-size: 1.5rem; letter-spacing: 4px;">
+            </div>
+            <button type="submit" class="btn-primary" id="btnConfirmTransfer">Confirm Transfer</button>
+        </form>
+    </div>
+</div>
+
+<!-- Receive QR Modal -->
+<div id="qrModal" class="modal-overlay">
+    <div class="modal-content" onclick="event.stopPropagation()" style="text-align: center; max-width: 400px; background: #1C2331; border: 1px solid rgba(255,255,255,0.05);">
+        <button type="button" class="modal-close" onclick="closeModals()">&times;</button>
+        <h3 class="modal-title">Receive Funds</h3>
+        <p style="color: #9CA3AF; font-size: 0.9rem; margin-bottom: 24px;">Show this QR code to the sender so they can scan and send you money securely.</p>
+        
+        <div style="background: white; padding: 16px; border-radius: 16px; display: inline-block; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
+            <img id="qrImage" src="" alt="Your Receiving QR Code" style="width: 220px; height: 220px; display: block; margin: 0 auto;">
+        </div>
+
+        <div style="color: #fff; font-weight: 600; font-size: 1.15rem; margin-bottom: 4px;">{{ app.user.email }}</div>
+        <div style="color: #6B7280; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Your Secure FINHUB Identity</div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function clearEditContactErrors() {
+        document.getElementById('editContactNameError').style.display = 'none';
+        document.getElementById('editContactNameError').innerText = '';
+        document.getElementById('editContactPhoneError').style.display = 'none';
+        document.getElementById('editContactPhoneError').innerText = '';
+    }
+
+    function openEditContactModal(id, currentName, currentPhone) {
+        document.getElementById('editContactId').value = id;
+        document.getElementById('{{ editContactForm.name.vars.id }}').value = currentName || '';
+        document.getElementById('{{ editContactForm.phone.vars.id }}').value = currentPhone || '';
+        clearEditContactErrors();
+        document.getElementById('editContactModal').classList.add('active');
+    }
+
+    function submitEditContact(e) {
+        e.preventDefault();
+
+        const id = document.getElementById('editContactId').value;
+        const nameInput = document.getElementById('{{ editContactForm.name.vars.id }}');
+        const phoneInput = document.getElementById('{{ editContactForm.phone.vars.id }}');
+        const btn = document.getElementById('btnUpdateContact');
+
+        clearEditContactErrors();
+        btn.disabled = true;
+        btn.innerText = 'Updating...';
+
+        fetch(`/user/contacts/${id}/edit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: nameInput.value.trim(),
+                phone: phoneInput.value.trim()
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = 'Update Contact';
+
+            if (data.success) {
+                closeModals();
+                window.location.reload();
+                return;
+            }
+
+            if (data.errors) {
+                if (data.errors.name) {
+                    document.getElementById('editContactNameError').innerText = data.errors.name;
+                    document.getElementById('editContactNameError').style.display = 'block';
+                }
+
+                if (data.errors.phone) {
+                    document.getElementById('editContactPhoneError').innerText = data.errors.phone;
+                    document.getElementById('editContactPhoneError').style.display = 'block';
+                }
+
+                return;
+            }
+
+            Swal.fire('Error', data.message || 'Failed to update contact', 'error');
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.innerText = 'Update Contact';
+            Swal.fire('Error', 'Network error.', 'error');
+        });
+    }
+
+    // Delete Contact
+    function deleteContact(id, name) {
+        Swal.fire({
+            title: `Delete ${name}?`,
+            text: "This contact will be removed from your quick send list.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#EF4444',
+            confirmButtonText: 'Yes, delete it!',
+            background: '#1A1625',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/user/contacts/${id}/delete`, {
+                    method: 'POST'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        Swal.fire('Error', data.message || 'Failed to delete contact', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    // Add New Contact
+    function addContact(e) {
+        e.preventDefault();
+        const emailInput = document.getElementById('contact_email');
+        const email = emailInput.value.trim();
+        const btn = document.getElementById('btnSaveContact');
+
+        // Clear previous errors
+        document.querySelectorAll('.contact-error').forEach(el => el.remove());
+
+        btn.disabled = true;
+        btn.innerText = 'Saving...';
+
+        fetch('/user/contacts/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = 'Save Contact';
+            
+            if (data.success) {
+                closeModals();
+                emailInput.value = '';
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Contact added successfully.',
+                    icon: 'success',
+                    background: '#1A1625',
+                    color: '#fff'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                if (data.errors && data.errors.email) {
+                    emailInput.insertAdjacentHTML('afterend', `<div class="contact-error" style="color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;">${data.errors.email}</div>`);
+                } else if (data.message) {
+                    Swal.fire('Error', data.message || 'Failed to add contact', 'error');
+                }
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = 'Save Contact';
+            Swal.fire('Error', 'Network error.', 'error');
+        });
+    }
+
+    // Transfer Modal Logic
+    function openTransferModal(id, name, email, avatarUrl, initial) {
+        document.getElementById('modalContactName').innerText = name;
+        document.getElementById('modalContactEmail').innerText = email || 'No email';
+        document.getElementById('transferRecipientEmail').value = email;
+        document.getElementById('transferAmount').value = '';
+        
+        const avatarDiv = document.getElementById('modalContactAvatar');
+        if (avatarUrl) {
+            avatarDiv.innerHTML = `<img src="${avatarUrl}" alt="${name}">`;
+        } else {
+            avatarDiv.innerHTML = initial;
+        }
+
+        document.getElementById('transferModal').classList.add('active');
+    }
+
+    function closeModals() {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.classList.remove('active');
+        });
+    }
+
+    // Close modals on click outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModals();
+            }
+        });
+    });
+
+    // Initialize Transfer (Request OTP)
+    function initTransfer(e) {
+        e.preventDefault();
+        const email = document.getElementById('transferRecipientEmail').value;
+        const amount = document.getElementById('transferAmount').value;
+        const btn = document.getElementById('btnInitTransfer');
+
+        if (!email) {
+            Swal.fire('Error', 'This contact does not have an email address.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = 'Sending OTP...';
+
+        fetch('/wallet/transfer/init', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipientEmail: email, amount: amount })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = 'Continue to Verify';
+            if (data.success) {
+                closeModals();
+                document.getElementById('otpCode').value = '';
+                document.getElementById('otpModal').classList.add('active');
+            } else {
+                Swal.fire('Transfer Error', data.message || 'An error occurred.', 'error');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = 'Continue to Verify';
+            Swal.fire('Error', 'Network error.', 'error');
+        });
+    }
+
+    // Confirm Transfer with OTP
+    function confirmTransfer(e) {
+        e.preventDefault();
+        const otp = document.getElementById('otpCode').value;
+        const btn = document.getElementById('btnConfirmTransfer');
+
+        btn.disabled = true;
+        btn.innerText = 'Verifying...';
+
+        fetch('/wallet/transfer/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp: otp })
+        })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = 'Confirm Transfer';
+            if (data.success) {
+                closeModals(); // Close the modal immediately so it doesn't show behind the alert
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Transfer completed successfully.',
+                    icon: 'success',
+                    background: '#1A1625',
+                    color: '#fff'
+                }).then(() => {
+                    // Navigate directly instead of reloading to prevent form resubmission/Turbo cache states
+                    window.location.href = '/user/transactions';
+                });
+            } else {
+                Swal.fire('Verification Failed', data.message || 'Invalid code.', 'error');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = 'Confirm Transfer';
+            Swal.fire('Error', 'Network error.', 'error');
+        });
+    }
+
+    // Receive QR Modal
+    function openQrModal() {
+        const userEmail = "{{ app.user.email|escape('js') }}";
+        // Java logic requires: https://escrow.finhub.tn/profile?email=[user_email]
+        const payload = `https://escrow.finhub.tn/profile?email=${encodeURIComponent(userEmail)}`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(payload)}`;
+        
+        // Setup image loaded event to prevent visual glitches
+        const img = document.getElementById('qrImage');
+        img.src = qrUrl;
+        
+        document.getElementById('qrModal').classList.add('active');
+    }
+</script>
+{% endblock %}

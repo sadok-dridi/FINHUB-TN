@@ -1,0 +1,166 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Virtual Cards - FINHUB Admin{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    .page-header { margin-bottom: 2rem; }
+    .page-title { font-size: 1.8rem; font-weight: 600; color: #E5E7EB; margin: 0 0 0.5rem 0; }
+    .page-subtitle { color: #9CA3AF; font-size: 0.95rem; margin: 0; }
+    .controls-bar { display: flex; justify-content: space-between; align-items: end; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat-card { background: rgba(30, 27, 50, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1.1rem 1.15rem; }
+    .stat-label { color: #9CA3AF; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.45rem; }
+    .stat-value { color: #E5E7EB; font-size: 1.7rem; font-weight: 700; }
+    .stat-active .stat-value { color: #10B981; }
+    .stat-frozen .stat-value { color: #F59E0B; }
+    .stat-expired .stat-value { color: #EF4444; }
+    .search-box { flex: 1 1 260px; }
+    .search-input { width: 100%; background: rgba(30, 27, 50, 0.8); border: 1px solid rgba(255,255,255,0.08); color: #E5E7EB; padding: 0.8rem 1rem; border-radius: 14px; outline: none; }
+    .search-input:focus { border-color: rgba(139, 92, 246, 0.45); }
+    .sort-form { display: flex; align-items: end; gap: 0.75rem; flex-wrap: wrap; }
+    .field-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field-label { color: #9CA3AF; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field-select { min-width: 160px; background: rgba(30, 27, 50, 0.8); border: 1px solid rgba(255,255,255,0.08); color: #E5E7EB; padding: 0.8rem 0.95rem; border-radius: 14px; outline: none; }
+    .field-select:focus { border-color: rgba(139, 92, 246, 0.45); }
+    .apply-btn { background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white; border: none; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 600; }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+    .card-item { background: rgba(30, 27, 50, 0.6); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 14px; padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+    .card-top { display: flex; justify-content: space-between; align-items: start; gap: 1rem; }
+    .card-owner { min-width: 0; }
+    .owner-name { color: white; font-size: 1rem; font-weight: 600; margin-bottom: 0.15rem; }
+    .owner-email { color: #9CA3AF; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .status-badge { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px; padding: 0.3rem 0.55rem; border-radius: 999px; }
+    .status-active { color: #10B981; background: rgba(16, 185, 129, 0.12); }
+    .status-frozen { color: #F59E0B; background: rgba(245, 158, 11, 0.12); }
+    .status-expired { color: #EF4444; background: rgba(239, 68, 68, 0.12); }
+    .detail-list { display: grid; gap: 0.7rem; }
+    .detail-row { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.88rem; }
+    .detail-label { color: #9CA3AF; }
+    .detail-value { color: #E5E7EB; font-weight: 500; text-align: right; }
+    .edit-btn { align-self: flex-end; text-decoration: none; background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white; border-radius: 10px; padding: 0.65rem 1rem; font-weight: 600; font-size: 0.85rem; }
+    .edit-btn:hover { color: white; opacity: 0.95; }
+    .empty-state { color: #9CA3AF; text-align: center; padding: 3rem 1rem; border: 1px dashed rgba(255,255,255,0.08); border-radius: 14px; }
+    .pagination-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: 2rem; }
+    .pagination-summary { color: #9CA3AF; font-size: 0.88rem; }
+    .pagination-links { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .page-link-admin { min-width: 38px; padding: 8px 12px; border-radius: 10px; text-align: center; text-decoration: none; color: #D1D5DB; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); font-size: 0.85rem; font-weight: 600; }
+    .page-link-admin:hover { color: white; border-color: rgba(139, 92, 246, 0.35); }
+    .page-link-admin.active { background: rgba(139, 92, 246, 0.22); color: white; border-color: rgba(139, 92, 246, 0.45); }
+    .page-link-admin.disabled { pointer-events: none; opacity: 0.45; }
+    @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .stats-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <h1 class="page-title">Virtual Cards</h1>
+    <p class="page-subtitle">Review issued virtual cards and update their status or expiration date.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Cards</div>
+        <div class="stat-value">{{ stats.total }}</div>
+    </div>
+    <div class="stat-card stat-active">
+        <div class="stat-label">Active</div>
+        <div class="stat-value">{{ stats.active }}</div>
+    </div>
+    <div class="stat-card stat-frozen">
+        <div class="stat-label">Frozen</div>
+        <div class="stat-value">{{ stats.frozen }}</div>
+    </div>
+    <div class="stat-card stat-expired">
+        <div class="stat-label">Expired</div>
+        <div class="stat-value">{{ stats.expired }}</div>
+    </div>
+</div>
+
+<div class="controls-bar">
+    <form method="get" class="search-box">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="direction" value="{{ direction }}">
+        <input type="text" name="search" value="{{ search }}" class="search-input" placeholder="Search by name, email, or card number...">
+    </form>
+
+    <form method="get" class="sort-form">
+        <input type="hidden" name="search" value="{{ search }}">
+        <div class="field-group">
+            <label class="field-label" for="sort">Sort By</label>
+            <select id="sort" name="sort" class="field-select">
+                <option value="name" {{ sort == 'name' ? 'selected' : '' }}>Name</option>
+                <option value="status" {{ sort == 'status' ? 'selected' : '' }}>Status</option>
+                <option value="expiry" {{ sort == 'expiry' ? 'selected' : '' }}>Expiration Date</option>
+            </select>
+        </div>
+        <div class="field-group">
+            <label class="field-label" for="direction">Direction</label>
+            <select id="direction" name="direction" class="field-select">
+                <option value="asc" {{ direction == 'asc' ? 'selected' : '' }}>Ascending</option>
+                <option value="desc" {{ direction == 'desc' ? 'selected' : '' }}>Descending</option>
+            </select>
+        </div>
+        <button type="submit" class="apply-btn">Apply</button>
+    </form>
+</div>
+
+{% if cards is empty %}
+    <div class="empty-state">No virtual cards found.</div>
+{% else %}
+    <div class="cards-grid">
+        {% for card in cards %}
+            {% set ownerName = card.full_name ?: (card.email ? card.email|split('@')[0] : 'Unknown User') %}
+            {% set ownerEmail = card.email ?: 'No linked email' %}
+            {% set statusClass = card.status == 'FROZEN' ? 'status-frozen' : (card.status == 'EXPIRED' ? 'status-expired' : 'status-active') %}
+            <div class="card-item">
+                <div class="card-top">
+                    <div class="card-owner">
+                        <div class="owner-name">{{ ownerName }}</div>
+                        <div class="owner-email">{{ ownerEmail }}</div>
+                    </div>
+                    <span class="status-badge {{ statusClass }}">{{ card.status }}</span>
+                </div>
+
+                <div class="detail-list">
+                    <div class="detail-row">
+                        <span class="detail-label">Card Number</span>
+                        <span class="detail-value">**** **** **** {{ card.card_number|slice(-4) }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Expires</span>
+                        <span class="detail-value">{{ card.expiry_date ? card.expiry_date|date('Y-m-d') : 'N/A' }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Created</span>
+                        <span class="detail-value">{{ card.created_at ? card.created_at|date('Y-m-d H:i') : 'N/A' }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Wallet ID</span>
+                        <span class="detail-value">{{ card.wallet_id ?: 'N/A' }}</span>
+                    </div>
+                </div>
+
+                <a href="{{ path('app_admin_virtual_card_edit', {'id': card.id}) }}" class="edit-btn">Edit Card</a>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if totalPages > 1 %}
+        <div class="pagination-bar">
+            <div class="pagination-summary">
+                Showing page {{ currentPage }} of {{ totalPages }}. Total cards: {{ totalCards }}.
+            </div>
+
+            <div class="pagination-links">
+                <a href="{{ path('app_admin_virtual_cards', app.request.query.all|merge({page: currentPage - 1})) }}" class="page-link-admin {{ currentPage == 1 ? 'disabled' : '' }}">Previous</a>
+                {% for p in 1..totalPages %}
+                    <a href="{{ path('app_admin_virtual_cards', app.request.query.all|merge({page: p})) }}" class="page-link-admin {{ p == currentPage ? 'active' : '' }}">{{ p }}</a>
+                {% endfor %}
+                <a href="{{ path('app_admin_virtual_cards', app.request.query.all|merge({page: currentPage + 1})) }}" class="page-link-admin {{ currentPage == totalPages ? 'disabled' : '' }}">Next</a>
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

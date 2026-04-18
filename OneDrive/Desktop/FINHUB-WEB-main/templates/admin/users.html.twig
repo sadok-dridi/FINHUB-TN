@@ -1,0 +1,491 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}User Management - FinHub Admin{% endblock %}
+
+{% block admin_stylesheets %}
+    {{ parent() }}
+    <style>
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+        .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            color: #E9D5FF;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .page-subtitle {
+            color: #9CA3AF;
+            font-size: 0.9rem;
+        }
+        
+        .search-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .sort-form {
+            display: flex;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .sort-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sort-label {
+            color: #9CA3AF;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .sort-select {
+            min-width: 170px;
+            background: rgba(30, 27, 75, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+
+        .sort-button {
+            background: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .sort-button:hover {
+            background: #7C3AED;
+        }
+        
+        .search-input {
+            width: 100%;
+            background: rgba(30, 27, 75, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #8B5CF6;
+            background: rgba(30, 27, 75, 0.8);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+        
+        .search-input::placeholder {
+            color: #6B7280;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .user-card {
+            background: rgba(23, 21, 39, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #2D2A40;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .user-info-header {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-name {
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+        }
+
+        .role-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block;
+            width: fit-content;
+            letter-spacing: 0.5px;
+        }
+
+        .role-admin {
+            background-color: rgba(139, 92, 246, 0.2);
+            color: #A78BFA;
+        }
+
+        .role-user {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34D399;
+        }
+
+        .card-details {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .detail-row {
+            font-size: 0.8rem;
+            color: #9CA3AF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .id-row {
+            font-size: 0.7rem;
+            color: #6B7280;
+        }
+
+        .trust-score {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #10B981;
+            margin-top: 4px;
+        }
+
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            justify-content: flex-end;
+            padding-top: 10px;
+        }
+
+        .btn-promote {
+            background-color: #8B5CF6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-promote:hover {
+            background-color: #7C3AED;
+        }
+
+        .pagination-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 28px;
+        }
+
+        .pagination-summary {
+            color: #9CA3AF;
+            font-size: 0.88rem;
+        }
+
+        .pagination-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .page-link-admin {
+            min-width: 38px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            color: #D1D5DB;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .page-link-admin:hover {
+            color: white;
+            border-color: rgba(139, 92, 246, 0.35);
+        }
+
+        .page-link-admin.active {
+            background: rgba(139, 92, 246, 0.22);
+            color: white;
+            border-color: rgba(139, 92, 246, 0.45);
+        }
+
+        .page-link-admin.disabled {
+            pointer-events: none;
+            opacity: 0.45;
+        }
+
+        /* Hide items that don't match search */
+        .hidden-by-search {
+            display: none !important;
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .toolbar {
+                align-items: stretch;
+            }
+            .search-container {
+                max-width: 100%;
+                margin-top: 5px;
+            }
+            .sort-form {
+                width: 100%;
+            }
+            .sort-field,
+            .sort-select,
+            .sort-button {
+                width: 100%;
+            }
+            .page-title {
+                font-size: 1.5rem;
+            }
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    <div class="page-header">
+        <div class="header-left">
+            <h1 class="page-title">User Management</h1>
+            <p class="page-subtitle">Manage and view all registered users</p>
+
+            <div class="toolbar">
+                <div class="search-container">
+                    <input type="text" id="userSearch" class="search-input" placeholder="Search users on this page...">
+                </div>
+
+                <form method="get" class="sort-form">
+                    <div class="sort-field">
+                        <label for="sort" class="sort-label">Sort By</label>
+                        <select id="sort" name="sort" class="sort-select">
+                            <option value="name" {{ sort == 'name' ? 'selected' : '' }}>Name</option>
+                            <option value="role" {{ sort == 'role' ? 'selected' : '' }}>Role</option>
+                            <option value="trust" {{ sort == 'trust' ? 'selected' : '' }}>Trust Score</option>
+                        </select>
+                    </div>
+
+                    <div class="sort-field">
+                        <label for="direction" class="sort-label">Direction</label>
+                        <select id="direction" name="direction" class="sort-select">
+                            <option value="asc" {{ direction == 'asc' ? 'selected' : '' }}>Ascending</option>
+                            <option value="desc" {{ direction == 'desc' ? 'selected' : '' }}>Descending</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="sort-button">Apply</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="users-grid" id="usersGrid">
+        {% for u in users %}
+            <div class="user-card" data-search="{{ u.fullName|default('')|lower }} {{ u.email|lower }} {{ u.role|lower }}" {% if u.role != 'ADMIN' %}onclick="window.location.href='{{ path('app_admin_user_details', {'id': u.id}) }}'" style="cursor: pointer;"{% endif %}>
+                <div class="card-header">
+                    <div class="user-avatar">
+                        {{ u.fullName|default(u.email|default('U'))|slice(0, 1)|upper }}
+                    </div>
+                    <div class="user-info-header">
+                        <div class="user-name">{{ u.fullName|default(u.email|split('@')[0]) }}</div>
+                        {% if u.role == 'ADMIN' %}
+                            <span class="role-badge role-admin">ADMIN</span>
+                        {% else %}
+                            <span class="role-badge role-user">USER</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-details">
+                    <div class="detail-row">Email: {{ u.email }}</div>
+                    <div class="id-row">ID: {{ u.id }}</div>
+                    
+                    {% if u.role != 'ADMIN' %}
+                        <div class="trust-score">Trust Score: {{ u.trustScore|default(100) }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="card-actions">
+                    {% if u.role != 'ADMIN' and app.user and u.email != app.user.email %}
+                        <button class="btn-promote" onclick="event.stopPropagation(); promoteUser('{{ u.email }}')">Promote</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div style="color: #9CA3AF; grid-column: 1 / -1;">No users found.</div>
+        {% endfor %}
+    </div>
+
+    {% if totalPages > 1 %}
+        <div class="pagination-bar">
+            <div class="pagination-summary">
+                Showing page {{ currentPage }} of {{ totalPages }}. Total users: {{ totalUsers }}.
+            </div>
+
+            <div class="pagination-links">
+                <a
+                    href="{{ path('app_admin_users', app.request.query.all|merge({page: currentPage - 1})) }}"
+                    class="page-link-admin {{ currentPage == 1 ? 'disabled' : '' }}"
+                >Previous</a>
+
+                {% for p in 1..totalPages %}
+                    <a
+                        href="{{ path('app_admin_users', app.request.query.all|merge({page: p})) }}"
+                        class="page-link-admin {{ p == currentPage ? 'active' : '' }}"
+                    >{{ p }}</a>
+                {% endfor %}
+
+                <a
+                    href="{{ path('app_admin_users', app.request.query.all|merge({page: currentPage + 1})) }}"
+                    class="page-link-admin {{ currentPage == totalPages ? 'disabled' : '' }}"
+                >Next</a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block admin_javascripts %}
+    {{ parent() }}
+    <script>
+        function initAdminUserSearch() {
+            const searchInput = document.getElementById('userSearch');
+            const cards = document.querySelectorAll('.user-card');
+
+            if (!searchInput || searchInput.dataset.searchBound === 'true') {
+                return;
+            }
+
+            searchInput.dataset.searchBound = 'true';
+
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase().trim();
+                
+                cards.forEach(card => {
+                    const searchData = card.getAttribute('data-search');
+                    if (query === '' || searchData.includes(query)) {
+                        card.classList.remove('hidden-by-search');
+                    } else {
+                        card.classList.add('hidden-by-search');
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initAdminUserSearch);
+        document.addEventListener('turbo:load', initAdminUserSearch);
+
+        // Promote function mirroring the Java App's confirmation logic and behavior
+        function promoteUser(email) {
+            if (confirm('Promote User to Admin\n\nAre you sure you want to promote this user?\n\nEmail: ' + email)) {
+                
+                fetch('/admin/users/' + encodeURIComponent(email) + '/promote', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Admin Invitation Sent\n\nAn admin invitation email was sent successfully to:\n\n' + email);
+                    } else {
+                        alert('Error\n\nCould not promote this user.\n\n' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error\n\nCould not promote this user.\n\nAn unexpected error occurred.');
+                });
+            }
+        }
+    </script>
+{% endblock %}

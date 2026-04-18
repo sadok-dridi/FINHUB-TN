@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme form _self %}
+{% block form_errors %}
+    {% if errors|length > 0 %}
+        <div style="color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;">
+            {% for error in errors %}
+                <div>{{ error.message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock form_errors %}
+
+{% block title %}Complete Your Profile - FinHub{% endblock %}
+
+{% block body %}
+<div class="full-height-center" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 6rem 1rem 2rem 1rem;">
+    <div class="card-custom p-4 p-sm-5" style="
+        width: 100%; 
+        max-width: 750px; 
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%) !important;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-left: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.6) !important;
+    ">
+        <div class="text-center mb-4 mb-sm-5">
+            <h2 class="header-text mb-2" style="
+                font-family: 'Inter', system-ui, sans-serif; 
+                font-weight: 700; 
+                font-size: 32px;
+                color: #FFFFFF;
+                text-shadow: 0 0 15px rgba(217, 70, 239, 0.4), 0 0 30px rgba(139, 92, 246, 0.2);
+            ">Complete Profile</h2>
+            <div class="sub-header-text" style="color: #9CA3AF; font-size: 15px;">Setup your financial twin to get started.</div>
+        </div>
+
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        <table style="width: 100%; color: #FFFFFF; border-collapse: separate; border-spacing: 0 15px;">
+            <tr>
+                <td style="width: 30%; padding-right: 10px; text-align: right; color: #9CA3AF; font-weight: 500; vertical-align: top; padding-top: 10px;">
+                    {{ form_label(form.phone_number, "Phone Number") }}
+                </td>
+                <td style="width: 70%;">
+                    {{ form_widget(form.phone_number, {'attr': {'class': 'form-control', 'style': 'background-color: #E8EDF2 !important; border: none; color: #111827 !important; padding: 10px 16px; border-radius: 12px; width: 100%;'}}) }}
+                    {{ form_errors(form.phone_number) }}
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 30%; padding-right: 10px; text-align: right; color: #9CA3AF; font-weight: 500; vertical-align: top; padding-top: 10px;">
+                    {{ form_label(form.monthly_income, "Monthly Income") }}
+                </td>
+                <td style="width: 70%;">
+                    {{ form_widget(form.monthly_income, {'attr': {'class': 'form-control', 'style': 'background-color: #E8EDF2 !important; border: none; color: #111827 !important; padding: 10px 16px; border-radius: 12px; width: 100%;'}}) }}
+                    {{ form_errors(form.monthly_income) }}
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 30%; padding-right: 10px; text-align: right; color: #9CA3AF; font-weight: 500; vertical-align: top; padding-top: 10px;">
+                    {{ form_label(form.monthly_expenses, "Monthly Expenses") }}
+                </td>
+                <td style="width: 70%;">
+                    {{ form_widget(form.monthly_expenses, {'attr': {'class': 'form-control', 'style': 'background-color: #E8EDF2 !important; border: none; color: #111827 !important; padding: 10px 16px; border-radius: 12px; width: 100%;'}}) }}
+                    {{ form_errors(form.monthly_expenses) }}
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 30%; padding-right: 10px; text-align: right; color: #9CA3AF; font-weight: 500; vertical-align: top; padding-top: 10px;">
+                    {{ form_label(form.savings_goal, "Savings Goal") }}
+                </td>
+                <td style="width: 70%;">
+                    {{ form_widget(form.savings_goal, {'attr': {'class': 'form-control', 'style': 'background-color: #E8EDF2 !important; border: none; color: #111827 !important; padding: 10px 16px; border-radius: 12px; width: 100%;'}}) }}
+                    {{ form_errors(form.savings_goal) }}
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 30%; padding-right: 10px; text-align: right; color: #9CA3AF; font-weight: 500; vertical-align: top; padding-top: 10px;">
+                    {{ form_label(form.risk_tolerance, "Risk Tolerance") }}
+                </td>
+                <td style="width: 70%;">
+                    {{ form_widget(form.risk_tolerance, {'attr': {'class': 'form-select', 'style': 'background-color: #E8EDF2 !important; border: none; color: #111827 !important; padding: 10px 16px; border-radius: 12px; width: 100%;'}}) }}
+                    {{ form_errors(form.risk_tolerance) }}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: center; padding-top: 30px;">
+                    {{ form_widget(form.save, {'attr': {'class': 'btn w-100', 'style': 'background: linear-gradient(90deg, #A855F7 0%, #D946EF 100%); color: white; border: none; font-weight: 600; padding: 15px; border-radius: 14px; font-size: 16px; letter-spacing: 0.5px; box-shadow: 0 4px 20px rgba(217, 70, 239, 0.4); transition: all 0.3s ease;'}, 'label': 'Complete Profile & Open Dashboard'}) }}
+                </td>
+            </tr>
+        </table>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

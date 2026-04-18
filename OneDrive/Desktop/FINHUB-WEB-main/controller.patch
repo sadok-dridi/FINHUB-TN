@@ -1,0 +1,57 @@
+--- src/Controller/Admin/UserController.php
++++ src/Controller/Admin/UserController.php
+@@ -10,6 +10,8 @@
+ use Doctrine\ORM\EntityManagerInterface;
+ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+ use Symfony\Component\HttpFoundation\Response;
++use Symfony\Component\HttpFoundation\Request;
+ use Symfony\Component\Routing\Annotation\Route;
++use App\Service\MarketService;
+ 
+ #[Route('/admin/users', name: 'admin_users_')]
+ class UserController extends AbstractController
+@@ -103,4 +105,43 @@
+         $this->addFlash('success', 'User permanently deleted and all assets liquidated to Central Bank.');
+         return $this->redirectToRoute('admin_users_index');
+     }
++
++    #[Route('/{id}/portfolio', name: 'portfolio', methods: ['GET'])]
++    public function portfolio(User $targetUser, EntityManagerInterface $em, MarketService $marketService): Response
++    {
++        $portfolioItems = $em->getRepository(\App\Entity\PortfolioItem::class)->findBy(['user' => $targetUser]);
++        
++        $symbols = array_map(fn($item) => $item->getSymbol(), $portfolioItems);
++        $prices = $marketService->getPrices($symbols);
++        $usdToTndRate = $marketService->getUsdToTndRate();
++        
++        $totalValueTnd = 0.0;
++        $itemsData = [];
++        
++        foreach ($portfolioItems as $item) {
++            $symbolUpper = strtoupper($item->getSymbol());
++            $priceData = $prices[$symbolUpper] ?? ['price' => 0.0, 'change_24h' => 0.0];
++            
++            $priceUsd = $priceData['price'];
++            $quantity = (float) $item->getQuantity();
++            
++            $valTnd = $priceUsd * $quantity * $usdToTndRate;
++            $totalValueTnd += $valTnd;
++            
++            $itemsData[] = [
++                'symbol' => $symbolUpper,
++                'originalSymbol' => $item->getSymbol(),
++                'quantity' => $quantity,
++                'priceUsd' => $priceUsd,
++                'valTnd' => round($valTnd, 2),
++                'averageCost' => (float) $item->getAverageCost(),
++            ];
++        }
++        
++        return $this->render('admin/user_portfolio.html.twig', [
++            'user' => $targetUser,
++            'items' => $itemsData,
++            'totalValueTnd' => round($totalValueTnd, 2),
++            'usdToTndRate' => $usdToTndRate,
++        ]);
++    }
+ }

@@ -1,0 +1,71 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Edit Virtual Card - FINHUB Admin{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; }
+    .page-title { font-size: 1.8rem; font-weight: 600; color: #E5E7EB; margin: 0; }
+    .page-subtitle { color: #9CA3AF; margin-top: 0.4rem; }
+    .back-btn { text-decoration: none; color: #D1D5DB; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 0.7rem 1rem; border-radius: 10px; font-weight: 600; }
+    .back-btn:hover { color: white; }
+    .edit-card { max-width: 760px; background: rgba(30, 27, 50, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 1.5rem; }
+    .card-meta { display: grid; gap: 0.75rem; margin-bottom: 1.75rem; }
+    .meta-row { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.92rem; }
+    .meta-label { color: #9CA3AF; }
+    .meta-value { color: #E5E7EB; font-weight: 500; text-align: right; }
+    .form-grid { display: grid; gap: 1.25rem; }
+    .form-label { display: block; color: #C4B5FD; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.45rem; }
+    .form-input { width: 100%; background: #1E1C2E; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0.9rem 1rem; color: white; }
+    .form-input:focus { outline: none; border-color: rgba(139, 92, 246, 0.45); }
+    .form-error { color: #EF4444; font-size: 0.82rem; margin-top: 0.45rem; }
+    .submit-row { display: flex; justify-content: flex-end; margin-top: 1.5rem; }
+    .submit-btn { background: linear-gradient(135deg, #8B5CF6, #D946EF); color: white; border: none; border-radius: 10px; padding: 0.85rem 1.2rem; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Edit Virtual Card</h1>
+        <div class="page-subtitle">Update card status and expiration date.</div>
+    </div>
+    <a href="{{ path('app_admin_virtual_cards') }}" class="back-btn">Back to Cards</a>
+</div>
+
+<div class="edit-card">
+    <div class="card-meta">
+        <div class="meta-row">
+            <span class="meta-label">Owner</span>
+            <span class="meta-value">{{ owner.fullName|default(owner.email ? owner.email|split('@')[0] : 'Unknown User') }}</span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label">Email</span>
+            <span class="meta-value">{{ owner.email|default('N/A') }}</span>
+        </div>
+        <div class="meta-row">
+            <span class="meta-label">Card Number</span>
+            <span class="meta-value">**** **** **** {{ card.cardNumber|slice(-4) }}</span>
+        </div>
+    </div>
+
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+        <div class="form-grid">
+            <div>
+                {{ form_label(form.status, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.status, {'attr': {'class': 'form-input'}}) }}
+                <div class="form-error">{{ form_errors(form.status) }}</div>
+            </div>
+            <div>
+                {{ form_label(form.expiryDate, null, {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.expiryDate, {'attr': {'class': 'form-input'}}) }}
+                <div class="form-error">{{ form_errors(form.expiryDate) }}</div>
+            </div>
+        </div>
+
+        <div class="submit-row">
+            {{ form_widget(form.save, {'attr': {'class': 'submit-btn'}}) }}
+        </div>
+    {{ form_end(form) }}
+</div>
+{% endblock %}

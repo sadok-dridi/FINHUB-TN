@@ -1,0 +1,576 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}FinHub - Wallets / Cards{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid px-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="header-title mb-0">Wallets & Virtual Cards</h1>
+        <!-- Search Bar -->
+        <div class="d-flex align-items-center" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 5px 15px; width: 100%; max-width: 350px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="walletSearchInput" placeholder="Search a wallet..." 
+                   style="background: transparent; border: none; color: white; width: 100%; outline: none; padding: 8px 0; font-size: 0.95rem;">
+        </div>
+    </div>
+
+    <!-- Flow and Adoption Statistics -->
+    <div class="row mb-4">
+        <!-- KPI Cards -->
+        <div class="col-md-4 mb-3">
+            <div class="dash-card d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(16,185,129,0.0) 100%); border: 1px solid rgba(16,185,129,0.3); border-radius: 16px; padding: 25px; height: 100%;">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div style="background: rgba(16,185,129,0.2); padding: 10px; border-radius: 50%;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    </div>
+                    <h6 style="color: #a7f3d0; margin: 0; font-size: 0.95rem;">Deposits (30 Days)</h6>
+                </div>
+                <h2 style="color: white; margin: 10px 0 0 0; font-weight: 700;">TND {{ stats.deposits30d|number_format(2, '.', ',') }}</h2>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-3">
+            <div class="dash-card d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(139,92,246,0.0) 100%); border: 1px solid rgba(139,92,246,0.3); border-radius: 16px; padding: 25px; height: 100%;">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div style="background: rgba(139,92,246,0.2); padding: 10px; border-radius: 50%;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d8b4fe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </div>
+                    <h6 style="color: #d8b4fe; margin: 0; font-size: 0.95rem;">Transfers (30 Days)</h6>
+                </div>
+                <h2 style="color: white; margin: 10px 0 0 0; font-weight: 700;">TND {{ stats.transfers30d|number_format(2, '.', ',') }}</h2>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="dash-card d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, rgba(6,182,212,0.1) 0%, rgba(6,182,212,0.0) 100%); border: 1px solid rgba(6,182,212,0.3); border-radius: 16px; padding: 25px; height: 100%;">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div style="background: rgba(6,182,212,0.2); padding: 10px; border-radius: 50%;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                    </div>
+                    <h6 style="color: #cffafe; margin: 0; font-size: 0.95rem;">Total Valid Cards</h6>
+                </div>
+                <h2 style="color: white; margin: 10px 0 0 0; font-weight: 700;">{{ stats.activeCards }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Line Chart for Daily Flow -->
+        <div class="col-md-12 mb-3">
+            <div class="dash-card h-100 d-flex flex-column" style="background-color: #1a1b26; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); padding: 20px;">
+                <h5 style="color: #9CA3AF; margin-bottom: 20px; font-weight: 600; font-size: 1rem;">Daily Transaction Volume (Last 7 Days)</h5>
+                <div style="position: relative; flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 200px;">
+                    <canvas id="flowChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-card">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                <thead>
+                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1);">
+                        <th onclick="sortTable(0, 'string')" style="color: #9CA3AF; font-weight: 600; padding: 16px; cursor: pointer; user-select: none;" title="Click to sort">User ⇕</th>
+                        <th onclick="sortTable(1, 'number')" style="color: #9CA3AF; font-weight: 600; padding: 16px; cursor: pointer; user-select: none;" title="Click to sort">Wallet ID ⇕</th>
+                        <th style="color: #9CA3AF; font-weight: 600; padding: 16px;">Card Number</th>
+                        <th onclick="sortTable(3, 'date')" style="color: #9CA3AF; font-weight: 600; padding: 16px; cursor: pointer; user-select: none;" title="Click to sort">Expire Year ⇕</th>
+                        <th style="color: #9CA3AF; font-weight: 600; padding: 16px;">CVV</th>
+                        <th style="color: #9CA3AF; font-weight: 600; padding: 16px;">Status</th>
+                        <th style="color: #9CA3AF; font-weight: 600; padding: 16px; text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="walletTableBody">
+                    {% for card in cards %}
+                    {% set txDep = 0 %}{% set txTrans = 0 %}{% set txEsc = 0 %}
+                    {% for tx in card.wallet.transactions %}
+                        {% if 'DEPOSIT' in tx.type or 'CASH' in tx.type %}{% set txDep = txDep + 1 %}
+                        {% elseif 'TRANSFER' in tx.type %}{% set txTrans = txTrans + 1 %}
+                        {% else %}{% set txEsc = txEsc + 1 %}{% endif %}
+                    {% endfor %}
+                    <tr class="wallet-row" style="border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;" 
+                        onclick="showCardDetails('{{ card.wallet.user.fullName|default('-')|escape('js') }}', '{{ card.wallet.user.email|escape('js') }}', '{{ card.wallet.id }}', '{{ card.wallet.balance }}', '{{ card.cardNumber }}', '{{ card.expiryDate|date('m/y') }}', {{ txDep }}, {{ txTrans }}, {{ txEsc }})">
+                        <td style="padding: 16px; color: #F3F4F6;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(139, 92, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #D8B4FE; font-weight: bold;">
+                                    {{ card.wallet.user.fullName|default(card.wallet.user.email)|slice(0, 1)|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">{{ card.wallet.user.fullName|default('-') }}</div>
+                                    <div style="font-size: 0.8rem; color: #9CA3AF;">{{ card.wallet.user.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="padding: 16px; color: #E5E7EB;">#{{ card.wallet.id }}</td>
+                        <td style="padding: 16px; font-family: monospace; font-size: 1.1rem; color: #D8B4FE;">
+                            {{ card.cardNumber|slice(0, 3) }} **** **** ****
+                        </td>
+                        <td style="padding: 16px; color: #9CA3AF;">{{ card.expiryDate|date('m/y') }}</td>
+                        <td style="padding: 16px; font-family: monospace; color: #9CA3AF;">***</td>
+                        <td style="padding: 16px;">
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #10B981; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">
+                                {{ card.status }}
+                            </span>
+                        </td>
+                        <td style="padding: 16px; text-align: right;">
+                            <button class="btn btn-sm" onclick="event.stopPropagation(); openEditModal({{ card.id }}, '{{ card.expiryDate|date('Y-m') }}', '{{ card.status }}')" style="background: rgba(139, 92, 246, 0.15); color: #D8B4FE; border: 1px solid rgba(139,92,246,0.3); border-radius: 8px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center" style="padding: 30px; color: #9CA3AF;">No virtual cards found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Card Modal -->
+<div class="modal fade" id="editCardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1b26; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <h5 class="modal-title" style="color: #fff;">Edit Virtual Card</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pb-0">
+                <form id="editCardForm">
+                    <input type="hidden" id="editCardId">
+                    
+                    <div id="editCardError" class="alert alert-danger d-none" style="padding: 10px; font-size: 0.85rem; border-radius: 8px;"></div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label text-white-50">Expiry Date</label>
+                        <input type="month" class="form-control" id="editCardExpiry" required 
+                               style="background-color: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-white-50">Status</label>
+                        <select class="form-select" id="editCardStatus" style="background-color: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1);">
+                            <option value="ACTIVE" style="color: black;">ACTIVE</option>
+                            <option value="INACTIVE" style="color: black;">INACTIVE</option>
+                            <option value="FROZEN" style="color: black;">FROZEN</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pb-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: transparent; border: 1px solid rgba(255,255,255,0.2);">Cancel</button>
+                        <button type="submit" class="btn btn-action-primary" id="saveCardBtn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Card Details Modal (Exportable to PDF) -->
+<div class="modal fade" id="viewCardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: #1a1b26; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <h5 class="modal-title" style="color: #fff;">Wallet Information</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pdfContentArea" style="padding: 20px; background-color: #1f2937; border-radius: 12px; margin-bottom: 20px; color: white;">
+                    <div style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">
+                        <h2 style="color: #d8b4fe; font-weight: bold; margin: 0;">FINHUB TUNISIA</h2>
+                        <span style="font-size: 0.8rem; color: #9ca3af;">Official Wallet & Virtual Card Record</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label style="color: #9ca3af; font-size: 0.85rem; display: block; margin-bottom: 4px;">Cardholder Name</label>
+                        <div id="viewCardName" style="font-size: 1.1rem; font-weight: 500;"></div>
+                        <div id="viewCardEmail" style="font-size: 0.9rem; color: #d1d5db;"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <label style="color: #9ca3af; font-size: 0.85rem; display: block; margin-bottom: 4px;">Wallet ID</label>
+                            <div id="viewWalletId" style="font-size: 1.1rem; font-weight: 500; font-family: monospace;"></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <label style="color: #9ca3af; font-size: 0.85rem; display: block; margin-bottom: 4px;">Available Balance</label>
+                            <div id="viewWalletBalance" style="font-size: 1.2rem; font-weight: bold; color: #10b981;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding: 10px; background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="width: 110px; height: 110px; position: relative;">
+                            <canvas id="modalActivityChart"></canvas>
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <div id="viewWalletActivityLabel" style="font-size: 1rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; display: inline-block; margin-bottom: 5px;"></div>
+                            <div style="font-size: 0.85rem; color: #9ca3af;">Breakdown:</div>
+                            <div style="font-size: 0.8rem; color: #d1d5db; display: flex; gap: 10px; margin-top: 3px;">
+                                <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span><span id="txtDep">0</span> Deposits</span>
+                                <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: #8b5cf6;"></span><span id="txtTrans">0</span> Transfers</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(139,92,246,0.05) 100%); padding: 15px; border-radius: 12px; border: 1px solid rgba(139,92,246,0.3);">
+                        <label style="color: #d8b4fe; font-size: 0.85rem; display: block; margin-bottom: 8px;">Virtual Card Number</label>
+                        <div id="viewCardNumber" style="font-size: 1.2rem; font-weight: 500; font-family: monospace; letter-spacing: 2px; margin-bottom: 10px;"></div>
+                        <div style="display: flex; gap: 20px;">
+                            <div>
+                                <label style="color: rgba(255,255,255,0.5); font-size: 0.75rem; display: block;">EXPIRY</label>
+                                <div id="viewCardExpiry" style="font-family: monospace;"></div>
+                            </div>
+                            <div>
+                                <label style="color: rgba(255,255,255,0.5); font-size: 0.75rem; display: block;">CVV</label>
+                                <div style="font-family: monospace;">***</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="button" class="btn w-100" onclick="downloadPdf()" style="background-color: #8b5cf6; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Download as PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+<!-- Load html2pdf for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    let modalDoughnutChart = null;
+
+    function showCardDetails(name, email, walletId, balance, cardNum, expiry, txDep, txTrans, txEsc) {
+        document.getElementById('viewCardName').innerText = name;
+        document.getElementById('viewCardEmail').innerText = email;
+        document.getElementById('viewWalletId').innerText = '#' + walletId;
+        
+        // Format balance properly
+        const numBalance = parseFloat(balance) || 0;
+        document.getElementById('viewWalletBalance').innerText = 'TND ' + numBalance.toLocaleString('en-US', {minimumFractionDigits: 2});
+        
+        const txCount = txDep + txTrans + txEsc;
+        document.getElementById('txtDep').innerText = txDep;
+        document.getElementById('txtTrans').innerText = txTrans;
+
+        // Activity Logic
+        const activityEl = document.getElementById('viewWalletActivityLabel');
+        if (txCount === 0) {
+            activityEl.innerText = "NO ACTIVITY (0 tx)";
+            activityEl.style.backgroundColor = "rgba(156, 163, 175, 0.2)";
+            activityEl.style.color = "#9ca3af"; 
+        } else if (txCount < 5) {
+            activityEl.innerText = "LOW (" + txCount + " tx)";
+            activityEl.style.backgroundColor = "rgba(245, 158, 11, 0.2)";
+            activityEl.style.color = "#fbd38d"; 
+        } else if (txCount < 20) {
+            activityEl.innerText = "MODERATE (" + txCount + " tx)";
+            activityEl.style.backgroundColor = "rgba(59, 130, 246, 0.2)";
+            activityEl.style.color = "#93c5fd"; 
+        } else {
+            activityEl.innerText = "HIGH (" + txCount + " tx)";
+            activityEl.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+            activityEl.style.color = "#a7f3d0"; 
+        }
+
+        // Draw Mini Chart
+        if (modalDoughnutChart) {
+            modalDoughnutChart.destroy();
+        }
+        
+        const ctx = document.getElementById('modalActivityChart');
+        if (ctx) {
+            modalDoughnutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Deposits', 'Transfers', 'Escrow'],
+                    datasets: [{
+                        data: [txDep, txTrans, txEsc],
+                        backgroundColor: ['#10b981', '#8b5cf6', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false, // Important so it renders instantly for PDF export
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        }
+        
+        // Format card number grouping
+        const formattedCard = cardNum.replace(/(.{4})/g, '$1 ').trim();
+        document.getElementById('viewCardNumber').innerText = formattedCard;
+        document.getElementById('viewCardExpiry').innerText = expiry;
+
+        const modal = new bootstrap.Modal(document.getElementById('viewCardModal'));
+        modal.show();
+    }
+
+ function downloadPdf() {
+    const element = document.getElementById('pdfContentArea');
+
+    const userName = document.getElementById('viewCardName')
+        .innerText
+        .trim()
+        .replace(/\s+/g, '_');
+
+    const opt = {
+        margin: 0.5,
+        filename: 'finhub-' + userName + '.pdf',
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 3 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+
+    let currentEditInitialExpiry = '';
+    let currentEditInitialStatus = '';
+
+    function openEditModal(cardId, currentExpiry, currentStatus) {
+        document.getElementById('editCardId').value = cardId;
+        document.getElementById('editCardExpiry').value = currentExpiry;
+        document.getElementById('editCardStatus').value = currentStatus;
+        
+        currentEditInitialExpiry = currentExpiry;
+        currentEditInitialStatus = currentStatus;
+        
+        const errorDiv = document.getElementById('editCardError');
+        if (errorDiv) errorDiv.classList.add('d-none');
+
+        const today = new Date();
+        const currentMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('editCardExpiry').min = currentMonth;
+        
+        const modal = new bootstrap.Modal(document.getElementById('editCardModal'));
+        modal.show();
+    }
+
+    document.getElementById('editCardForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const cardId = document.getElementById('editCardId').value;
+        const expiryDate = document.getElementById('editCardExpiry').value;
+        const status = document.getElementById('editCardStatus').value;
+        const btn = document.getElementById('saveCardBtn');
+        const errorDiv = document.getElementById('editCardError');
+        
+        if (errorDiv) errorDiv.classList.add('d-none');
+
+        if (!expiryDate) {
+            if (errorDiv) {
+                errorDiv.innerText = "Expiry date cannot be empty.";
+                errorDiv.classList.remove('d-none');
+            } else {
+                alert("Expiry date cannot be empty.");
+            }
+            return;
+        }
+
+        if (expiryDate === currentEditInitialExpiry && status === currentEditInitialStatus) {
+            if (errorDiv) {
+                errorDiv.innerText = "Please modify at least one field before saving.";
+                errorDiv.classList.remove('d-none');
+            } else {
+                alert("Please modify at least one field before saving.");
+            }
+            return;
+        }
+
+        if (expiryDate) {
+            const today = new Date();
+            const currentMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
+            if (expiryDate < currentMonth) {
+                if (errorDiv) {
+                    errorDiv.innerText = "Expiry date cannot be in the past.";
+                    errorDiv.classList.remove('d-none');
+                } else {
+                    alert("Expiry date cannot be in the past.");
+                }
+                return;
+            }
+        }
+        
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+        
+        fetch(`/admin/wallets/card/${cardId}/edit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ expiryDate, status })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.message || "An error occurred.");
+                btn.disabled = false;
+                btn.innerText = "Save Changes";
+            }
+        })
+        .catch(err => {
+            alert('Connection error');
+            btn.disabled = false;
+            btn.innerText = "Save Changes";
+        });
+    });
+
+    // Real-time search filter
+    document.getElementById('walletSearchInput').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#walletTableBody .wallet-row');
+        
+        rows.forEach(row => {
+            // Get all text content from the row
+            const textContent = row.textContent.toLowerCase();
+            if (textContent.includes(filter)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Table sorting functionality
+    let sortDirections = [true, true, true, true]; // true = asc, false = desc for each column
+    function sortTable(columnIndex, type) {
+        const tbody = document.getElementById('walletTableBody');
+        const rows = Array.from(tbody.querySelectorAll('.wallet-row'));
+        const isAsc = sortDirections[columnIndex];
+        
+        // Toggle direction for next time
+        sortDirections[columnIndex] = !isAsc;
+
+        rows.sort((a, b) => {
+            // Extract text from the cell
+            let valA = a.querySelectorAll('td')[columnIndex].innerText.trim();
+            let valB = b.querySelectorAll('td')[columnIndex].innerText.trim();
+
+            if (type === 'number') {
+                // Remove non-numeric characters (like #)
+                valA = parseFloat(valA.replace(/[^0-9.-]+/g,"")) || 0;
+                valB = parseFloat(valB.replace(/[^0-9.-]+/g,"")) || 0;
+                return isAsc ? (valA - valB) : (valB - valA);
+            } else if (type === 'date') {
+                // Parse MM/YY to YYMM for numeric sorting
+                const parseDate = (d) => {
+                    if (!d || !d.includes('/')) return 0;
+                    const parts = d.split('/');
+                    return parseInt(parts[1] + parts[0]);
+                };
+                return isAsc ? (parseDate(valA) - parseDate(valB)) : (parseDate(valB) - parseDate(valA));
+            } else {
+                // Case-insensitive string sort
+                valA = valA.toLowerCase();
+                valB = valB.toLowerCase();
+                if (valA < valB) return isAsc ? -1 : 1;
+                if (valA > valB) return isAsc ? 1 : -1;
+                return 0;
+            }
+        });
+
+        // Re-append sorted rows to the tbody
+        rows.forEach(row => tbody.appendChild(row));
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('flowChart');
+        if (!ctx) return;
+        
+        const chartLabels = {{ stats.chartLabels|json_encode|raw }};
+        const dailyVolume = {{ stats.dailyVolume|json_encode|raw }};
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Transaction Volume (TND)',
+                    data: dailyVolume,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#1a1b26',
+                    pointBorderColor: '#8b5cf6',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(26, 27, 38, 0.9)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return 'TND ' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255,255,255,0.05)',
+                            drawBorder: false,
+                        },
+                        ticks: {
+                            color: '#9CA3AF'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255,255,255,0.05)',
+                            drawBorder: false,
+                        },
+                        ticks: {
+                            color: '#9CA3AF',
+                            callback: function(value) {
+                                if (value >= 1000) {
+                                    return value / 1000 + 'k';
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

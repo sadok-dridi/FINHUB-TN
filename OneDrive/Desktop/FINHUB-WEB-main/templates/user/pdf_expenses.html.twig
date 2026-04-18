@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Expense Summary</title>
+    <style>
+        body { font-family: sans-serif; color: #333; margin: 20px; }
+        h1 { color: #8B5CF6; font-size: 24px; margin-bottom: 5px; }
+        .summary-box { border: 1px solid #ddd; padding: 15px; margin-bottom: 30px; background: #f9f9f9; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 13px; }
+        .total { font-weight: bold; font-size: 1.3em; text-align: right; margin-top: 20px; color: #1f2937; }
+        .item-list { font-size: 0.9em; color: #4b5563; margin: 5px 0 0 15px; padding-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>FinHub Expense Tracker</h1>
+    <p style="color: #6b7280; font-size: 14px; margin-top: 0;">Summary for: {{ user.email }}</p>
+    
+    <div class="summary-box">
+        <span style="font-size: 16px;">Total Expenses:</span> <strong style="font-size: 20px;">{{ totalAmount|number_format(2, '.', '') }} TND</strong>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Merchant</th>
+                <th>Items (if any)</th>
+                <th style="text-align: right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td style="width: 20%;">{{ expense.date }}</td>
+                <td style="width: 25%; font-weight: 500;">{{ expense.merchant }}</td>
+                <td>
+                    {% if expense.items is not empty %}
+                        <ul class="item-list">
+                        {% for item in expense.items %}
+                            <li>{{ item.name }} - {{ item.price|number_format(2, '.', '') }} TND</li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <em style="color: #9ca3af; font-size: 0.9em;">No details provided</em>
+                    {% endif %}
+                </td>
+                <td style="text-align: right; width: 20%; font-weight: 600;">{{ expense.amount|number_format(2, '.', '') }} TND</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 30px; color: #9ca3af;">No expenses found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="total">Grand Total: {{ totalAmount|number_format(2, '.', '') }} TND</div>
+</body>
+</html>

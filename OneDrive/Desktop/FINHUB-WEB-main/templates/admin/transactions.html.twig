@@ -1,0 +1,331 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Transaction Audit - FINHUB{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+    
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #E5E7EB;
+        margin: 0 0 0.5rem 0;
+        text-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    }
+    
+    .page-subtitle {
+        color: #9CA3AF;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+
+    .controls-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .controls-left {
+        display: flex;
+        gap: 1rem;
+        align-items: end;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .search-box {
+        position: relative;
+        flex-grow: 1;
+        max-width: 400px;
+    }
+
+    .search-input {
+        width: 100%;
+        background: rgba(30, 27, 50, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: #E5E7EB;
+        padding: 0.6rem 1rem 0.6rem 2.5rem;
+        border-radius: 20px;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .search-input:focus {
+        border-color: rgba(139, 92, 246, 0.5);
+        background: rgba(40, 37, 60, 0.9);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.8rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6B7280;
+        width: 16px;
+        height: 16px;
+        pointer-events: none;
+    }
+
+    .btn-refresh {
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .btn-refresh:hover {
+        color: #E5E7EB;
+    }
+
+    .sort-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .sort-label {
+        color: #9CA3AF;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .sort-select {
+        min-width: 200px;
+        background: rgba(30, 27, 50, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: #E5E7EB;
+        padding: 0.6rem 0.9rem;
+        border-radius: 14px;
+        outline: none;
+    }
+
+    .sort-select:focus {
+        border-color: rgba(139, 92, 246, 0.5);
+        background: rgba(40, 37, 60, 0.9);
+    }
+
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .user-card {
+        background: rgba(30, 27, 50, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .user-card.is-admin {
+        opacity: 0.7;
+        cursor: default;
+        pointer-events: none;
+    }
+    
+    .user-card.is-admin:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #2D2A40;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .user-info {
+        overflow: hidden;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: white;
+        font-size: 0.95rem;
+        margin-bottom: 0.1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .user-email {
+        color: #9CA3AF;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.05);
+        width: 100%;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .status-badge {
+        font-size: 0.7rem;
+    }
+
+    .status-active {
+        color: #10B981;
+    }
+
+    .status-frozen {
+        color: #EF4444;
+        font-weight: 600;
+        background: rgba(239, 68, 68, 0.1);
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+    }
+    
+    .status-no-wallet {
+        color: #6B7280;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Transaction Audit</h1>
+        <p class="page-subtitle">Select a user to audit their transaction ledger</p>
+    </div>
+
+    <div class="controls-bar">
+        <div class="controls-left">
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search users...">
+            </div>
+
+            <form method="get" class="sort-form">
+                <label for="sort" class="sort-label">Sort By</label>
+                <select id="sort" name="sort" class="sort-select" onchange="this.form.submit()">
+                    <option value="name_asc" {{ sort|default('name_asc') == 'name_asc' ? 'selected' : '' }}>Name A to Z</option>
+                    <option value="name_desc" {{ sort|default('name_asc') == 'name_desc' ? 'selected' : '' }}>Name Z to A</option>
+                    <option value="email_asc" {{ sort|default('name_asc') == 'email_asc' ? 'selected' : '' }}>Email A to Z</option>
+                    <option value="email_desc" {{ sort|default('name_asc') == 'email_desc' ? 'selected' : '' }}>Email Z to A</option>
+                    <option value="wallet_status" {{ sort|default('name_asc') == 'wallet_status' ? 'selected' : '' }}>Wallet Status</option>
+                </select>
+            </form>
+        </div>
+
+        <button class="btn-refresh" onclick="window.location.reload()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            Refresh
+        </button>
+    </div>
+
+    <div class="users-grid" id="usersGrid">
+        {% for user in users %}
+            {% set isAdmin = user.role == 'ADMIN' or user.role == 'ROLE_ADMIN' %}
+            <a href="{{ isAdmin ? '#' : path('app_admin_user_transactions', {'id': user.id}) }}" class="user-card user-item {{ isAdmin ? 'is-admin' : '' }}" data-name="{{ user.fullName|default(user.email)|lower }}" data-email="{{ user.email|lower }}">
+                <div class="card-header">
+                    <div class="avatar-circle">
+                        {{ user.fullName|default(user.email)|slice(0, 1)|upper }}
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name">{{ user.fullName|default(user.email|split('@')[0]) }}</div>
+                        <div class="user-email">{{ user.email }}</div>
+                    </div>
+                </div>
+                <div class="card-divider"></div>
+                <div class="card-footer">
+                    {% if user.wallet %}
+                        {% if user.wallet.status == 'FROZEN' %}
+                            <span class="status-badge status-frozen">⚠ FROZEN</span>
+                        {% else %}
+                            <span class="status-badge status-active">Active</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="status-badge status-no-wallet">No Wallet</span>
+                    {% endif %}
+                </div>
+            </a>
+        {% else %}
+            <div style="grid-column: 1 / -1; color: #9CA3AF; text-align: center; padding: 2rem;">
+                No users found.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const userItems = document.querySelectorAll('.user-item');
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            let foundCount = 0;
+
+            userItems.forEach(item => {
+                const name = item.getAttribute('data-name');
+                const email = item.getAttribute('data-email');
+                
+                if (name.includes(searchTerm) || email.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                    foundCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Handle "No results" case if needed
+        });
+    });
+</script>
+{% endblock %}

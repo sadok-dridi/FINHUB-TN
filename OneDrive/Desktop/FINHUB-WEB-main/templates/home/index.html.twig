@@ -1,0 +1,426 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FinHub - The Future of Finance{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Hero Overrides */
+        .hero-section {
+            padding-top: 100px; /* Offset fixed navbar */
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            padding-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section {
+                height: 100vh;
+                min-height: 100vh;
+                padding-top: 70px; /* Slightly lower from navbar */
+                padding-bottom: 2rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 1.5rem; /* Reduced gap for tighter layout */
+            }
+            .hero-title {
+                font-size: 2.2rem !important; /* Smaller, professional app heading */
+                line-height: 1.2 !important;
+                letter-spacing: -0.5px;
+                margin-bottom: 2rem !important; /* Added space between title and desc */
+            }
+            .hero-subtitle {
+                font-size: 0.95rem !important; /* Smaller, crisp description */
+                line-height: 1.5;
+                margin-bottom: 1rem !important;
+                padding: 0 1.5rem;
+                color: rgba(255, 255, 255, 0.7) !important; /* Subtler text color */
+            }
+            .badge {
+                 margin-bottom: 0 !important;
+                 font-size: 0.8rem;
+                 padding: 6px 12px !important;
+            }
+            .cta-buttons a.btn {
+                 font-size: 0.95rem !important; /* Smaller buttons */
+                 padding: 0.8rem 1.5rem !important; /* Less padding */
+                 max-width: 300px !important; /* Narrower buttons */
+            }
+        }
+
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            display: block;
+        }
+        .stat-label {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <span class="badge bg-opacity-10 bg-info text-info mb-4 px-3 py-2 rounded-pill animate-float reveal-pop" style="border: 1px solid rgba(13, 202, 240, 0.4); box-shadow: 0 0 15px rgba(13, 202, 240, 0.2);">
+                        ✨ V2.0 Now Live
+                    </span>
+                    <h1 class="hero-title display-3 fw-bold mb-4 animate-gradient-text reveal-zoom delay-100" style="background: linear-gradient(to right, #E9D5FF, #D946EF, #8B5CF6, #E9D5FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; text-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);">
+                        The Future of<br>Finance is Here.
+                    </h1>
+                    <p class="hero-subtitle lead mb-5 mx-auto reveal-fade-up delay-200" style="max-width: 650px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); opacity: 0.9;">
+                        Secure Wallet. Smart Escrow. AI-Powered Insights.<br>
+                        Everything you need to manage your digital wealth in one place.
+                    </p>
+                    
+                    <div class="cta-buttons d-flex flex-column flex-md-row gap-3 justify-content-center reveal-fade-up delay-300">
+                        <a href="{{ path('app_register') }}" class="btn btn-primary-custom px-5 py-3 animate-pulse-glow w-100" style="font-size: 1.1rem; border: 1px solid rgba(255,255,255,0.2); max-width: 400px; margin: 0 auto;">
+                            Create Free Account
+                        </a>
+                        <a href="#how-it-works" class="btn btn-outline-light px-5 py-3 w-100" style="border-radius: 16px; font-weight: bold; font-size: 1.1rem; background: rgba(255,255,255,0.05); backdrop-filter: blur(5px); max-width: 400px; margin: 0 auto;">
+                            Explore Features
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Features Section -->
+    <section id="features" class="feature-section py-5">
+        <div class="container py-5">
+            <div class="text-center mb-5 reveal-zoom">
+                <!-- Added Zoom Effect on Headers -->
+                <h2 class="display-5 fw-bold mb-3" style="color: #ffffff;">Everything you need</h2>
+                <p class="lead mx-auto" style="color: #ffffff; opacity: 0.95; max-width: 600px;">Powerful features to manage your digital assets.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Wallet Card -->
+                <div class="col-md-4 reveal-slide-left delay-100">
+                    <div class="feature-card glass-card p-4 h-100" style="--card-color: #8B5CF6;">
+                        <div class="feature-icon animate-float" style="color: #8B5CF6; font-size: 3rem; margin-bottom: 1.5rem; text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);">🔒</div>
+                        <h3 class="feature-title h4 fw-bold" style="color: #E9D5FF;">Secure Wallet</h3>
+                        <p class="feature-desc" style="color: #D1D5DB;">
+                            Bank-grade encryption meets blockchain transparency. Store your assets with confidence.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Escrow Card -->
+                <div class="col-md-4 reveal-fade-up delay-200">
+                    <div class="feature-card glass-card p-4 h-100" style="--card-color: #10B981;">
+                        <div class="feature-icon animate-float" style="color: #10B981; font-size: 3rem; margin-bottom: 1.5rem; animation-delay: 1s; numbertext-shadow: 0 0 20px rgba(16, 185, 129, 0.4);">🤝</div>
+                        <h3 class="feature-title h4 fw-bold" style="color: #E9D5FF;">Smart Escrow</h3>
+                        <p class="feature-desc" style="color: #D1D5DB;">
+                            Trade safely with strangers. Funds are held in our secure escrow.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Financial Twin Card -->
+                <div class="col-md-4 reveal-slide-right delay-300">
+                    <div class="feature-card glass-card p-4 h-100" style="--card-color: #D946EF;">
+                        <div class="feature-icon animate-float" style="color: #D946EF; font-size: 3rem; margin-bottom: 1.5rem; animation-delay: 2s; text-shadow: 0 0 20px rgba(217, 70, 239, 0.4);">🤖</div>
+                        <h3 class="feature-title h4 fw-bold" style="color: #E9D5FF;">Financial Twin</h3>
+                        <p class="feature-desc" style="color: #D1D5DB;">
+                            Your AI counterpart analyzes spending habits and maximizes wealth.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deep Dive 1: Wallet & Security -->
+    <section class="feature-row">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0 reveal-slide-right">
+                    <div class="feature-img-placeholder" style="--glow-color: rgba(139, 92, 246, 0.3);">
+                        <div style="z-index: 1; text-align: center;">
+                            <div style="font-size: 4rem;">🔒</div>
+                            <div style="margin-top: 1rem; color: white; letter-spacing: 2px; font-weight: 600;">SECURE CORE</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 ps-lg-5 reveal-fade-up delay-100">
+                    <div class="feature-content ml-lg-5">
+                        <h3 style="color: #E9D5FF; font-weight: 800; font-size: 2.5rem; margin-bottom: 1.5rem;">Bank-Grade Ledger.</h3>
+                        <p class="lead mb-4" style="color: #ffffff; opacity: 0.95;">Our securized server infrastructure ensures your data is immutable and safe.</p>
+                        
+                        <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">Dual-Ledger Architecure</strong>
+                                <span style="color: #D1D5DB;">Real-time consistency checks between SQL and Blockchain.</span>
+                            </div>
+                        </div>
+                        <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">Securized Auth</strong>
+                                <span style="color: #D1D5DB;">Multi-factor authentication with JWT sessions.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deep Dive 2: Escrow (Flagship) -->
+    <section class="feature-row" style="background: rgba(255,255,255,0.02);">
+        <div class="container">
+            <div class="row align-items-center flex-row-reverse">
+                <div class="col-lg-6 mb-5 mb-lg-0 reveal-slide-left">
+                     <div class="feature-img-placeholder" style="--glow-color: rgba(16, 185, 129, 0.3);">
+                        <div style="z-index: 1; text-align: center;">
+                            <div style="font-size: 4rem;">🤝</div>
+                            <div style="margin-top: 1rem; color: white; letter-spacing: 2px; font-weight: 600;">SMART PROTECTION</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 pe-lg-5 reveal-fade-up delay-100">
+                    <div class="feature-content">
+                        <span class="badge bg-success mb-3">FLAGSHIP FEATURE</span>
+                        <h3 style="color: #E9D5FF; font-weight: 800; font-size: 2.5rem; margin-bottom: 1.5rem;">The Perfect Middleman.</h3>
+                        <p class="lead mb-4" style="color: #ffffff; opacity: 0.95;">Our Escrow system is the heart of FinHub. We hold the funds so you can breathe easy.</p>
+                        
+                        <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">Code Review & Inspections</strong>
+                                <span style="color: #D1D5DB;">Funds are only released when milestones are verified.</span>
+                            </div>
+                        </div>
+                        <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">Dispute Resolution</strong>
+                                <span style="color: #D1D5DB;">Fair mediation process built into the contract.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deep Dive 3: Automation & AI -->
+    <section class="feature-row">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-5 mb-lg-0 reveal-slide-right">
+                    <div class="feature-img-placeholder" style="--glow-color: rgba(217, 70, 239, 0.3);">
+                        <div style="z-index: 1; text-align: center;">
+                            <div style="font-size: 4rem;">🤖</div>
+                            <div style="margin-top: 1rem; color: white; letter-spacing: 2px; font-weight: 600;">INTELLIGENT SYSTEM</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 ps-lg-5 reveal-fade-up delay-100">
+                    <div class="feature-content ml-lg-5">
+                        <h3 style="color: #E9D5FF; font-weight: 800; font-size: 2.5rem; margin-bottom: 1.5rem;">Automated Intelligence.</h3>
+                        <p class="lead mb-4" style="color: #ffffff; opacity: 0.95;">We've integrated powerful tools to put your finance on autopilot.</p>
+                        
+                         <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">n8n Workflows</strong>
+                                <span style="color: #D1D5DB;">Complex financial automations running in the background.</span>
+                            </div>
+                        </div>
+                         <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">Telegram Bot</strong>
+                                <span style="color: #D1D5DB;">Receive instant alerts and control your wallet via chat.</span>
+                            </div>
+                        </div>
+                         <div class="feature-list-item">
+                            <div class="feature-list-icon">✓</div>
+                            <div>
+                                <strong class="d-block" style="color: #67E8F9;">AI Integration</strong>
+                                <span style="color: #D1D5DB;">Predictive insights on your spending habits.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-5" id="faq">
+        <div class="container py-5">
+             <div class="text-center mb-5 reveal-zoom">
+                <h2 class="display-5 fw-bold text-white">Common Queries</h2>
+                <p class="text-muted lead">We've got answers.</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8 reveal-fade-up delay-100">
+                    <div class="accordion accordion-custom" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Is my money safe?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Absolutely. We use industry-standard AES-256 encryption.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    How does the AI work?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our AI analyzes your transaction history locally to protect privacy.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-5" style="background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.4));">
+        <div class="container py-5">
+            <div class="text-center mb-5 reveal-cinematic">
+                <h2 class="display-5 fw-bold text-white">How it Works</h2>
+                <p class="text-muted lead">Start your journey in minutes.</p>
+            </div>
+
+            <div class="row text-center g-4 justify-content-center">
+                <div class="col-md-3 reveal-cinematic">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="step-number mb-3" style="background: rgba(139, 92, 246, 0.2); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.5); box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);">1</div>
+                        <h4 class="h5 fw-bold" style="color: #E9D5FF;">Create Account</h4>
+                        <p class="small" style="color: #D1D5DB;">Sign up with your email and verify your identity in seconds.</p>
+                    </div>
+                </div>
+                <div class="col-md-1 d-none d-md-flex align-items-center justify-content-center opacity-25 reveal-cinematic delay-100">
+                     <span class="h2 text-muted">→</span>
+                </div>
+                <div class="col-md-3 reveal-cinematic delay-200">
+                     <div class="d-flex flex-column align-items-center">
+                        <div class="step-number mb-3" style="background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.5); box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);">2</div>
+                        <h4 class="h5 fw-bold" style="color: #A7F3D0;">Generate Wallet</h4>
+                        <p class="small" style="color: #D1D5DB;">Your unique blockchain wallet is created automatically.</p>
+                    </div>
+                </div>
+                 <div class="col-md-1 d-none d-md-flex align-items-center justify-content-center opacity-25 reveal-cinematic delay-300">
+                     <span class="h2 text-muted">→</span>
+                </div>
+                <div class="col-md-3 reveal-cinematic delay-400">
+                     <div class="d-flex flex-column align-items-center">
+                        <div class="step-number mb-3" style="background: rgba(217, 70, 239, 0.2); color: #F472B6; border: 1px solid rgba(217, 70, 239, 0.5); box-shadow: 0 0 15px rgba(217, 70, 239, 0.3);">3</div>
+                        <h4 class="h5 fw-bold" style="color: #FBCFE8;">Start Trading</h4>
+                        <p class="small" style="color: #D1D5DB;">Deposit funds, escrow trades, or track your expenses.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-5 mb-5">
+        <div class="container">
+            <div class="glass-card p-5 text-center reveal-cinematic">
+                <h2 class="display-6 fw-bold mb-3" style="color: #E9D5FF;">Ready to take control?</h2>
+                <p class="mb-4" style="color: #ffffff; opacity: 0.95; font-size: 1.1rem;">Join thousands of users who trust FinHub for their financial life.</p>
+                <a href="{{ path('app_register') }}" class="btn btn-primary-custom px-5 py-3" style="width: auto;">
+                    Get Started Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 mt-5 border-top" style="border-color: rgba(255,255,255,0.05) !important; position: relative; z-index: 1; background: #0F0E17;">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5 class="fw-bold mb-3" style="color: #ffffff;">FINHUB</h5>
+                    <p class="small" style="color: #D1D5DB;">The next generation financial platform combining security, AI, and ease of use.</p>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="fw-bold mb-3" style="color: #ffffff;">Product</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#" class="text-decoration-none" style="color: #D1D5DB;">Wallet</a></li>
+                        <li><a href="#" class="text-decoration-none" style="color: #D1D5DB;">Escrow</a></li>
+                        <li><a href="#" class="text-decoration-none" style="color: #D1D5DB;">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="fw-bold mb-3" style="color: #ffffff;">Company</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#" class="text-decoration-none" style="color: #D1D5DB;">About Us</a></li>
+                        <li><a href="#" class="text-decoration-none" style="color: #D1D5DB;">Careers</a></li>
+                        <li><a href="#" class="text-decoration-none" style="color: #D1D5DB;">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold mb-3" style="color: #ffffff;">Newsletter</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Email address" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                        <button class="btn btn-primary-custom" style="width: auto; border-radius: 0 8px 8px 0;">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5 pt-4 border-top" style="border-color: rgba(255,255,255,0.05) !important;">
+                <p class="text-muted small mb-0">&copy; {{ "now"|date("Y") }} FINHUB-TN. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function initObservers() {
+            // Reveal on Scroll
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target); 
+                    }
+                });
+            }, observerOptions);
+
+            // Select ALL elements with any class starting with 'reveal-'
+            document.querySelectorAll('[class*="reveal-"]').forEach(el => observer.observe(el));
+        }
+
+        // Initialize on normal load
+        document.addEventListener('DOMContentLoaded', initObservers);
+        // Initialize on Turbo visit
+        document.addEventListener('turbo:load', initObservers);
+    </script>
+{% endblock %}

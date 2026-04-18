@@ -1,0 +1,559 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Knowledge Base - FINHUB{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    /* Support Center Header */
+    .support-header-container {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    
+    .support-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #E5E7EB;
+        margin-bottom: 0.5rem;
+    }
+    
+    .support-subtitle {
+        font-size: 0.95rem;
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+    }
+    
+    .support-nav {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .support-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #9CA3AF;
+        background: transparent;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .support-tab:hover {
+        color: #E5E7EB;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .support-tab.active {
+        background: rgba(139, 92, 246, 0.2);
+        color: #E5E7EB;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    /* Knowledge Base Section */
+    .kb-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .kb-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #E9D5FF;
+        margin: 0;
+    }
+
+    .btn-new-article {
+        background: linear-gradient(135deg, #A855F7, #8B5CF6);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-new-article:hover {
+        background: linear-gradient(135deg, #9333EA, #7C3AED);
+        transform: translateY(-1px);
+    }
+
+    /* Search Bar */
+    .search-box {
+        display: flex;
+        gap: 1rem;
+        background: rgba(30, 27, 50, 0.6);
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+        flex: 1;
+        background: rgba(20, 18, 35, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .search-input:focus {
+        border-color: #8B5CF6;
+    }
+
+    .btn-search {
+        background: transparent;
+        color: #A855F7;
+        border: 1px solid rgba(168, 85, 247, 0.4);
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-search:hover {
+        background: rgba(168, 85, 247, 0.1);
+        border-color: #A855F7;
+    }
+
+    /* Article List */
+    .article-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .article-item {
+        background: rgba(30, 27, 46, 0.8);
+        padding: 1.25rem 1.5rem;
+        color: #E5E7EB;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .article-item:hover {
+        background: rgba(45, 41, 68, 0.9);
+    }
+    
+    .article-title-text {
+        color: #E5E7EB;
+    }
+
+    .article-category-text {
+        color: #9CA3AF;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #9CA3AF;
+        background: rgba(30, 27, 50, 0.4);
+        border-radius: 12px;
+        border: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    /* Editor Container */
+    .editor-container {
+        display: none;
+        background: rgba(30, 27, 50, 0.6);
+        border-radius: 12px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .editor-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-back {
+        background: rgba(255,255,255,0.05);
+        border: none;
+        color: #E5E7EB;
+        padding: 0.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+        background: rgba(255,255,255,0.1);
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+
+    .form-control {
+        background: rgba(20, 18, 35, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #8B5CF6;
+    }
+
+    textarea.form-control {
+        min-height: 200px;
+        resize: vertical;
+    }
+
+    .editor-actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .editor-actions-left {
+        flex: 1;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        color: #9CA3AF;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+        color: white;
+    }
+
+    .btn-save {
+        background: #8B5CF6;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-save:hover {
+        background: #7C3AED;
+    }
+    
+    .btn-delete {
+        background: transparent;
+        color: #EF4444;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #EF4444;
+    }
+
+    @media (max-width: 768px) {
+        .support-nav { gap: 0.5rem; }
+        .support-tab { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+        .kb-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        .search-box { flex-direction: column; padding: 0.75rem; }
+        .btn-search { width: 100%; }
+        .editor-container { padding: 1rem; }
+        .editor-actions { flex-direction: column; gap: 0.5rem; align-items: stretch; }
+        .editor-actions-left { display: flex; justify-content: center; }
+        .btn-delete { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-container">
+
+    <!-- Header Section -->
+    <div class="support-header-container">
+        <h1 class="support-title">Support & Safety Center</h1>
+        <p class="support-subtitle">Manage user support tickets, system alerts, and compliance requests.</p>
+        
+        <div class="support-nav">
+            <a href="{{ path('app_admin_support') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Support Tickets
+            </a>
+            <a href="{{ path('app_admin_support_alerts') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                System Alerts
+            </a>
+            <a href="{{ path('app_admin_support_kyc') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                KYC Requests
+            </a>
+            <a href="{{ path('app_admin_support_kb') }}" class="support-tab active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Knowledge Base
+            </a>
+        </div>
+    </div>
+
+    <div class="kb-container">
+        
+        <!-- ListView Area -->
+        <div id="kbListView">
+            <div class="kb-header">
+                <h2 class="section-title">Knowledge Base</h2>
+                <button class="btn-new-article" onclick="openEditor()">+ New Article</button>
+            </div>
+            
+            <form action="{{ path('app_admin_support_kb') }}" method="GET" class="search-box">
+                <input type="text" name="q" class="search-input" placeholder="Search articles..." value="{{ searchQuery }}">
+                <button type="submit" class="btn-search">Search</button>
+            </form>
+
+            {% if articles is empty %}
+                <div class="empty-state">No articles found.</div>
+            {% else %}
+                <div class="article-list">
+                    {% for article in articles %}
+                        <a href="#" class="article-item" onclick="openEditor({{ article|json_encode }}); return false;">
+                            <span class="article-title-text">{{ article.title }}</span>&nbsp;
+                            <span class="article-category-text">({{ article.category }})</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Editor Area -->
+        <div id="kbEditorView" class="editor-container">
+            <div class="editor-header">
+                <button class="btn-back" onclick="closeEditor()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                </button>
+                <h2 class="section-title" id="editorTitle">New Article</h2>
+            </div>
+
+            {{ form_start(kbForm, {'attr': {'id': 'kbArticleForm', 'novalidate': 'novalidate', 'onsubmit': 'saveArticle(event)'}}) }}
+                <input type="hidden" id="articleId" name="article_id">
+
+                <div class="form-group">
+                    {{ form_label(kbForm.title, 'Title', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(kbForm.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter article title'}}) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(kbForm.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(kbForm.category, {'attr': {'class': 'form-control', 'placeholder': 'e.g. Wallet, Security, Account'}}) }}
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(kbForm.content, 'Content', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(kbForm.content, {'attr': {'class': 'form-control', 'placeholder': 'Write article content here...'}}) }}
+                </div>
+
+                <div class="editor-actions">
+                    <div class="editor-actions-left">
+                        <button type="button" class="btn-delete" id="btnDelete" onclick="deleteArticle()" style="display: none;">Delete Article</button>
+                    </div>
+                    <button type="button" class="btn-cancel" onclick="closeEditor()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Article</button>
+                </div>
+            {{ form_end(kbForm) }}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function openEditor(article = null) {
+        document.getElementById('kbListView').style.display = 'none';
+        document.getElementById('kbEditorView').style.display = 'block';
+
+        const form = document.getElementById('kbArticleForm');
+        const titleInput = document.getElementById('{{ kbForm.title.vars.id }}');
+        const categoryInput = document.getElementById('{{ kbForm.category.vars.id }}');
+        const contentInput = document.getElementById('{{ kbForm.content.vars.id }}');
+
+        form.reset();
+        document.querySelectorAll('#kbEditorView .text-danger.form-error').forEach(el => el.remove());
+        [titleInput, categoryInput, contentInput].forEach(el => el.style.borderColor = '');
+        
+        if (article) {
+            document.getElementById('editorTitle').textContent = 'Edit Article';
+            document.getElementById('articleId').value = article.id;
+            titleInput.value = article.title;
+            categoryInput.value = article.category;
+            contentInput.value = article.content;
+            document.getElementById('btnDelete').style.display = 'inline-block';
+        } else {
+            document.getElementById('editorTitle').textContent = 'New Article';
+            document.getElementById('articleId').value = '';
+            document.getElementById('btnDelete').style.display = 'none';
+        }
+    }
+
+    function closeEditor() {
+        document.getElementById('kbEditorView').style.display = 'none';
+        document.getElementById('kbListView').style.display = 'block';
+    }
+
+    async function saveArticle(event) {
+        event.preventDefault();
+
+        const form = document.getElementById('kbArticleForm');
+        const id = document.getElementById('articleId').value;
+        const titleInput = document.getElementById('{{ kbForm.title.vars.id }}');
+        const categoryInput = document.getElementById('{{ kbForm.category.vars.id }}');
+        const contentInput = document.getElementById('{{ kbForm.content.vars.id }}');
+        
+        titleInput.value = titleInput.value.trim();
+        categoryInput.value = categoryInput.value.trim();
+        contentInput.value = contentInput.value.trim();
+
+        const formData = new FormData(form);
+        formData.set('article_id', id);
+
+        // Clear previous errors
+        document.querySelectorAll('#kbEditorView .text-danger.form-error').forEach(el => el.remove());
+        [titleInput, categoryInput, contentInput].forEach(el => el.style.borderColor = '');
+
+        const btn = document.querySelector('.btn-save');
+        const originalText = btn.innerText;
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(form.action, {
+                method: form.method,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else if (data.errors) {
+                const generalErrors = [];
+
+                for (const [field, errorMsg] of Object.entries(data.errors)) {
+                    let targetInput = null;
+                    if (field === 'title') targetInput = titleInput;
+                    else if (field === 'category') targetInput = categoryInput;
+                    else if (field === 'content') targetInput = contentInput;
+                    
+                    if (targetInput) {
+                        targetInput.style.borderColor = '#EF4444';
+                        const errorSpan = document.createElement('span');
+                        errorSpan.className = 'text-danger form-error';
+                        errorSpan.style.color = '#EF4444';
+                        errorSpan.style.fontSize = '0.85rem';
+                        errorSpan.style.marginTop = '4px';
+                        errorSpan.style.display = 'block';
+                        errorSpan.innerText = errorMsg;
+                        targetInput.parentNode.appendChild(errorSpan);
+                    } else {
+                        generalErrors.push(errorMsg);
+                    }
+                }
+
+                if (generalErrors.length > 0) {
+                    alert(generalErrors.join('\n'));
+                }
+            } else {
+                alert('Error: ' + (data.message || 'An error occurred.'));
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while saving the article.');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function deleteArticle() {
+        const id = document.getElementById('articleId').value;
+        if (!id) return;
+        
+        if (!confirm('Are you sure you want to delete this article?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/admin/support/kb/delete/' + id, {
+                method: 'DELETE',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while deleting the article.');
+        }
+    }
+</script>
+{% endblock %}

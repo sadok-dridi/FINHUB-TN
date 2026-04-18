@@ -1,0 +1,1017 @@
+{% extends 'user/layout.html.twig' %}
+
+{% block title %}Help & Support - FinHub{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .support-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+            gap: 1.5rem;
+        }
+        .support-header { margin-bottom: 1rem; }
+        .support-title { font-size: 1.8rem; font-weight: 600; color: #ffffff; margin-bottom: 0.5rem; }
+        .support-subtitle { color: #94a3b8; font-size: 1rem; }
+
+        .support-tabs {
+            position: relative;
+            z-index: 10;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            gap: 1rem;
+            background: var(--card-bg, #1e1b2e);
+            padding: 0.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 1rem;
+        }
+        .support-tab {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .support-tab.active {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        .support-tab:hover:not(.active) { color: #ffffff; background: rgba(255, 255, 255, 0.05); }
+
+        .tab-pane {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            height: 100%;
+        }
+        .tab-pane.active { display: flex; }
+
+        /* --- AI CHAT CSS --- */
+        .chat-container {
+            flex: 1;
+            background: var(--card-bg, #1e1b2e);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .chat-messages {
+            flex: 1; padding: 2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem;
+        }
+        .msg-row { display: flex; width: 100%; }
+        .msg-row.bot { justify-content: flex-start; }
+        .msg-row.user { justify-content: flex-end; }
+        .msg-bubble {
+            max-width: 75%; padding: 1rem 1.25rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.5;
+        }
+        .msg-row.bot .msg-bubble {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: #e2e8f0; border-top-left-radius: 4px;
+        }
+        .msg-row.user .msg-bubble {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(139, 92, 246, 0.3); color: #ffffff; border-top-right-radius: 4px;
+        }
+        .chat-input-wrapper {
+            padding: 1.25rem 2rem; background: rgba(0, 0, 0, 0.2); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; gap: 1rem; align-items: center;
+        }
+        .chat-input {
+            flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; font-size: 0.95rem; padding: 0.875rem 1.25rem; border-radius: 8px; outline: none;
+        }
+        .chat-input:focus { border-color: #a78bfa; background: rgba(255, 255, 255, 0.08); }
+        .chat-input:disabled { opacity: 0.55; cursor: not-allowed; }
+        .btn-send {
+            background: #8b5cf6; color: white; border: none; padding: 0.875rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; gap: 0.5rem; transition: all 0.2s ease;
+        }
+        .btn-send:hover { background: #7c3aed; }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* --- KNOWLEDGE BASE CSS --- */
+        .kb-container { display: flex; flex-direction: column; gap: 1.5rem; height: 100%; }
+        .kb-search-wrapper { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .kb-search-input { flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; padding: 0.875rem 1.25rem; border-radius: 20px; outline: none; font-size: 1rem; }
+        .kb-search-input:focus { border-color: #a78bfa; background: rgba(255, 255, 255, 0.08); }
+        .btn-kb-search { background: linear-gradient(135deg, #a855f7, #d946ef); color: white; border: none; padding: 0.875rem 2rem; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .btn-kb-search:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .kb-list { display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.5rem; flex: 1; }
+        .kb-card { background: var(--card-bg, #1e1b2e); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; gap: 0.75rem; }
+        .kb-card:hover { border-color: rgba(167, 139, 250, 0.4); background: rgba(255,255,255,0.02); transform: translateY(-2px); }
+        .kb-header-row { display: flex; align-items: center; gap: 0.75rem; }
+        .kb-tag { border: 1px solid #64748b; color: #94a3b8; font-size: 0.75rem; padding: 0.1rem 0.5rem; border-radius: 4px; text-transform: uppercase; }
+        .kb-title { font-size: 1.15rem; font-weight: 600; color: #a78bfa; }
+        .kb-content { font-size: 0.95rem; color: #e2e8f0; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+        .kb-content.expanded { -webkit-line-clamp: unset; overflow: visible; }
+        
+        /* --- ALERTS CSS --- */
+        .alerts-container { display: flex; flex-direction: column; gap: 1.5rem; }
+        .alerts-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .alerts-title { font-size: 1.4rem; font-weight: 600; color: #fff; }
+        .btn-refresh { background: transparent; border: none; color: #94a3b8; cursor: pointer; transition: color 0.2s; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; }
+        .btn-refresh:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .alerts-list { display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.5rem; }
+        .alert-card { position: relative; background: var(--card-bg, #1e1b2e); border-radius: 12px; padding: 1.25rem 1.5rem; display: flex; align-items: flex-start; gap: 1rem; overflow: hidden; }
+        .alert-card::before { content: ""; position: absolute; left: 0; top: 10%; bottom: 10%; width: 4px; border-radius: 0 4px 4px 0; }
+        .alert-icon { flex-shrink: 0; margin-top: 2px; }
+        .alert-warning::before { background: #f59e0b; }
+        .alert-critical::before { background: #ef4444; }
+        .alert-info::before { background: #a855f7; }
+        .alert-content { display: flex; flex-direction: column; gap: 0.25rem; }
+        .alert-message { font-size: 1.05rem; font-weight: 500; color: #e2e8f0; }
+        .alert-meta { font-size: 0.85rem; color: #64748b; }
+
+
+        /* --- TICKETS LIST CSS --- */
+        .tickets-container {
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+        .tickets-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;
+        }
+        .tickets-title { font-size: 1.4rem; font-weight: 600; color: #fff; }
+        .btn-new-ticket {
+            background: linear-gradient(135deg, #a855f7, #d946ef); color: white; border: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 500; cursor: pointer; display: flex; gap: 0.5rem; align-items: center; transition: all 0.2s ease;
+        }
+        .btn-new-ticket:hover { opacity: 0.9; transform: translateY(-1px); }
+        .ticket-list {
+            display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.5rem;
+        }
+        .tickets-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .tickets-search-box { flex: 1 1 260px; }
+        .tickets-search-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 0.875rem 1.25rem;
+            border-radius: 20px;
+            outline: none;
+            font-size: 0.95rem;
+        }
+        .tickets-search-input:focus { border-color: #a78bfa; background: rgba(255,255,255,0.08); }
+        .tickets-sort-controls {
+            display: flex;
+            gap: 0.75rem;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+        .tickets-sort-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .tickets-sort-label {
+            color: #94a3b8;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .tickets-sort-select {
+            min-width: 170px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 14px;
+            outline: none;
+            color-scheme: dark;
+        }
+        .tickets-sort-select option {
+            background: #1e1b2e;
+            color: #fff;
+        }
+        .tickets-no-results {
+            color: #94a3b8;
+            text-align: center;
+            padding: 2rem;
+            border: 1px dashed rgba(255,255,255,0.1);
+            border-radius: 12px;
+            display: none;
+        }
+        .ticket-card {
+            background: var(--card-bg, #1e1b2e);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .ticket-card:hover {
+            border-color: rgba(167, 139, 250, 0.4);
+            background: rgba(255,255,255,0.02);
+            transform: translateY(-2px);
+        }
+        .ticket-info { display: flex; flex-direction: column; gap: 0.5rem; }
+        .ticket-title-row { display: flex; align-items: center; gap: 1rem; }
+        .ticket-subject { font-size: 1.1rem; font-weight: 600; color: #fff; }
+        .badge-status {
+            padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+        }
+        .badge-open { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+        .badge-resolved { background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+        .ticket-meta { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+        .ticket-actions { color: #64748b; }
+        .ticket-actions:hover { color: #ef4444; }
+
+        /* --- TICKET DETAIL CSS --- */
+        .ticket-detail-header {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .btn-back {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+            width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.1); }
+        .ticket-detail-info h2 { font-size: 1.3rem; margin: 0 0 0.25rem 0; color: #fff; }
+        .ticket-detail-meta { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: #94a3b8; }
+        
+        .ticket-chat-container {
+            flex: 1; background: var(--card-bg, #1e1b2e); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; overflow: hidden;
+        }
+        
+        /* Message styles for Ticket */
+        .t-msg-row { display: flex; width: 100%; margin-bottom: 1.5rem; }
+        .t-msg-row.agent { justify-content: flex-end; }
+        .t-msg-row.user { justify-content: flex-start; }
+        .t-msg-bubble {
+            max-width: 80%; padding: 1.25rem; border-radius: 12px; position: relative;
+        }
+        .t-msg-row.user .t-msg-bubble {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-top-left-radius: 4px;
+        }
+        .t-msg-row.agent .t-msg-bubble {
+            background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.2); border-top-right-radius: 4px;
+        }
+        .t-msg-header {
+            font-size: 0.85rem; color: #94a3b8; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between;
+        }
+        .t-msg-body { font-size: 0.95rem; color: #e2e8f0; line-height: 1.6; }
+        .ticket-closed-note {
+            padding: 0.9rem 1.25rem;
+            margin: 1rem 2rem 0;
+            border-radius: 10px;
+            background: rgba(148, 163, 184, 0.12);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        /* Modal for new ticket */
+        .modal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: var(--card-bg, #1e1b2e); width: 100%; max-width: 500px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); padding: 2rem;
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
+        .modal-header h3 { margin: 0; color: #fff; }
+        .close-modal { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.9rem; }
+        .form-control {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.75rem; border-radius: 8px; outline: none;
+        }
+        .form-control:focus { border-color: #a78bfa; }
+        .btn-submit {
+            background: #8b5cf6; color: white; border: none; padding: 0.875rem; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1rem;
+        }
+        .btn-submit:hover { background: #7c3aed; }
+        
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            .support-wrapper {
+                height: calc(100vh - 80px); /* Adjust for mobile header */
+                gap: 1rem;
+            }
+            .support-title {
+                font-size: 1.4rem;
+            }
+            .support-subtitle {
+                font-size: 0.9rem;
+            }
+            .support-tabs {
+                position: relative;
+                z-index: 10;
+                display: flex;
+                flex-wrap: wrap; /* Turn off horizontal sliding and wrap to next line */
+                gap: 0.5rem;
+                padding: 0.5rem;
+                justify-content: center;
+                width: 100%;
+                height: auto;
+                overflow-x: visible;
+            }
+            .support-tab {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+                flex: 1 1 calc(50% - 0.5rem); /* Creates a neat 2x2 grid on mobile */
+                white-space: nowrap;
+                height: 40px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .chat-messages {
+                padding: 1rem;
+            }
+            .msg-bubble {
+                max-width: 90%;
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+            .chat-input-wrapper {
+                padding: 0.75rem 1rem;
+                gap: 0.5rem;
+            }
+            .chat-input {
+                padding: 0.75rem 1rem;
+            }
+            .btn-send {
+                padding: 0.75rem 1rem;
+            }
+            .ticket-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            .ticket-title-row {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .alerts-title, .tickets-title {
+                font-size: 1.2rem;
+            }
+            .kb-search-wrapper {
+                flex-direction: column;
+                width: 100%;
+            }
+            .kb-search-input {
+                width: 100%;
+            }
+            .btn-kb-search {
+                width: 100%;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            .alert-card {
+                padding: 1rem;
+                flex-direction: column;
+            }
+            .alert-icon {
+                margin-bottom: 0.5rem;
+            }
+            .t-msg-bubble {
+                max-width: 95%;
+                padding: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block user_content %}
+<div class="support-wrapper">
+    <div class="support-header">
+        <h1 class="support-title">Help & Support</h1>
+        <p class="support-subtitle">Get instant answers from FinHub Prime AI or manage your tickets.</p>
+    </div>
+
+    <div class="support-tabs">
+        <button type="button" class="support-tab active" data-target="pane-ai">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            AI Assistant
+        </button>
+        <button type="button" class="support-tab" data-target="pane-tickets">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            My Tickets
+        </button>
+        <button type="button" class="support-tab" data-target="pane-alerts">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            System Alerts
+        </button>
+        <button type="button" class="support-tab" data-target="pane-kb">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            Knowledge Base
+        </button>
+    </div>
+
+    <!-- AI ASSISTANT PANE -->
+    <div class="tab-pane active" id="pane-ai">
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="msg-row bot">
+                    <div class="msg-bubble">
+                        Hello! I'm your <strong>FinHub Assistant</strong>. How can I help you regarding your wallet, transactions, or security today?
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-wrapper">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Ask anything..." autocomplete="off">
+                <button class="btn-send" id="btn-send">
+                    Send 
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TICKETS LIST PANE -->
+    <div class="tab-pane" id="pane-tickets">
+        <div class="tickets-container">
+            <div class="tickets-header">
+                <div class="tickets-title">My Tickets</div>
+                <div style="display:flex; gap:1rem;">
+                    <button class="btn-new-ticket" id="btn-open-modal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        New Ticket
+                    </button>
+                </div>
+            </div>
+
+            <div class="tickets-toolbar">
+                <div class="tickets-search-box">
+                    <input type="text" id="tickets-search-input" class="tickets-search-input" placeholder="Search by subject, category, or status...">
+                </div>
+                <div class="tickets-sort-controls">
+                    <div class="tickets-sort-group">
+                        <label for="tickets-sort" class="tickets-sort-label">Sort By</label>
+                        <select id="tickets-sort" class="tickets-sort-select">
+                            <option value="date">Date</option>
+                            <option value="subject">Subject</option>
+                            <option value="status">Status</option>
+                            <option value="category">Category</option>
+                        </select>
+                    </div>
+                    <div class="tickets-sort-group">
+                        <label for="tickets-direction" class="tickets-sort-label">Direction</label>
+                        <select id="tickets-direction" class="tickets-sort-select">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ticket-list" id="ticket-list">
+                {% for ticket in tickets %}
+                <div class="ticket-card" data-id="{{ ticket.id }}" data-subject="{{ ticket.subject|lower|escape('html_attr') }}" data-status="{{ ticket.status|lower|escape('html_attr') }}" data-category="{{ ticket.category|lower|escape('html_attr') }}" data-date="{{ ticket.createdAt|date('Y-m-d H:i:s') }}">
+                    <div class="ticket-info">
+                        <div class="ticket-title-row">
+                            <span class="ticket-subject">{{ ticket.subject }}</span>
+                            <span class="badge-status {{ ticket.status == 'OPEN' ? 'badge-open' : 'badge-resolved' }}">
+                                {{ ticket.status }}
+                            </span>
+                        </div>
+                        <div class="ticket-meta">
+                            {{ ticket.category }} • {{ ticket.createdAt|date('M d, H:i') }}
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="color: #94a3b8; text-align: center; padding: 2rem;">No tickets found.</div>
+                {% endfor %}
+            </div>
+            <div id="tickets-no-results" class="tickets-no-results">No tickets match your search.</div>
+        </div>
+    </div>
+
+    <!-- SYSTEM ALERTS PANE -->
+    <div class="tab-pane" id="pane-alerts">
+        <div class="alerts-container">
+            <div class="alerts-header">
+                <div class="alerts-title">System Alerts</div>
+                <button class="btn-refresh" onclick="location.reload();" title="Refresh">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                </button>
+            </div>
+            <div class="alerts-list">
+                {% for alert in alerts %}
+                {% set sev = alert.severity|upper %}
+                {% set card_class = "alert-warning" %}
+                {% if sev == "CRITICAL" or sev == "ERROR" %}
+                    {% set card_class = "alert-critical" %}
+                {% elseif sev == "INFO" %}
+                    {% set card_class = "alert-info" %}
+                {% endif %}
+
+                <div class="alert-card {{ card_class }}">
+                    <div class="alert-icon">
+                        {% if sev == "CRITICAL" or sev == "ERROR" %}
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#ef4444" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15" stroke="#1e1b2e"></line><line x1="9" y1="9" x2="15" y2="15" stroke="#1e1b2e"></line></svg>
+                        {% elseif sev == "INFO" %}
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#a855f7" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12" stroke="#1e1b2e"></line><line x1="12" y1="8" x2="12.01" y2="8" stroke="#1e1b2e"></line></svg>
+                        {% else %}
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13" stroke="#1e1b2e"></line><line x1="12" y1="17" x2="12.01" y2="17" stroke="#1e1b2e"></line></svg>
+                        {% endif %}
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-message">{{ alert.message }}</div>
+                        <div class="alert-meta">{{ alert.source }} • {{ alert.created_at|date("M d, H:i") }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <div style="color: #94a3b8; text-align: center; padding: 2rem;">No system alerts.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- KNOWLEDGE BASE PANE -->
+    <div class="tab-pane" id="pane-kb">
+        <div class="kb-container">
+            <div class="kb-search-wrapper">
+                <input type="text" id="kb-search-input" class="kb-search-input" placeholder="Search knowledge base...">
+                <button class="btn-kb-search" id="btn-kb-search">Search</button>
+            </div>
+            
+            <div class="kb-list" id="kb-list">
+                {% for kb in kbArticles %}
+                <div class="kb-card" onclick="this.querySelector('.kb-content').classList.toggle('expanded')">
+                    <div class="kb-header-row">
+                        <span class="kb-tag">{{ kb.category }}</span>
+                        <span class="kb-title">{{ kb.title }}</span>
+                    </div>
+                    <div class="kb-content">{{ kb.content }}</div>
+                </div>
+                {% else %}
+                <div style="color: #94a3b8; text-align: center; padding: 2rem;">No knowledge base articles found.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TICKET DETAIL PANE -->
+    <div class="tab-pane" id="pane-ticket-detail">
+        <div class="ticket-detail-header">
+            <button class="btn-back" id="btn-back-tickets">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+            <div class="ticket-detail-info">
+                <h2 id="td-subject">Loading...</h2>
+                <div class="ticket-detail-meta" id="td-meta">
+                    <span class="badge-status badge-open" id="td-status">OPEN</span>
+                    <span id="td-category">CATEGORY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ticket-chat-container">
+            <div class="chat-messages" id="t-messages" style="background: transparent;">
+                <!-- Messages injected here -->
+            </div>
+            <div id="ticket-closed-note" class="ticket-closed-note">This ticket is resolved. You can no longer send new messages.</div>
+            <div class="chat-input-wrapper">
+                <input type="text" id="t-input" class="chat-input" placeholder="Type your reply..." autocomplete="off">
+                <button class="btn-send" id="t-btn-send">
+                    Send 
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Ticket Modal -->
+<div class="modal" id="new-ticket-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New Ticket</h3>
+            <button class="close-modal" id="btn-close-modal">&times;</button>
+        </div>
+        <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="nt-subject" class="form-control" placeholder="Briefly describe your issue">
+        </div>
+        <div class="form-group">
+            <label>Category</label>
+            <select id="nt-category" class="form-control">
+                <option value="WALLET">Wallet</option>
+                <option value="TRANSACTION">Transaction</option>
+                <option value="SECURITY">Security</option>
+                <option value="OTHER">Other</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Message</label>
+            <textarea id="nt-message" class="form-control" rows="4" placeholder="Detail your problem..."></textarea>
+        </div>
+        <button class="btn-submit" id="nt-submit">Submit Ticket</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Tabs Logic ---
+    const tabs = document.querySelectorAll('.support-tab');
+    const panes = document.querySelectorAll('.tab-pane');
+    
+    tabs.forEach(tab => {
+        
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+            tabs.forEach(t => t.classList.remove('active'));
+            panes.forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.target).classList.add('active');
+        });
+    });
+
+    // --- AI Chat Logic ---
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const btnSend = document.getElementById('btn-send');
+
+    function addMessage(content, isUser) {
+        const row = document.createElement('div');
+        row.className = `msg-row ${isUser ? 'user' : 'bot'}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        let parsedContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        bubble.innerHTML = parsedContent;
+        row.appendChild(bubble);
+        chatMessages.appendChild(row);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function handleSendAI() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+        addMessage(text, true);
+        chatInput.value = '';
+        chatInput.disabled = true; btnSend.disabled = true;
+
+        try {
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            addMessage(data.response, false);
+        } catch (e) {
+            addMessage('Connection error.', false);
+        } finally {
+            chatInput.disabled = false; btnSend.disabled = false; chatInput.focus();
+        }
+    }
+    btnSend.addEventListener('click', handleSendAI);
+    chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleSendAI(); });
+
+    // --- Knowledge Base Search Logic ---
+    const kbSearchInput = document.getElementById('kb-search-input');
+    const btnKbSearch = document.getElementById('btn-kb-search');
+    const kbList = document.getElementById('kb-list');
+
+    let originalKbHtml = kbList.innerHTML;
+
+    window.openWebResult = function(source) {
+        if (!source) return;
+        const index = source.indexOf('http');
+        if (index !== -1) {
+            window.open(source.substring(index).trim(), '_blank');
+        }
+    };
+
+    async function performKbSearch() {
+        const query = kbSearchInput.value.trim();
+        
+        if (query === '') {
+            kbList.innerHTML = originalKbHtml;
+            return;
+        }
+        
+        // Show loading state
+        btnKbSearch.disabled = true;
+        btnKbSearch.innerHTML = '<span class="typing-indicator" style="display:flex; padding:0; height:18px;"><span></span><span></span><span></span></span>';
+        kbList.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 2rem;">Searching local knowledge base and web...</div>';
+
+        try {
+            const res = await fetch('/api/kb/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query })
+            });
+            const data = await res.json();
+            
+            kbList.innerHTML = '';
+            let foundAny = false;
+
+            // Render Local Result (Top 1)
+            if (data.local && data.local.length > 0) {
+                foundAny = true;
+                data.local.forEach(kb => {
+                    kbList.innerHTML += `
+                        <div class="kb-card" onclick="this.querySelector('.kb-content').classList.toggle('expanded')">
+                            <div class="kb-header-row">
+                                <span class="kb-tag">${kb.category}</span>
+                                <span class="kb-title">${kb.title}</span>
+                            </div>
+                            <div class="kb-content">${kb.content}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Render Web Results
+            if (data.web && data.web.length > 0) {
+                data.web.forEach(web => {
+                    if (web.error) return; // Skip errors
+                    foundAny = true;
+                    // Web cards have primary border and source link
+                    kbList.innerHTML += `
+                        <div class="kb-card web-card" onclick="window.openWebResult('${web.source}')" style="border-color: rgba(167, 139, 250, 0.4);">
+                            <div class="kb-header-row">
+                                <span class="kb-tag" style="color: #a78bfa; border-color: rgba(167, 139, 250, 0.4);">${web.category}</span>
+                                <span class="kb-title">${web.title}</span>
+                            </div>
+                            <div class="kb-content">${web.content}</div>
+                            <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.5rem; word-break: break-all;">Source: ${web.source}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (!foundAny) {
+                kbList.innerHTML = '<div style="color: #94a3b8; text-align: center; padding: 2rem;">No local or web articles found for "' + query + '".</div>';
+            }
+
+        } catch (error) {
+            console.error(error);
+            kbList.innerHTML = '<div style="color: #ef4444; text-align: center; padding: 2rem;">Search failed to connect to server.</div>';
+        } finally {
+            btnKbSearch.disabled = false;
+            btnKbSearch.innerHTML = 'Search';
+        }
+    }
+
+    btnKbSearch.addEventListener('click', performKbSearch);
+    kbSearchInput.addEventListener('keypress', e => { if (e.key === 'Enter') performKbSearch(); });
+
+    // --- Tickets Logic ---
+    const modal = document.getElementById('new-ticket-modal');
+    document.getElementById('btn-open-modal').addEventListener('click', () => {
+        document.querySelectorAll('#new-ticket-modal .text-danger.form-error').forEach(el => el.remove());
+        ['nt-subject', 'nt-category', 'nt-message'].forEach(id => {
+            const el = document.getElementById(id);
+            el.style.borderColor = '';
+            if (id === 'nt-category') el.value = 'WALLET';
+            else el.value = '';
+        });
+        modal.classList.add('show');
+    });
+    document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.remove('show'));
+
+    // Submit new ticket
+    document.getElementById('nt-submit').addEventListener('click', async () => {
+        const subjectInput = document.getElementById('nt-subject');
+        const categoryInput = document.getElementById('nt-category');
+        const messageInput = document.getElementById('nt-message');
+        
+        const subjectVal = subjectInput.value.trim();
+        const categoryVal = categoryInput.value.trim();
+        const messageVal = messageInput.value.trim();
+
+        // Clear previous errors
+        document.querySelectorAll('#new-ticket-modal .text-danger.form-error').forEach(el => el.remove());
+        [subjectInput, categoryInput, messageInput].forEach(el => el.style.borderColor = '');
+
+        const btn = document.getElementById('nt-submit');
+        const originalText = btn.innerText;
+        btn.innerText = 'Submitting...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/ticket/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    subject: subjectVal === '' ? null : subjectVal, 
+                    category: categoryVal === '' ? null : categoryVal, 
+                    message: messageVal === '' ? null : messageVal 
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                location.reload();
+            } else if (data.errors) {
+                for (const [field, errorMsg] of Object.entries(data.errors)) {
+                    let targetInput = null;
+                    if (field === 'subject') targetInput = subjectInput;
+                    else if (field === 'category') targetInput = categoryInput;
+                    else if (field === 'message') targetInput = messageInput;
+                    
+                    if (targetInput) {
+                        targetInput.style.borderColor = '#EF4444';
+                        const errorSpan = document.createElement('span');
+                        errorSpan.className = 'text-danger form-error';
+                        errorSpan.style.color = '#EF4444';
+                        errorSpan.style.fontSize = '0.85rem';
+                        errorSpan.style.marginTop = '4px';
+                        errorSpan.style.display = 'block';
+                        errorSpan.innerText = errorMsg;
+                        targetInput.parentNode.appendChild(errorSpan);
+                    }
+                }
+            } else {
+                alert(data.error || 'An error occurred.');
+            }
+        } catch(e) {
+            console.error(e);
+            alert('Network error.');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+
+    // View Ticket
+    let currentTicketId = null;
+    const ticketsSearchInput = document.getElementById('tickets-search-input');
+    const ticketsSortSelect = document.getElementById('tickets-sort');
+    const ticketsDirectionSelect = document.getElementById('tickets-direction');
+    const ticketsNoResults = document.getElementById('tickets-no-results');
+
+    function applyTicketFilters() {
+        const ticketList = document.getElementById('ticket-list');
+        const ticketCards = Array.from(ticketList.querySelectorAll('.ticket-card'));
+
+        if (!ticketsSearchInput || !ticketsSortSelect || !ticketsDirectionSelect || ticketCards.length === 0) {
+            return;
+        }
+
+        const search = ticketsSearchInput.value.trim().toLowerCase();
+        const sort = ticketsSortSelect.value;
+        const direction = ticketsDirectionSelect.value;
+
+        const filteredCards = ticketCards.filter((card) => {
+            const haystack = `${card.dataset.subject || ''} ${card.dataset.status || ''} ${card.dataset.category || ''}`;
+            const match = haystack.includes(search);
+            card.style.display = match ? 'flex' : 'none';
+            return match;
+        });
+
+        filteredCards.sort((a, b) => {
+            let comparison = 0;
+
+            if (sort === 'subject') {
+                comparison = (a.dataset.subject || '').localeCompare(b.dataset.subject || '');
+            } else if (sort === 'status') {
+                comparison = (a.dataset.status || '').localeCompare(b.dataset.status || '');
+            } else if (sort === 'category') {
+                comparison = (a.dataset.category || '').localeCompare(b.dataset.category || '');
+            } else {
+                comparison = (a.dataset.date || '').localeCompare(b.dataset.date || '');
+            }
+
+            return direction === 'asc' ? comparison : -comparison;
+        });
+
+        filteredCards.forEach((card) => ticketList.appendChild(card));
+        ticketsNoResults.style.display = filteredCards.length === 0 ? 'block' : 'none';
+    }
+
+    ticketsSearchInput?.addEventListener('input', applyTicketFilters);
+    ticketsSortSelect?.addEventListener('change', applyTicketFilters);
+    ticketsDirectionSelect?.addEventListener('change', applyTicketFilters);
+    document.addEventListener('DOMContentLoaded', applyTicketFilters);
+
+    document.querySelectorAll('.ticket-card').forEach(card => {
+        card.addEventListener('click', async () => {
+            const id = card.dataset.id;
+            currentTicketId = id;
+            
+            // Switch view
+            panes.forEach(p => p.classList.remove('active'));
+            document.getElementById('pane-ticket-detail').classList.add('active');
+            
+            const res = await fetch(`/api/ticket/${id}`);
+            const data = await res.json();
+            
+            document.getElementById('td-subject').textContent = data.subject;
+            document.getElementById('td-status').textContent = data.status;
+            document.getElementById('td-category').textContent = data.category;
+            updateTicketReplyState(data.status);
+            
+            const tMsgs = document.getElementById('t-messages');
+            tMsgs.innerHTML = '';
+            
+            data.messages.forEach(m => renderTicketMsg(m));
+        });
+    });
+
+    document.getElementById('btn-back-tickets').addEventListener('click', () => {
+        panes.forEach(p => p.classList.remove('active'));
+        document.getElementById('pane-tickets').classList.add('active');
+        currentTicketId = null;
+        updateTicketReplyState('OPEN');
+    });
+
+    function renderTicketMsg(msg) {
+        const tMsgs = document.getElementById('t-messages');
+        const row = document.createElement('div');
+        // 'USER' sender -> aligned left (like Image 2), 'SUPPORT' -> aligned right
+        const isUser = msg.sender_role === 'USER';
+        row.className = `t-msg-row ${isUser ? 'user' : 'agent'}`;
+        
+        row.innerHTML = `
+            <div class="t-msg-bubble">
+                <div class="t-msg-header">
+                    <span>${isUser ? 'You' : 'Support'}</span>
+                    <span>${msg.created_at}</span>
+                </div>
+                <div class="t-msg-body">${msg.message.replace(/\n/g, '<br>')}</div>
+            </div>
+        `;
+        tMsgs.appendChild(row);
+        tMsgs.scrollTop = tMsgs.scrollHeight;
+    }
+
+    // Reply Ticket
+    const tInput = document.getElementById('t-input');
+    const tBtnSend = document.getElementById('t-btn-send');
+    const ticketClosedNote = document.getElementById('ticket-closed-note');
+
+    function updateTicketReplyState(status) {
+        const isClosed = status === 'RESOLVED' || status === 'CLOSED';
+
+        tInput.disabled = isClosed;
+        tBtnSend.disabled = isClosed;
+        tInput.placeholder = isClosed ? 'This ticket is closed.' : 'Type your reply...';
+        ticketClosedNote.style.display = isClosed ? 'block' : 'none';
+    }
+
+    async function handleReply() {
+        if (!currentTicketId) return;
+        if (tInput.disabled) return;
+        const text = tInput.value.trim();
+        if (!text) return;
+
+        tInput.value = ''; tInput.disabled = true; tBtnSend.disabled = true;
+
+        try {
+            const res = await fetch(`/api/ticket/${currentTicketId}/reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                renderTicketMsg(data.message);
+                tInput.disabled = false;
+                tBtnSend.disabled = false;
+                tInput.focus();
+                return;
+            }
+
+            if (data.error && data.error.includes('closed')) {
+                updateTicketReplyState('RESOLVED');
+            }
+
+            alert(data.error || 'Unable to send message.');
+        } catch (error) {
+            console.error(error);
+            alert('Network error.');
+        }
+
+        if (!tInput.disabled) {
+            tInput.disabled = false;
+            tBtnSend.disabled = false;
+            tInput.focus();
+        }
+    }
+
+    tBtnSend.addEventListener('click', handleReply);
+    tInput.addEventListener('keypress', e => { if (e.key === 'Enter') handleReply(); });
+});
+</script>
+{% endblock %}

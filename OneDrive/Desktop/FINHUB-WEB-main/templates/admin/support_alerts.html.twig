@@ -1,0 +1,465 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}System Alerts - FINHUB{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    /* Support Center Header */
+    .support-header-container {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    
+    .support-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #E5E7EB;
+        margin-bottom: 0.5rem;
+    }
+    
+    .support-subtitle {
+        font-size: 0.95rem;
+        color: #9CA3AF;
+        margin-bottom: 2rem;
+    }
+    
+    .support-nav {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .support-tab {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #9CA3AF;
+        background: transparent;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .support-tab:hover {
+        color: #E5E7EB;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .support-tab.active {
+        background: rgba(139, 92, 246, 0.2);
+        color: #E5E7EB;
+        border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    /* Broadcast Form Container */
+    .broadcast-container {
+        max-width: 600px;
+        margin: 0 auto 3rem auto;
+    }
+    
+    .form-subtitle {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+        margin-bottom: 1rem;
+    }
+
+    .broadcast-card {
+        background: rgba(30, 27, 50, 0.6);
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-label {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+
+    .form-control {
+        background: rgba(20, 18, 35, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #8B5CF6;
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .btn-broadcast {
+        background: linear-gradient(135deg, #A855F7, #8B5CF6);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.85rem;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 0.5rem;
+    }
+
+    .btn-broadcast:hover {
+        background: linear-gradient(135deg, #9333EA, #7C3AED);
+        transform: translateY(-1px);
+    }
+
+    /* Active Broadcasts List */
+    .broadcasts-section {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #E9D5FF;
+        margin: 0;
+    }
+
+    .btn-refresh {
+        background: transparent;
+        border: none;
+        color: #9CA3AF;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-refresh:hover {
+        color: #E5E7EB;
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(180deg);
+    }
+
+    .broadcast-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .alert-card {
+        background: rgba(30, 27, 46, 0.75);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    /* Left borders based on severity */
+    .alert-card.severity-WARNING {
+        border-left: 4px solid #F59E0B;
+    }
+    .alert-card.severity-CRITICAL, .alert-card.severity-ERROR {
+        border-left: 4px solid #EF4444;
+    }
+    .alert-card.severity-INFO {
+        border-left: 4px solid #3B82F6;
+    }
+
+    .alert-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+    }
+
+    .alert-icon {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+    }
+
+    .alert-card.severity-WARNING .alert-icon { color: #F59E0B; }
+    .alert-card.severity-CRITICAL .alert-icon, .alert-card.severity-ERROR .alert-icon { color: #EF4444; }
+    .alert-card.severity-INFO .alert-icon { color: #3B82F6; }
+
+    .alert-message {
+        flex: 1;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #E5E7EB;
+        margin: 0;
+        word-break: break-word;
+    }
+
+    .btn-delete {
+        background: transparent;
+        border: none;
+        color: #EF4444;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.15);
+    }
+
+    .alert-meta {
+        font-size: 0.75rem;
+        color: #9CA3AF;
+        padding-left: 2.25rem; /* align with text, bypassing icon */
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #9CA3AF;
+        font-size: 0.95rem;
+    }
+    @media (max-width: 768px) {
+        .support-nav { gap: 0.5rem; }
+        .support-tab { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+        .broadcast-card { padding: 1rem; }
+        .btn-broadcast { font-size: 0.9rem; padding: 0.6rem; }
+        .alert-card { padding: 1rem; }
+        .alert-message { font-size: 0.9rem; }
+        .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-container">
+
+    <!-- Header Section -->
+    <div class="support-header-container">
+        <h1 class="support-title">Support & Safety Center</h1>
+        <p class="support-subtitle">Manage user support tickets, system alerts, and compliance requests.</p>
+        
+        <div class="support-nav">
+            <a href="{{ path('app_admin_support') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Support Tickets
+            </a>
+            <a href="{{ path('app_admin_support_alerts') }}" class="support-tab active">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                System Alerts
+            </a>
+            <a href="{{ path('app_admin_support_kyc') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+                KYC Requests
+            </a>
+            <a href="{{ path('app_admin_support_kb') }}" class="support-tab">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                Knowledge Base
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="broadcast-container">
+        <div class="form-subtitle">Send alerts to all users</div>
+        <div class="broadcast-card">
+            <div class="form-group">
+                <label class="form-label">Severity Level</label>
+                <select id="severityInput" class="form-control">
+                    <option value="INFO">INFO</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Source Name</label>
+                <input type="text" id="sourceInput" class="form-control" value="System Admin">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Message</label>
+                <textarea id="messageInput" class="form-control"></textarea>
+            </div>
+
+            <button class="btn-broadcast" onclick="broadcastAlert()">Broadcast Alert</button>
+        </div>
+    </div>
+
+    <!-- Active Broadcasts -->
+    <div class="broadcasts-section">
+        <div class="section-header">
+            <h3 class="section-title">Active Broadcasts</h3>
+            <button class="btn-refresh" onclick="window.location.reload();" title="Refresh Broadcasts">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+            </button>
+        </div>
+
+        <div class="broadcast-list">
+            {% if broadcasts is empty %}
+                <div class="empty-state">No active broadcasts.</div>
+            {% else %}
+                {% for alert in broadcasts %}
+                    {% set severity = alert.severity|upper %}
+                    <div class="alert-card severity-{{ severity }}">
+                        <div class="alert-header">
+                            <div class="alert-icon">
+                                {% if severity == 'WARNING' %}
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                {% elseif severity == 'CRITICAL' or severity == 'ERROR' %}
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                {% else %}
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                {% endif %}
+                            </div>
+                            <h4 class="alert-message">{{ alert.message }}</h4>
+                            <button class="btn-delete" onclick="deleteBroadcast('{{ alert.message|escape('js') }}', '{{ alert.created_at }}')" title="Delete Broadcast">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+                        <div class="alert-meta">{{ alert.source|default('System Admin') }} &bull; {{ alert.created_at|date('M d, H:i') }}</div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block admin_javascripts %}
+<script>
+    async function broadcastAlert() {
+        const severityInput = document.getElementById('severityInput');
+        const sourceInput = document.getElementById('sourceInput');
+        const messageInput = document.getElementById('messageInput');
+        
+        const severityVal = severityInput.value;
+        const sourceVal = sourceInput.value.trim();
+        const messageVal = messageInput.value.trim();
+
+        // Clear previous errors
+        document.querySelectorAll('.broadcast-card .text-danger.form-error').forEach(el => el.remove());
+        [severityInput, sourceInput, messageInput].forEach(el => el.style.borderColor = '');
+
+        // Check simple validation to avoid annoying confirm
+        if (!sourceVal || !messageVal) {
+            // We still proceed with fetch to show server-side errors
+        } else {
+            if (!confirm('Are you sure you want to send this alert to ALL users?')) {
+                return;
+            }
+        }
+
+        const btn = document.querySelector('.btn-broadcast');
+        const originalText = btn.innerText;
+        btn.innerText = 'Broadcasting...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('{{ path('app_admin_support_alerts_broadcast') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ 
+                    severity: severityVal === '' ? null : severityVal, 
+                    source: sourceVal === '' ? null : sourceVal, 
+                    message: messageVal === '' ? null : messageVal 
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else if (data.errors) {
+                for (const [field, errorMsg] of Object.entries(data.errors)) {
+                    let targetInput = null;
+                    if (field === 'severity') targetInput = severityInput;
+                    else if (field === 'source') targetInput = sourceInput;
+                    else if (field === 'message') targetInput = messageInput;
+                    
+                    if (targetInput) {
+                        targetInput.style.borderColor = '#EF4444';
+                        const errorSpan = document.createElement('span');
+                        errorSpan.className = 'text-danger form-error';
+                        errorSpan.style.color = '#EF4444';
+                        errorSpan.style.fontSize = '0.85rem';
+                        errorSpan.style.marginTop = '4px';
+                        errorSpan.style.display = 'block';
+                        errorSpan.innerText = errorMsg;
+                        targetInput.parentNode.appendChild(errorSpan);
+                    }
+                }
+            } else {
+                alert('Error: ' + (data.message || 'An error occurred.'));
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while broadcasting the alert.');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    async function deleteBroadcast(message, createdAt) {
+        if (!confirm('This will remove the alert for ALL users. Continue?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('{{ path('app_admin_support_alerts_delete') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ message: message, created_at: createdAt })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        } catch (error) {
+            console.error('Action failed:', error);
+            alert('An error occurred while deleting the broadcast.');
+        }
+    }
+</script>
+{% endblock %}

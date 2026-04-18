@@ -1,0 +1,709 @@
+{% extends 'user/layout.html.twig' %}
+
+{% block title %}Wallet - FinHub{% endblock %}
+
+{% block user_content %}
+        <div class="wallet-container">
+            <div class="container px-0 px-lg-3">
+                {% if walletStatus == 'FROZEN' %}
+                    <div style="background-color: rgba(220, 38, 38, 0.1); border: 1px solid #DC2626; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                        <h5 style="color: #EF4444; margin-bottom: 8px; font-weight: 600;">⚠️ Account Frozen</h5>
+                        <p style="color: #FCA5A5; margin: 0; font-size: 0.95rem;">Your wallet has been frozen due to a security alert. Please contact support immediately.</p>
+                    </div>
+                {% endif %}
+
+                <!-- Header -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                    <h1 class="header-title mb-0">Wallet</h1>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-action-primary d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" data-bs-toggle="modal" data-bs-target="#cashInModal" {% if walletStatus == 'FROZEN' %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                            <span class="fs-5">+</span> Cash In
+                        </button>
+                        <button class="btn btn-action-secondary d-flex align-items-center justify-content-center gap-2 flex-grow-1 flex-md-grow-0" data-bs-toggle="modal" data-bs-target="#transferModal" {% if walletStatus == 'FROZEN' %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}>
+                            <span class="fs-5">➤</span> Transfer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Top Balances Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12 col-lg-6">
+                        <div class="dash-card card-green-border">
+                            <span class="card-label">Available Balance</span>
+                            <span class="card-value">{{ currency|default('TND') }} {{ balance|default(0)|number_format(2, '.', ',') }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="dash-card card-orange-border">
+                            <span class="card-label">In Escrow (Held)</span>
+                            <span class="card-value">{{ currency|default('TND') }} {{ escrowBalance|default(0)|number_format(2, '.', ',') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Section Row -->
+                <div class="row g-4 mb-5">
+                    <div class="col-12 col-lg-5 d-flex flex-column">
+                        <h3 class="section-title mt-0">Virtual Cards</h3>
+                        <div class="virtual-card-bg flex-grow-1" onclick="this.classList.toggle('revealed')">
+                            <div class="virtual-card-overlay"></div>
+                            <div class="virtual-card-top">
+                                <div class="virtual-card-logo"><span style="font-size: 1.4rem;">❖</span> FINHUB TN</div>
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if virtualCard %}
+                                        {% set badgeColor = walletStatus == 'ACTIVE' ? '#34d399' : (walletStatus == 'FROZEN' ? '#93c5fd' : '#fca5a5') %}
+                                        <span style="background: rgba(0, 0, 0, 0.2); color: {{ badgeColor }}; border: 1px solid rgba(255, 255, 255, 0.15); backdrop-filter: blur(4px); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px;">
+                                            {{ walletStatus }}
+                                        </span>
+                                    {% endif %}
+                                    <div class="virtual-card-waves">)))</div>
+                                </div>
+                            </div>
+                            <div class="virtual-card-middle">
+                                <span class="virtual-card-label">Card number</span>
+                                <div class="virtual-card-number">{{ virtualCard ? virtualCard.cardNumber : '**** **** **** ****' }}</div>
+                            </div>
+                            <div class="virtual-card-bottom">
+                                <div class="virtual-card-info">
+                                    <div class="virtual-card-details">
+                                        <span>Valid thru {{ virtualCard ? virtualCard.expiryDate : '**/**' }}</span>
+                                        <span>CVV {{ virtualCard ? virtualCard.cvv : '***' }}</span>
+                                    </div>
+                                    <div class="virtual-card-name">{{ app.user.fullName|default(app.user.email)|upper }}</div>
+                                </div>
+                                <div class="virtual-card-brand">VISA</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-7 d-flex flex-column">
+                        <h3 class="section-title mt-0 d-none d-lg-block" style="visibility: hidden;">Placeholder</h3>
+                        <div class="dash-card card-blue-border flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="card-label mb-0">Market Portfolio</span>
+                                <div class="live-indicator"><span class="live-dot"></span> LIVE</div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+                                <div>
+                                    <span class="card-value">{{ currency|default('TND') }} {{ portfolioStats.totalAssetValue|default(0)|number_format(2, '.', ',') }}</span>
+                                    <small style="color: #6B7280; font-size: 0.82rem; display:block;">Total Asset Value</small>
+                                </div>
+                                <div class="text-md-end">
+                                    <span style="color: {{ portfolioStats.profitLoss >= 0 ? '#10B981' : '#EF4444' }}; font-weight: 600; font-size: 0.95rem;">
+                                        {{ portfolioStats.profitLoss >= 0 ? '+' : '' }}{{ currency|default('TND') }} {{ portfolioStats.profitLoss|default(0)|number_format(2, '.', ',') }} &nbsp; 
+                                        {{ portfolioStats.changePercent >= 0 ? '+' : '' }}{{ portfolioStats.changePercent|default(0)|number_format(2, '.', ',') }}%
+                                    </span><br>
+                                    <small style="color: #6B7280; font-size: 0.82rem;">Est. Cost: {{ currency|default('TND') }} {{ portfolioStats.costBasis|default(0)|number_format(2, '.', ',') }}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-4 pt-3 mt-auto" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span style="color: #6B7280;">≡</span>
+                                    <span style="color: #9CA3AF; font-size: 0.85rem;">{{ portfolioStats.numAssets|default(0) }} Assets</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span style="color: #FBBF24;">★</span>
+                                    <span style="color: #9CA3AF; font-size: 0.85rem;">
+                                        {% if portfolioStats.numAssets > 0 %}
+                                            Top: {{ portfolioStats.topAsset }} ({{ portfolioStats.topAssetPerformance > 0 ? '+' : '' }}{{ portfolioStats.topAssetPerformance|number_format(2, '.', ',') }}%)
+                                        {% else %}
+                                            Top: N/A
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="section-title m-0">Recent Transactions</h3>
+                </div>
+
+                <div class="tx-list">
+                    {% if recentTransactions is empty %}
+                        <div class="tx-item">
+                            <div class="text-center w-100" style="color: #6B7280;">No recent transactions to display.</div>
+                        </div>
+                    {% else %}
+                        {% for item in recentTransactions %}
+                            <div class="tx-item" {% if item.isTampered %}style="border: 1px solid #EF4444; background: rgba(239, 68, 68, 0.05);"{% endif %}>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="tx-icon-wrapper">
+                                        <img src="{{ item.avatarUrl }}" alt="{{ item.displayName }}">
+                                    </div>
+                                    <div class="tx-details">
+                                        <h6>
+                                            {% if item.displayName == 'System' %}
+                                                {{ item.tx.type|capitalize }} Transaction
+                                            {% elseif 'RECEIVED' in item.tx.type or 'DEPOSIT' in item.tx.type %}
+                                                From {{ item.displayName }}
+                                            {% else %}
+                                                To {{ item.displayName }}
+                                            {% endif %}
+                                        </h6>
+                                        <small>
+                                            {% if item.isTampered %}
+                                                <span style="color: #EF4444; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.5px;">TAMPER DETECTED</span><br>
+                                            {% endif %}
+                                            {{ item.tx.createdAt|date('M d, H:i') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="tx-amount {{ item.isOutflow ? 'negative' : 'positive' }}">
+                                    <span class="fw-bold">{{ item.isOutflow ? '- ' : '+ ' }}{{ currency|default('TND') }} {{ item.tx.amount|abs|number_format(3, '.', ',') }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+<!-- Send Money Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1" aria-labelledby="transferModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 450px;">
+        <div class="modal-content" style="background-color: #1e212b; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px;">
+            <div class="modal-header border-0 pb-0 d-flex gap-3 align-items-start">
+                <div style="background-color: #1a4d3f; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </div>
+                <div>
+                    <h5 class="modal-title text-white mb-1" id="transferModalLabel" style="font-weight: 600;">Send Money</h5>
+                    <p style="color: #9ca3af; font-size: 0.9rem; margin: 0;">Transfer funds instantly to another user.</p>
+                </div>
+            </div>
+            
+            <hr style="border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 15px;">
+            
+            <div class="modal-body pt-0">
+                {{ form_start(transferForm, {'attr': {'id': 'transferForm', 'novalidate': 'novalidate', 'onsubmit': 'event.preventDefault(); initiateTransfer();'}}) }}
+                    <div class="mb-4">
+                        <label for="{{ transferForm.recipientEmail.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(transferForm.recipientEmail) }}</label>
+                        {{ form_widget(transferForm.recipientEmail, {'attr': {'class': 'form-control', 'style': 'background-color: #2b2e38; border: none; color: white; padding: 12px 14px; border-radius: 8px;'}}) }}
+                        {{ form_errors(transferForm.recipientEmail) }}
+                    </div>
+                    <div class="mb-5">
+                        <label for="{{ transferForm.amount.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(transferForm.amount) }}</label>
+                        {{ form_widget(transferForm.amount, {'attr': {'class': 'form-control', 'placeholder': '0.000', 'style': 'background-color: #2b2e38; border: none; color: white; padding: 12px 14px; border-radius: 8px;'}}) }}
+                        {{ form_errors(transferForm.amount) }}
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-3 mt-4">
+                        <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e5e7eb; padding: 10px 24px; border-radius: 8px; font-weight: 500;">Cancel</button>
+                        <button type="submit" id="initTransferBtn" class="btn d-flex align-items-center gap-2" style="background-color: #22c55e; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 600; border: none;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            <span id="initTransferBtnText">Send Money</span>
+                        </button>
+                    </div>
+                {{ form_end(transferForm) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OTP Verification Modal -->
+<div class="modal fade" id="otpModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content text-center" style="background-color: #1a1b26; border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 25px 20px;">
+            
+            <div class="d-flex justify-content-center mb-3">
+                <div style="background: rgba(139, 92, 246, 0.15); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <h4 class="text-white mb-2" style="font-weight: 500;">Verification Required</h4>
+            <p id="otpDescription" style="color: #9ca3af; font-size: 0.95rem; margin-bottom: 10px;">Please enter the 6-digit code sent to your email.</p>
+            
+            <div id="otpCountdown" style="color: #a78bfa; font-weight: 500; font-size: 1.1rem; margin-bottom: 25px; letter-spacing: 1px;">01:00</div>
+
+            <form id="verifyOtpForm" onsubmit="event.preventDefault(); confirmTransfer();">
+                <div class="mb-4 d-flex justify-content-center">
+                    <input type="text" id="otpInput" maxlength="6" placeholder="000000" autocomplete="off" required
+                           style="background-color: #2b2e38; border: 1px solid rgba(139,92,246,0.3); color: #e5e7eb; padding: 12px 20px; border-radius: 12px; font-size: 1.5rem; letter-spacing: 5px; text-align: center; width: 80%; font-family: monospace; outline: none;">
+                </div>
+                
+                <div id="otpError" class="text-danger mb-3" style="display:none; font-size: 0.85rem;"></div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <button type="button" class="btn" onclick="cancelTransfer()" style="background-color: transparent; color: #9ca3af; padding: 10px 24px; font-weight: 500;">Cancel</button>
+                    <button type="submit" id="verifyTransferBtn" class="btn" style="background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 10px 24px; border-radius: 12px; font-weight: 500; border: none; box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3);">
+                        Verify Transaction
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    let countdownInterval;
+    let otpFlowType = 'transfer';
+
+    function openOtpModal(flowType, description) {
+        otpFlowType = flowType;
+        document.getElementById('otpInput').value = '';
+        document.getElementById('otpError').style.display = 'none';
+        document.getElementById('verifyTransferBtn').disabled = false;
+        document.getElementById('verifyTransferBtn').innerText = 'Verify Transaction';
+        document.getElementById('otpDescription').innerText = description;
+
+        const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
+        otpModal.show();
+
+        startCountdown(60);
+        document.getElementById('otpInput').focus();
+    }
+
+    function initiateTransfer() {
+        const btn = document.getElementById('initTransferBtn');
+        const text = document.getElementById('initTransferBtnText');
+        const email = document.getElementById('transfer_recipientEmail').value;
+        const amount = document.getElementById('transfer_amount').value;
+
+        // Clear previous errors
+        document.querySelectorAll('.transfer-error').forEach(el => el.remove());
+
+        btn.disabled = true;
+        text.innerText = "Sending Security Code...";
+
+        fetch("{{ path('app_wallet_transfer_init') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recipientEmail: email, amount: amount })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Hide first modal, show OTP modal
+                const transferModalEl = document.getElementById('transferModal');
+                const transferModal = bootstrap.Modal.getInstance(transferModalEl);
+                transferModal.hide();
+                openOtpModal('transfer', 'Please enter the 6-digit code sent to your email.');
+            } else {
+                if (data.errors) {
+                    if (data.errors.recipientEmail) {
+                        const emailInput = document.getElementById('transfer_recipientEmail');
+                        emailInput.insertAdjacentHTML('afterend', `<div class="transfer-error" style="color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;">${data.errors.recipientEmail}</div>`);
+                    }
+                    if (data.errors.amount) {
+                        const amountInput = document.getElementById('transfer_amount');
+                        amountInput.insertAdjacentHTML('afterend', `<div class="transfer-error" style="color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;">${data.errors.amount}</div>`);
+                    }
+                } else if (data.message) {
+                    alert(data.message);
+                }
+                btn.disabled = false;
+                text.innerText = "Send Money";
+            }
+        })
+        .catch(err => {
+            alert("Connection error. Please try again.");
+            btn.disabled = false;
+            text.innerText = "Send Money";
+        });
+    }
+
+    function confirmTransfer() {
+        const btn = document.getElementById('verifyTransferBtn');
+        const otp = document.getElementById('otpInput').value;
+        const errorEl = document.getElementById('otpError');
+        
+        if (otp.length !== 6) {
+            errorEl.innerText = "Code must be 6 digits.";
+            errorEl.style.display = "block";
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Verifying...";
+        errorEl.style.display = "none";
+
+        const confirmRoute = otpFlowType === 'card-cashin'
+            ? "{{ path('app_wallet_deposit_card_confirm') }}"
+            : "{{ path('app_wallet_transfer_confirm') }}";
+
+        fetch(confirmRoute, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ otp: otp })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Success! The server automatically flashes a success message.
+                // We just need to reload to show it.
+                window.location.reload();
+            } else {
+                errorEl.innerText = data.message;
+                errorEl.style.display = "block";
+                btn.disabled = false;
+                btn.innerText = "Verify Transaction";
+            }
+        })
+        .catch(err => {
+            errorEl.innerText = "Connection error.";
+            errorEl.style.display = "block";
+            btn.disabled = false;
+            btn.innerText = "Verify Transaction";
+        });
+    }
+
+    function startCountdown(seconds) {
+        clearInterval(countdownInterval);
+        const display = document.getElementById('otpCountdown');
+        
+        countdownInterval = setInterval(function () {
+            let m = parseInt(seconds / 60, 10);
+            let s = parseInt(seconds % 60, 10);
+
+            m = m < 10 ? "0" + m : m;
+            s = s < 10 ? "0" + s : s;
+
+            display.textContent = m + ":" + s;
+
+            if (--seconds < 0) {
+                clearInterval(countdownInterval);
+                display.textContent = "00:00 (Expired)";
+                document.getElementById('verifyTransferBtn').disabled = true;
+            }
+        }, 1000);
+    }
+
+    function cancelTransfer() {
+        clearInterval(countdownInterval);
+        const otpModalEl = document.getElementById('otpModal');
+        const otpModal = bootstrap.Modal.getInstance(otpModalEl);
+        otpModal.hide();
+        
+        // Reset original form button
+        document.getElementById('initTransferBtn').disabled = false;
+        document.getElementById('initTransferBtnText').innerText = "Send Money";
+        const cardCashInBtn = document.getElementById('cardCashInBtn');
+        if (cardCashInBtn) {
+            cardCashInBtn.disabled = false;
+            cardCashInBtn.innerText = 'Cash In with Card';
+        }
+        document.getElementById('otpInput').value = "";
+        document.getElementById('verifyTransferBtn').disabled = false;
+        document.getElementById('verifyTransferBtn').innerText = "Verify Transaction";
+        otpFlowType = 'transfer';
+    }
+</script>
+
+<!-- Cash In Modal -->
+<div class="modal fade" id="cashInModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 450px;">
+        <div class="modal-content" style="background-color: #1a1b26; border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 10px;">
+            <div class="modal-header border-0 pb-0">
+                <div class="w-100">
+                    <h4 class="mb-1" style="color: #e5e7eb; font-weight: 500; text-shadow: 0 0 10px rgba(167, 139, 250, 0.3);">
+                        <span style="color: #a78bfa;">Cash</span> In
+                    </h4>
+                    <p style="color: #9ca3af; font-size: 0.9rem; margin-bottom: 0;">Secure Plaid Bank Verification</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="opacity: 0.5;"></button>
+            </div>
+            
+            <div class="modal-body pt-4">
+                <div class="d-flex gap-2 mb-4" style="background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px;">
+                    <button type="button" id="cashInMethodPlaid" class="btn flex-fill" onclick="switchCashInMethod('plaid')" style="background: rgba(139, 92, 246, 0.18); color: white; border-radius: 10px; border: 1px solid rgba(139,92,246,0.25);">Plaid</button>
+                    <button type="button" id="cashInMethodCard" class="btn flex-fill" onclick="switchCashInMethod('card')" style="background: transparent; color: #9ca3af; border-radius: 10px; border: 1px solid transparent;">Virtual Card</button>
+                </div>
+
+                <div id="plaidCashInSection">
+                    {{ form_start(cashInForm, {'attr': {'id': 'cashInForm', 'novalidate': 'novalidate', 'onsubmit': 'event.preventDefault(); handleDeposit();'}}) }}
+                        <div class="mb-4">
+                            <label for="{{ cashInForm.amount.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(cashInForm.amount) }}</label>
+                            <div class="input-group" style="border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 12px; overflow: hidden; background-color: #2b2e38;">
+                                <span class="input-group-text border-0" style="background-color: transparent; color: #a78bfa; font-weight: 600; font-size: 1.1rem; padding-right: 5px;">TND</span>
+                                {{ form_widget(cashInForm.amount, {'attr': {'class': 'form-control border-0 text-white', 'placeholder': '0.00', 'style': 'background-color: transparent; font-size: 1.2rem; outline: none; box-shadow: none; border-left: 1px solid rgba(255,255,255,0.1) !important;'}}) }}
+                            </div>
+                            {{ form_errors(cashInForm.amount) }}
+                        </div>
+                        
+                        <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 25px;">
+                            Click below to securely connect to your bank via Plaid API Sandbox.
+                        </p>
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn" data-bs-dismiss="modal" id="cancelCashInBtn" style="background-color: transparent; border: none; color: #9ca3af; padding: 10px 20px; font-weight: 500;">Cancel</button>
+                            <button type="submit" id="linkBankBtn" class="btn" style="background-color: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e5e7eb; padding: 10px 24px; border-radius: 8px; font-weight: 500;">
+                                Link Bank Account
+                            </button>
+                        </div>
+                    {{ form_end(cashInForm) }}
+                </div>
+
+                <div id="cardCashInSection" style="display: none;">
+                    {{ form_start(cardCashInForm, {'attr': {'id': 'cardCashInForm', 'novalidate': 'novalidate', 'onsubmit': 'event.preventDefault(); handleCardCashIn();'}}) }}
+                        <div class="mb-3">
+                            <label for="{{ cardCashInForm.amount.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(cardCashInForm.amount) }}</label>
+                            {{ form_widget(cardCashInForm.amount, {'attr': {'class': 'form-control text-white', 'placeholder': '0.000', 'style': 'background-color: #2b2e38; border: 1px solid rgba(255,255,255,0.08); color: white; padding: 12px 14px; border-radius: 8px;'}}) }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ cardCashInForm.cardNumber.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(cardCashInForm.cardNumber) }}</label>
+                            {{ form_widget(cardCashInForm.cardNumber, {'attr': {'class': 'form-control text-white', 'style': 'background-color: #2b2e38; border: 1px solid rgba(255,255,255,0.08); color: white; padding: 12px 14px; border-radius: 8px;'}}) }}
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label for="{{ cardCashInForm.expiryDate.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(cardCashInForm.expiryDate) }}</label>
+                                {{ form_widget(cardCashInForm.expiryDate, {'attr': {'class': 'form-control text-white', 'style': 'background-color: #2b2e38; border: 1px solid rgba(255,255,255,0.08); color: white; padding: 12px 14px; border-radius: 8px;'}}) }}
+                            </div>
+                            <div class="col-6">
+                                <label for="{{ cardCashInForm.cvv.vars.id }}" class="form-label" style="color: #e5e7eb; font-size: 0.9rem;">{{ form_label(cardCashInForm.cvv) }}</label>
+                                {{ form_widget(cardCashInForm.cvv, {'attr': {'class': 'form-control text-white', 'style': 'background-color: #2b2e38; border: 1px solid rgba(255,255,255,0.08); color: white; padding: 12px 14px; border-radius: 8px;'}}) }}
+                            </div>
+                        </div>
+
+                        <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 25px;">
+                            Use another user's active FinHub virtual card. Your own cards are not allowed.
+                        </p>
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: transparent; border: none; color: #9ca3af; padding: 10px 20px; font-weight: 500;">Cancel</button>
+                            <button type="submit" id="cardCashInBtn" class="btn" style="background-color: #22c55e; border: none; color: white; padding: 10px 24px; border-radius: 8px; font-weight: 600;">Cash In with Card</button>
+                        </div>
+                    {{ form_end(cardCashInForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Polling Spinner Modal -->
+<div class="modal fade" id="pollingModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content text-center" style="background-color: #1E1B2E; border: 2px solid #a855f7; border-radius: 12px; padding: 30px;">
+            
+            <div class="d-flex justify-content-center mb-4">
+                <div class="spinner-border" role="status" style="width: 3rem; height: 3rem; color: #ec4899;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <h4 class="text-white mb-2" style="font-weight: bold; font-size: 22px;">Secure Bank Gateway</h4>
+            <p style="color: #9ca3af; font-size: 14px; margin-bottom: 25px; line-height: 1.6;">
+                A secure portal has opened in your web browser.<br>
+                This window will automatically close and credit<br>
+                your account once the transfer succeeds.
+            </p>
+
+            <div class="d-flex justify-content-center">
+                <button type="button" class="btn" onclick="cancelPolling()" style="background-color: transparent; color: #F87171; border: 1px solid #F87171; border-radius: 6px; padding: 10px 24px; cursor: pointer;">
+                    Cancel Transaction
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------------------------------------------
+    // PLAID DEPOSIT / POLLING LOGIC
+    // ---------------------------------------------
+    let currentBalance = 0;
+    let pollInterval;
+
+    function switchCashInMethod(method) {
+        const plaidButton = document.getElementById('cashInMethodPlaid');
+        const cardButton = document.getElementById('cashInMethodCard');
+        const plaidSection = document.getElementById('plaidCashInSection');
+        const cardSection = document.getElementById('cardCashInSection');
+
+        const isPlaid = method === 'plaid';
+
+        plaidSection.style.display = isPlaid ? 'block' : 'none';
+        cardSection.style.display = isPlaid ? 'none' : 'block';
+
+        plaidButton.style.background = isPlaid ? 'rgba(139, 92, 246, 0.18)' : 'transparent';
+        plaidButton.style.color = isPlaid ? 'white' : '#9ca3af';
+        plaidButton.style.borderColor = isPlaid ? 'rgba(139,92,246,0.25)' : 'transparent';
+
+        cardButton.style.background = isPlaid ? 'transparent' : 'rgba(34, 197, 94, 0.14)';
+        cardButton.style.color = isPlaid ? '#9ca3af' : 'white';
+        cardButton.style.borderColor = isPlaid ? 'transparent' : 'rgba(34,197,94,0.25)';
+    }
+
+    function clearCardCashInErrors() {
+        document.querySelectorAll('.card-cashin-error').forEach(el => el.remove());
+    }
+
+    function handleDeposit() {
+        const amountField = document.getElementById('cash_in_amount');
+        const amount = parseFloat(amountField.value);
+        
+        // Clear previous errors
+        document.querySelectorAll('.deposit-error').forEach(el => el.remove());
+
+        fetch("{{ path('app_wallet_deposit_init') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: amountField.value })
+        })
+        .then(res => res.json())
+        .then(initData => {
+            if (!initData.success) {
+                if (initData.errors && initData.errors.amount) {
+                    amountField.parentElement.insertAdjacentHTML('afterend', `<div class="deposit-error" style="color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;">${initData.errors.amount}</div>`);
+                } else if (initData.message) {
+                    alert(initData.message);
+                }
+                return; // Stop here if invalid
+            }
+
+            // Valid! Proceed to get balance and open Plaid
+            fetch("{{ path('app_wallet_balance') }}")
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) {
+                        alert('Error checking wallet state.');
+                        return;
+                    }
+                    currentBalance = data.balance;
+                    const userId = data.userId;
+                    const walletId = data.walletId;
+
+                    // Open Plaid in New Tab exactly like Java `java.awt.Desktop.browse(new URI(url))`
+                    const url = `https://escrow.finhub.tn/plaid/link_page?user_id=${userId}&wallet_id=${walletId}&amount=${amount}`;
+                    window.open(url, '_blank');
+
+                    // Switch UI exactly like Java Stage
+                    const cashInModalEl = document.getElementById('cashInModal');
+                    const cashInModal = bootstrap.Modal.getInstance(cashInModalEl);
+                    cashInModal.hide();
+
+                    const pollModal = new bootstrap.Modal(document.getElementById('pollingModal'));
+                    pollModal.show();
+
+                    // Clear previous intervals if any
+                    clearInterval(pollInterval);
+
+                    // Start Background Thread Loop (2 seconds)
+                    pollInterval = setInterval(checkBalanceUpdate, 2000);
+                })
+                .catch(err => {
+                    alert('Connection to server failed.');
+                });
+        })
+        .catch(err => {
+            alert('Validation connection failed.');
+        });
+    }
+
+    function handleCardCashIn() {
+        const amountField = document.getElementById('card_cash_in_amount');
+        const cardNumberField = document.getElementById('card_cash_in_cardNumber');
+        const expiryField = document.getElementById('card_cash_in_expiryDate');
+        const cvvField = document.getElementById('card_cash_in_cvv');
+        const submitBtn = document.getElementById('cardCashInBtn');
+
+        clearCardCashInErrors();
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Processing...';
+
+        fetch("{{ path('app_wallet_deposit_card_init') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amount: amountField.value,
+                cardNumber: cardNumberField.value,
+                expiryDate: expiryField.value,
+                cvv: cvvField.value
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Cash In with Card';
+
+            if (data.success) {
+                const cashInModalEl = document.getElementById('cashInModal');
+                const cashInModal = bootstrap.Modal.getInstance(cashInModalEl);
+                cashInModal.hide();
+                openOtpModal('card-cashin', `Enter the 6-digit code sent to the virtual card holder (${data.maskedEmail || 'email on file'}) for card ending ${data.lastFour || '****'}.`);
+                return;
+            }
+
+            if (data.errors) {
+                const fieldMap = {
+                    amount: amountField,
+                    cardNumber: cardNumberField,
+                    expiryDate: expiryField,
+                    cvv: cvvField
+                };
+
+                Object.entries(data.errors).forEach(([field, message]) => {
+                    if (fieldMap[field]) {
+                        fieldMap[field].insertAdjacentHTML('afterend', `<div class="card-cashin-error" style="color: #ef4444; font-size: 13px; margin-top: 5px; font-weight: 500;">${message}</div>`);
+                    }
+                });
+                return;
+            }
+
+            alert(data.message || 'Card cash in failed.');
+        })
+        .catch(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Cash In with Card';
+            alert('Connection error. Please try again.');
+        });
+    }
+
+    function checkBalanceUpdate() {
+        fetch("{{ path('app_wallet_balance') }}")
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.balance > currentBalance) {
+                    // Balance went up! Complete the mock background thread!
+                    clearInterval(pollInterval);
+                    
+                    const pollModalEl = document.getElementById('pollingModal');
+                    const pollModal = bootstrap.Modal.getInstance(pollModalEl);
+                    pollModal.hide();
+                    
+                    // Native Java App used DialogUtil.showInfo!
+                    // In Web, we'll reset UI and just reload page showing the new DB balance.
+                    alert("Transfer Complete: Your FinHub Ledger has been securely credited!");
+                    window.location.reload();
+                }
+            })
+            .catch(err => {
+                // Ignore silent timeouts just like Java
+                console.warn("Polling timeout ignored.");
+            });
+    }
+
+    function cancelPolling() {
+        clearInterval(pollInterval);
+        const pollModalEl = document.getElementById('pollingModal');
+        const pollModal = bootstrap.Modal.getInstance(pollModalEl);
+        pollModal.hide();
+        
+        // Reset everything
+        document.getElementById('cash_in_amount').value = '';
+    }
+
+    document.getElementById('card_cash_in_cardNumber')?.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9 ]/g, '').replace(/\s{2,}/g, ' ');
+    });
+
+    document.getElementById('card_cash_in_expiryDate')?.addEventListener('input', function () {
+        let value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+        if (value.length >= 3) {
+            value = value.slice(0, 2) + '/' + value.slice(2);
+        }
+        this.value = value;
+    });
+
+    document.getElementById('card_cash_in_cvv')?.addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 4);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Invitation</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f5; padding: 20px; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="color: #8B5CF6; margin-top: 0;">FINHUB Administrator Invitation</h2>
+        <p>Hello {{ user.fullName|default(user.email) }},</p>
+        <p>You have been invited to become an Administrator for the FINHUB platform. As an admin, you will have access to user management, transactions, escrows, and support tickets.</p>
+        <p>To accept this invitation and activate your admin privileges, please click the button below:</p>
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ invite_link }}" style="background-color: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Accept Admin Invitation</a>
+        </div>
+        <p style="font-size: 0.9em; color: #666;">If the button above does not work, copy and paste this link into your browser:</p>
+        <p style="font-size: 0.85em; color: #8B5CF6; word-break: break-all;">{{ invite_link }}</p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+        <p style="font-size: 0.8em; color: #999;">If you did not expect this invitation, please ignore this email.</p>
+    </div>
+</body>
+</html>

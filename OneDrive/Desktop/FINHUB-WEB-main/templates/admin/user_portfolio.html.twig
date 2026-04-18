@@ -1,0 +1,156 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}User Portfolio - FINHUB{% endblock %}
+
+{% block admin_stylesheets %}
+<style>
+    .portfolio-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .portfolio-summary {
+        background: rgba(30, 27, 50, 0.8);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        min-width: 300px;
+    }
+
+    .portfolio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .asset-card {
+        background: rgba(30, 27, 50, 0.8);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .asset-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .asset-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .asset-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .asset-info {
+        flex-grow: 1;
+    }
+
+    .asset-symbol {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #E5E7EB;
+        margin-bottom: 0.2rem;
+    }
+
+    .asset-qty {
+        font-size: 0.9rem;
+        color: #9CA3AF;
+    }
+
+    .asset-value {
+        text-align: right;
+    }
+
+    .asset-value-tnd {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #8B5CF6;
+        margin-bottom: 0.2rem;
+    }
+
+    .asset-value-usd {
+        font-size: 0.85rem;
+        color: #9CA3AF;
+    }
+    
+    .empty-portfolio {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(30, 27, 50, 0.8);
+        border: 1px dashed rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: #9CA3AF;
+    }
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="page-container">
+    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+        <button onclick="window.location.href='{{ path('app_admin_user_details', {'id': targetUser.id}) }}'" class="btn-back" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+            Back to Details
+        </button>
+        <h1 class="page-title" style="margin: 0; font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 600;">{{ targetUser.fullName|default(targetUser.email) }}'s Portfolio</h1>
+    </div>
+
+    <div class="portfolio-header">
+        <div class="portfolio-summary">
+            <div style="color: #9CA3AF; font-size: 0.95rem; margin-bottom: 0.5rem;">Total Portfolio Value</div>
+            <div style="font-size: 2.2rem; font-weight: 700; color: #8B5CF6; display: flex; align-items: baseline; gap: 0.5rem;">
+                {{ totalValueTnd }} <span style="font-size: 1.2rem; color: #9CA3AF;">TND</span>
+            </div>
+            <div style="color: #6B7280; font-size: 0.85rem; margin-top: 0.5rem;">
+                Estimated value based on current market prices. (Rate: 1 USD = {{ usdToTndRate|number_format(2) }} TND)
+            </div>
+        </div>
+    </div>
+
+    <h2 style="font-size: 1.2rem; font-weight: 600; color: #E5E7EB; margin-bottom: 1.5rem;">Digital Assets</h2>
+
+    {% if items|length > 0 %}
+        <div class="portfolio-grid">
+            {% for item in items %}
+                <div class="asset-card">
+                    <div class="asset-icon">
+                        <img src="{{ item.iconUrl }}" alt="{{ item.symbol }}" onerror="this.src='https://assets.coincap.io/assets/icons/btc@2x.png'; this.onerror=null; this.style.opacity='0.2';">
+                    </div>
+                    <div class="asset-info">
+                        <div class="asset-symbol">{{ item.symbol }}</div>
+                        <div class="asset-qty">{{ item.quantity }} {{ item.symbol }}</div>
+                    </div>
+                    <div class="asset-value">
+                        <div class="asset-value-tnd">{{ item.valTnd|number_format(2, '.', ',') }} TND</div>
+                        <div class="asset-value-usd">@ ${{ item.priceUsd|number_format(2, '.', ',') }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-portfolio">
+            <svg style="width: 48px; height: 48px; color: rgba(255,255,255,0.2); margin-bottom: 1rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+            <p style="font-size: 1.1rem; color: #E5E7EB; margin-bottom: 0.5rem;">No assets found</p>
+            <p style="font-size: 0.9rem;">This user does not currently hold any digital assets in their portfolio.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
