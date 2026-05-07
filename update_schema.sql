@@ -3,7 +3,7 @@ ALTER TABLE users_local ADD COLUMN phone_number VARCHAR(20) DEFAULT NULL;
 ALTER TABLE users_local ADD COLUMN profile_photo_url VARCHAR(255) DEFAULT NULL;
 
 -- Create KYC Requests table
-CREATE TABLE IF NOT EXISTS kyc_requests (
+CREATE TABLE IF NOT EXISTS kyc_request (
     request_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     document_type VARCHAR(20) NOT NULL, -- 'ID_CARD' or 'VIDEO'

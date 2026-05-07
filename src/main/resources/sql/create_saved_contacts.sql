@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS saved_contacts (
+CREATE TABLE IF NOT EXISTS saved_contact (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     contact_email VARCHAR(255) NOT NULL,

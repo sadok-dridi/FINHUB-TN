@@ -12,7 +12,7 @@ public class TransactionManager {
             BigDecimal amount, String reference, String prevHash, String txHash, java.time.LocalDateTime createdAt) {
 
         String sql = """
-                    INSERT INTO wallet_transactions
+                    INSERT INTO wallet_transaction
                     (wallet_id, type, amount, reference, prev_hash, tx_hash, created_at)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
@@ -41,7 +41,7 @@ public class TransactionManager {
 
     public java.util.List<tn.finhub.model.WalletTransaction> findByWalletId(int walletId) {
         java.util.List<tn.finhub.model.WalletTransaction> list = new java.util.ArrayList<>();
-        String sql = "SELECT * FROM wallet_transactions WHERE wallet_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM wallet_transaction WHERE wallet_id = ? ORDER BY created_at DESC, id DESC";
 
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
@@ -66,7 +66,7 @@ public class TransactionManager {
     }
 
     public void deleteByWalletId(int walletId) {
-        String sql = "DELETE FROM wallet_transactions WHERE wallet_id = ?";
+        String sql = "DELETE FROM wallet_transaction WHERE wallet_id = ?";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ps.executeUpdate();
@@ -76,7 +76,7 @@ public class TransactionManager {
     }
 
     public void deleteAll() {
-        String sql = "DELETE FROM wallet_transactions";
+        String sql = "DELETE FROM wallet_transaction";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.executeUpdate();
         } catch (Exception e) {
@@ -85,7 +85,7 @@ public class TransactionManager {
     }
 
     public tn.finhub.model.WalletTransaction getLastTransaction(int walletId) {
-        String sql = "SELECT * FROM wallet_transactions WHERE wallet_id = ? ORDER BY created_at DESC LIMIT 1";
+        String sql = "SELECT * FROM wallet_transaction WHERE wallet_id = ? ORDER BY created_at DESC, id DESC LIMIT 1";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -108,7 +108,7 @@ public class TransactionManager {
     }
 
     public void update(int txId, BigDecimal amount, String type, String reference, String txHash, String prevHash) {
-        String sql = "UPDATE wallet_transactions SET amount = ?, type = ?, reference = ?, tx_hash = ?, prev_hash = ? WHERE id = ?";
+        String sql = "UPDATE wallet_transaction SET amount = ?, type = ?, reference = ?, tx_hash = ?, prev_hash = ? WHERE id = ?";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setBigDecimal(1, amount);
             ps.setString(2, type);

@@ -18,7 +18,7 @@ public class TestDB {
                 System.out.println("ID: " + rs.getInt("user_id") + " | " + rs.getString("email"));
             }
 
-            rs = st.executeQuery("SELECT * FROM wallets ORDER BY id DESC LIMIT 5");
+            rs = st.executeQuery("SELECT * FROM wallet ORDER BY id DESC LIMIT 5");
             System.out.println("--- WALLETS ---");
             while (rs.next()) {
                 System.out.println("WalletID: " + rs.getInt("id") + " | UserID: " + rs.getInt("user_id") + " | Bal: "

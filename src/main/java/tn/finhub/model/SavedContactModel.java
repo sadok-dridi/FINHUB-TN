@@ -13,7 +13,7 @@ public class SavedContactModel {
     }
 
     public void updateContact(int id, String newName) {
-        String sql = "UPDATE saved_contacts SET contact_name = ? WHERE id = ?";
+        String sql = "UPDATE saved_contact SET contact_name = ? WHERE id = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, newName);
             pstmt.setInt(2, id);
@@ -25,7 +25,7 @@ public class SavedContactModel {
     }
 
     public void addContact(SavedContact contact) {
-        String sql = "INSERT INTO saved_contacts (user_id, contact_email, contact_name) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO saved_contact (user_id, contact_email, contact_name) VALUES (?, ?, ?)";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, contact.getUserId());
@@ -41,7 +41,7 @@ public class SavedContactModel {
 
     public List<SavedContact> getContactsByUserId(int userId) {
         List<SavedContact> contacts = new ArrayList<>();
-        String sql = "SELECT * FROM saved_contacts WHERE user_id = ? ORDER BY contact_name ASC";
+        String sql = "SELECT * FROM saved_contact WHERE user_id = ? ORDER BY contact_name ASC";
 
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
@@ -64,7 +64,7 @@ public class SavedContactModel {
     }
 
     public void deleteContact(int contactId) {
-        String sql = "DELETE FROM saved_contacts WHERE id = ?";
+        String sql = "DELETE FROM saved_contact WHERE id = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, contactId);
@@ -76,7 +76,7 @@ public class SavedContactModel {
     }
 
     public boolean exists(int userId, String email) {
-        String sql = "SELECT COUNT(*) FROM saved_contacts WHERE user_id = ? AND contact_email = ?";
+        String sql = "SELECT COUNT(*) FROM saved_contact WHERE user_id = ? AND contact_email = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
 
             pstmt.setInt(1, userId);
@@ -93,7 +93,7 @@ public class SavedContactModel {
     }
 
     public void deleteByUserId(int userId) {
-        String sql = "DELETE FROM saved_contacts WHERE user_id = ?";
+        String sql = "DELETE FROM saved_contact WHERE user_id = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setInt(1, userId);
             pstmt.executeUpdate();
@@ -103,7 +103,7 @@ public class SavedContactModel {
     }
 
     public void deleteByContactEmail(String email) {
-        String sql = "DELETE FROM saved_contacts WHERE contact_email = ?";
+        String sql = "DELETE FROM saved_contact WHERE contact_email = ?";
         try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
             pstmt.setString(1, email);
             pstmt.executeUpdate();

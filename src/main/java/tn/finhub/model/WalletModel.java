@@ -27,7 +27,7 @@ public class WalletModel {
     // ========================
 
     public Wallet findById(int walletId) {
-        String sql = "SELECT * FROM wallets WHERE id = ?";
+        String sql = "SELECT * FROM wallet WHERE id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ResultSet rs = ps.executeQuery();
@@ -47,7 +47,7 @@ public class WalletModel {
     }
 
     public Wallet findByUserId(int userId) {
-        String sql = "SELECT * FROM wallets WHERE user_id = ?";
+        String sql = "SELECT * FROM wallet WHERE user_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
@@ -68,7 +68,7 @@ public class WalletModel {
 
     public void createWallet(int userId) {
         String sql = """
-                    INSERT INTO wallets (user_id, currency, balance, escrow_balance)
+                    INSERT INTO wallet (user_id, currency, balance, escrow_balance)
                     VALUES (?, 'TND', 0, 0)
                 """;
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
@@ -94,7 +94,7 @@ public class WalletModel {
     }
 
     public void deleteById(int walletId) {
-        String sql = "DELETE FROM wallets WHERE id = ?";
+        String sql = "DELETE FROM wallet WHERE id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ps.executeUpdate();
@@ -104,7 +104,7 @@ public class WalletModel {
     }
 
     public void updateStatus(int walletId, String status) {
-        String sql = "UPDATE wallets SET status = ? WHERE id = ?";
+        String sql = "UPDATE wallet SET status = ? WHERE id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, walletId);
@@ -115,7 +115,7 @@ public class WalletModel {
     }
 
     public void updateUserId(int walletId, int newUserId) {
-        String sql = "UPDATE wallets SET user_id = ? WHERE id = ?";
+        String sql = "UPDATE wallet SET user_id = ? WHERE id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, newUserId);
             ps.setInt(2, walletId);
@@ -253,6 +253,8 @@ public class WalletModel {
     public void recalculateWalletBalance(int walletId) {
         List<WalletTransaction> transactions = txDAO.findByWalletId(walletId);
         BigDecimal newBalance = BigDecimal.ZERO;
+        BigDecimal newEscrow = BigDecimal.ZERO;
+
         for (WalletTransaction tx : transactions) {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
@@ -261,12 +263,18 @@ public class WalletModel {
                     newBalance = newBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> newBalance = newBalance.subtract(amt);
             }
+            if ("HOLD".equals(tx.getType()))
+                newEscrow = newEscrow.add(amt);
+            if ("RELEASE".equals(tx.getType()) || "ESCROW_SENT".equals(tx.getType())
+                    || "ESCROW_REFUND".equals(tx.getType()))
+                newEscrow = newEscrow.subtract(amt);
         }
 
-        String sql = "UPDATE wallets SET balance = ? WHERE id = ?";
+        String sql = "UPDATE wallet SET balance = ?, escrow_balance = ? WHERE id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setBigDecimal(1, newBalance);
-            ps.setInt(2, walletId);
+            ps.setBigDecimal(2, newEscrow);
+            ps.setInt(3, walletId);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error updating wallet balance", e);
@@ -286,7 +294,7 @@ public class WalletModel {
             conn.setAutoCommit(false);
 
             // Move balance to escrow
-            String sql = "UPDATE wallets SET balance = balance - ?, escrow_balance = escrow_balance + ? WHERE id = ?";
+            String sql = "UPDATE wallet SET balance = balance - ?, escrow_balance = escrow_balance + ? WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setBigDecimal(1, amount);
                 ps.setBigDecimal(2, amount);
@@ -322,7 +330,7 @@ public class WalletModel {
             // Move escrow back to balance (or out if paid, but usually release implies
             // unlock)
             // Implementation from DAO: escrow - amount, balance + amount
-            String sql = "UPDATE wallets SET escrow_balance = escrow_balance - ?, balance = balance + ? WHERE id = ?";
+            String sql = "UPDATE wallet SET escrow_balance = escrow_balance - ?, balance = balance + ? WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setBigDecimal(1, amount);
                 ps.setBigDecimal(2, amount);
@@ -453,7 +461,7 @@ public class WalletModel {
     }
 
     private void updateBalanceInTx(int walletId, BigDecimal amount, Connection conn) throws SQLException {
-        String sql = "UPDATE wallets SET balance = balance + ? WHERE id = ?";
+        String sql = "UPDATE wallet SET balance = balance + ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setBigDecimal(1, amount);
             ps.setInt(2, walletId);
@@ -476,7 +484,7 @@ public class WalletModel {
     }
 
     public BigDecimal getTotalVolume() {
-        String sql = "SELECT SUM(amount) FROM wallet_transactions";
+        String sql = "SELECT SUM(amount) FROM wallet_transaction";
         try (Statement st = getConnection().createStatement();
                 ResultSet rs = st.executeQuery(sql)) {
             if (rs.next()) {
@@ -571,6 +579,7 @@ public class WalletModel {
             freezeWallet(walletId);
             throw new RuntimeException("Security Alert: " + reason);
         }
+
         if (!verifyBalance(walletId)) {
             String reason = "Balance mismatch detected – wallet frozen";
             ledgerDAO.insertFlag(new LedgerFlag(walletId, reason));
@@ -670,6 +679,9 @@ public class WalletModel {
                         "ESCROW_REFUND" ->
                     calcBalance = calcBalance.add(amt);
                 case "DEBIT", "HOLD", "TRANSFER_SENT" -> calcBalance = calcBalance.subtract(amt);
+                // Fallback for ANY unrecognized transactions
+                default -> {
+                }
             }
             if ("HOLD".equals(tx.getType()))
                 calcEscrow = calcEscrow.add(amt);
@@ -681,7 +693,10 @@ public class WalletModel {
         Wallet w = findById(walletId);
         System.out.println("[DEBUG] Wallet " + walletId + " - Calculated Balance: " + calcBalance
                 + " | Actual Balance: " + w.getBalance());
-        return w.getBalance().compareTo(calcBalance) == 0 && w.getEscrowBalance().compareTo(calcEscrow) == 0;
+
+        // Tolerance for floating point padding discrepancies
+        return w.getBalance().stripTrailingZeros().compareTo(calcBalance.stripTrailingZeros()) == 0
+                && w.getEscrowBalance().stripTrailingZeros().compareTo(calcEscrow.stripTrailingZeros()) == 0;
     }
 
     private void ensureGenesisTransaction(int walletId) {
@@ -750,7 +765,7 @@ public class WalletModel {
             BigDecimal netAmount = totalAmount.subtract(fee);
 
             // 1. Debit Sender Escrow Balance
-            String sqlSender = "UPDATE wallets SET escrow_balance = escrow_balance - ? WHERE id = ?";
+            String sqlSender = "UPDATE wallet SET escrow_balance = escrow_balance - ? WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sqlSender)) {
                 ps.setBigDecimal(1, totalAmount);
                 ps.setInt(2, senderId);
@@ -792,7 +807,7 @@ public class WalletModel {
             conn.setAutoCommit(false);
 
             // Move from Escrow Balance back to Main Balance
-            String sql = "UPDATE wallets SET escrow_balance = escrow_balance - ?, balance = balance + ? WHERE id = ?";
+            String sql = "UPDATE wallet SET escrow_balance = escrow_balance - ?, balance = balance + ? WHERE id = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setBigDecimal(1, amount);
                 ps.setBigDecimal(2, amount);
@@ -829,7 +844,7 @@ public class WalletModel {
         }
 
         StringBuilder sql = new StringBuilder(
-                "SELECT w.id as wallet_id, u.profile_photo_url FROM wallets w JOIN users_local u ON w.user_id = u.user_id WHERE w.id IN (");
+                "SELECT w.id as wallet_id, u.profile_photo_url FROM wallet w JOIN users_local u ON w.user_id = u.user_id WHERE w.id IN (");
         for (int i = 0; i < walletIds.size(); i++) {
             sql.append(i == 0 ? "?" : ", ?");
         }
@@ -861,7 +876,7 @@ public class WalletModel {
         }
 
         StringBuilder sql = new StringBuilder(
-                "SELECT w.id as wallet_id, u.full_name FROM wallets w JOIN users_local u ON w.user_id = u.user_id WHERE w.id IN (");
+                "SELECT w.id as wallet_id, u.full_name FROM wallet w JOIN users_local u ON w.user_id = u.user_id WHERE w.id IN (");
         for (int i = 0; i < walletIds.size(); i++) {
             sql.append(i == 0 ? "?" : ", ?");
         }

@@ -12,7 +12,7 @@ public class SystemAlertModel {
     }
 
     public void createAlert(SystemAlert alert) {
-        String sql = "INSERT INTO system_alerts (user_id, severity, message, source) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO system_alert (user_id, severity, message, source) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, alert.getUserId());
             stmt.setString(2, alert.getSeverity());
@@ -31,7 +31,7 @@ public class SystemAlertModel {
 
     public List<SystemAlert> getAlertsByUserId(int userId) {
         List<SystemAlert> alerts = new ArrayList<>();
-        String sql = "SELECT * FROM system_alerts WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM system_alert WHERE user_id = ? ORDER BY created_at DESC";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -56,7 +56,7 @@ public class SystemAlertModel {
         UserModel userModel = new UserModel();
         List<tn.finhub.model.User> allUsers = userModel.findAll();
 
-        String sql = "INSERT INTO system_alerts (user_id, severity, message, source) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO system_alert (user_id, severity, message, source) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             for (tn.finhub.model.User user : allUsers) {
@@ -77,7 +77,7 @@ public class SystemAlertModel {
         List<SystemAlert> alerts = new ArrayList<>();
         // Group by message and created_at to find unique broadcasts
         String sql = "SELECT MIN(id) as id, 0 as user_id, severity, message, source, created_at " +
-                "FROM system_alerts " +
+                "FROM system_alert " +
                 "GROUP BY severity, message, source, created_at " +
                 "ORDER BY created_at DESC";
         try (Statement stmt = getConnection().createStatement();
@@ -99,7 +99,7 @@ public class SystemAlertModel {
     }
 
     public void deleteBroadcast(String message, Timestamp createdAt) {
-        String sql = "DELETE FROM system_alerts WHERE message = ? AND created_at = ?";
+        String sql = "DELETE FROM system_alert WHERE message = ? AND created_at = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setString(1, message);
             stmt.setTimestamp(2, createdAt);

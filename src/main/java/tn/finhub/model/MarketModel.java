@@ -87,7 +87,7 @@ public class MarketModel {
 
     public List<PortfolioItem> getPortfolio(int userId) {
         List<PortfolioItem> items = new ArrayList<>();
-        String sql = "SELECT * FROM portfolio_items WHERE user_id = ?";
+        String sql = "SELECT * FROM portfolio_item WHERE user_id = ?";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();
@@ -106,7 +106,7 @@ public class MarketModel {
     }
 
     public PortfolioItem getPortfolioItem(int userId, String symbol) {
-        String sql = "SELECT * FROM portfolio_items WHERE user_id = ? AND symbol = ?";
+        String sql = "SELECT * FROM portfolio_item WHERE user_id = ? AND symbol = ?";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, symbol);
@@ -128,7 +128,7 @@ public class MarketModel {
     public void updatePortfolioItem(PortfolioItem item) {
         if (item.getId() == 0) {
             // New item
-            String sql = "INSERT INTO portfolio_items (user_id, symbol, quantity, average_cost) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO portfolio_item (user_id, symbol, quantity, average_cost) VALUES (?, ?, ?, ?)";
             try (PreparedStatement ps = getHostedConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
                 ps.setInt(1, item.getUserId());
                 ps.setString(2, item.getSymbol());
@@ -143,7 +143,7 @@ public class MarketModel {
             }
         } else {
             // Update existing
-            String sql = "UPDATE portfolio_items SET quantity = ?, average_cost = ? WHERE id = ?";
+            String sql = "UPDATE portfolio_item SET quantity = ?, average_cost = ? WHERE id = ?";
             try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
                 ps.setBigDecimal(1, item.getQuantity());
                 ps.setBigDecimal(2, item.getAverageCost());
@@ -156,7 +156,7 @@ public class MarketModel {
     }
 
     public void deletePortfolioItem(int itemId) {
-        String sql = "DELETE FROM portfolio_items WHERE id = ?";
+        String sql = "DELETE FROM portfolio_item WHERE id = ?";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, itemId);
             ps.executeUpdate();
@@ -166,7 +166,7 @@ public class MarketModel {
     }
 
     public void deletePortfolioByUserId(int userId) {
-        String sql = "DELETE FROM portfolio_items WHERE user_id = ?";
+        String sql = "DELETE FROM portfolio_item WHERE user_id = ?";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
@@ -234,7 +234,7 @@ public class MarketModel {
     }
 
     public void deleteTradesByUserId(int userId) {
-        String sql = "DELETE FROM simulated_trades WHERE user_id = ?";
+        String sql = "DELETE FROM simulated_trade WHERE user_id = ?";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
@@ -246,7 +246,7 @@ public class MarketModel {
     // --- Trades (HOSTED DB) ---
 
     public void recordTrade(SimulatedTrade trade) {
-        String sql = "INSERT INTO simulated_trades (user_id, asset_symbol, action, quantity, price_at_transaction, transaction_date) VALUES (?, ?, ?, ?, ?, NOW())";
+        String sql = "INSERT INTO simulated_trade (user_id, asset_symbol, action, quantity, price_at_transaction, transaction_date) VALUES (?, ?, ?, ?, ?, NOW())";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, trade.getUserId());
             ps.setString(2, trade.getAssetSymbol());
@@ -261,7 +261,7 @@ public class MarketModel {
 
     public List<SimulatedTrade> getTradeHistory(int userId) {
         List<SimulatedTrade> trades = new ArrayList<>();
-        String sql = "SELECT * FROM simulated_trades WHERE user_id = ? ORDER BY transaction_date DESC";
+        String sql = "SELECT * FROM simulated_trade WHERE user_id = ? ORDER BY transaction_date DESC";
         try (PreparedStatement ps = getHostedConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ResultSet rs = ps.executeQuery();

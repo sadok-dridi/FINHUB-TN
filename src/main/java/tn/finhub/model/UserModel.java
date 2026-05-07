@@ -237,17 +237,17 @@ public class UserModel {
             }
 
             // Trusted Contacts (Escrow contacts)
-            deleteFromTable("trusted_contacts", "user_id", id);
-            deleteFromTable("trusted_contacts", "contact_id", id);
+            deleteFromTable("trusted_contact", "user_id", id);
+            deleteFromTable("trusted_contact", "contact_id", id);
 
             // Financial Profile
             deleteFromTable("financial_profiles_local", "user_id", id);
 
             // KYC Requests
-            deleteFromTable("kyc_requests", "user_id", id);
+            deleteFromTable("kyc_request", "user_id", id);
 
             // System Alerts
-            deleteFromTable("system_alerts", "user_id", id);
+            deleteFromTable("system_alert", "user_id", id);
 
             MarketModel marketModel = new MarketModel();
             marketModel.deletePortfolioByUserId(id);

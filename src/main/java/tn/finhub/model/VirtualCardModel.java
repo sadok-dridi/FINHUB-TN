@@ -19,7 +19,7 @@ public class VirtualCardModel {
 
     private void createTableIfNotExists() {
         String sql = """
-                    CREATE TABLE IF NOT EXISTS virtual_cards (
+                    CREATE TABLE IF NOT EXISTS virtual_card (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         wallet_id INT NOT NULL,
                         card_number VARCHAR(16) NOT NULL UNIQUE,
@@ -27,13 +27,13 @@ public class VirtualCardModel {
                         expiry_date DATE NOT NULL,
                         status VARCHAR(20) DEFAULT 'ACTIVE',
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE CASCADE
+                        FOREIGN KEY (wallet_id) REFERENCES wallet(id) ON DELETE CASCADE
                     )
                 """;
         try (Statement stmt = DBConnection.getInstance().createStatement()) {
             stmt.execute(sql);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to create virtual_cards table", e);
+            throw new RuntimeException("Failed to create virtual_card table", e);
         }
     }
 
@@ -42,7 +42,7 @@ public class VirtualCardModel {
     // ========================
 
     public void save(VirtualCard card) {
-        String sql = "INSERT INTO virtual_cards (wallet_id, card_number, cvv, expiry_date, status) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO virtual_card (wallet_id, card_number, cvv, expiry_date, status) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, card.getWalletId());
             ps.setString(2, card.getCardNumber());
@@ -62,7 +62,7 @@ public class VirtualCardModel {
 
     public List<VirtualCard> findByWalletId(int walletId) {
         List<VirtualCard> cards = new ArrayList<>();
-        String sql = "SELECT * FROM virtual_cards WHERE wallet_id = ?";
+        String sql = "SELECT * FROM virtual_card WHERE wallet_id = ?";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ResultSet rs = ps.executeQuery();
@@ -83,7 +83,7 @@ public class VirtualCardModel {
     }
 
     public VirtualCard findByCardNumber(String cardNumber) {
-        String sql = "SELECT * FROM virtual_cards WHERE card_number = ?";
+        String sql = "SELECT * FROM virtual_card WHERE card_number = ?";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setString(1, cardNumber);
             ResultSet rs = ps.executeQuery();
@@ -173,7 +173,7 @@ public class VirtualCardModel {
     }
 
     public void deleteByWalletId(int walletId) {
-        String sql = "DELETE FROM virtual_cards WHERE wallet_id = ?";
+        String sql = "DELETE FROM virtual_card WHERE wallet_id = ?";
         try (PreparedStatement ps = DBConnection.getInstance().prepareStatement(sql)) {
             ps.setInt(1, walletId);
             ps.executeUpdate();

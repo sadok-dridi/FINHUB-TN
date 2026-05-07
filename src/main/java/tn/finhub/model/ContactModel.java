@@ -15,7 +15,7 @@ public class ContactModel {
     }
 
     public void ensureAliasColumn() {
-        String sql = "ALTER TABLE trusted_contacts ADD COLUMN IF NOT EXISTS alias VARCHAR(255)";
+        String sql = "ALTER TABLE trusted_contact ADD COLUMN IF NOT EXISTS alias VARCHAR(255)";
         try (java.sql.Statement stmt = getConnection().createStatement()) {
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
@@ -24,7 +24,7 @@ public class ContactModel {
     }
 
     public boolean addContact(int userId, int contactId) {
-        String sql = "INSERT INTO trusted_contacts (user_id, contact_id) VALUES (?, ?)";
+        String sql = "INSERT INTO trusted_contact (user_id, contact_id) VALUES (?, ?)";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, contactId);
@@ -40,7 +40,7 @@ public class ContactModel {
         List<User> contacts = new ArrayList<>();
         // Updated to fetch alias
         String sql = "SELECT u.*, tc.alias FROM users_local u " +
-                "JOIN trusted_contacts tc ON u.user_id = tc.contact_id " +
+                "JOIN trusted_contact tc ON u.user_id = tc.contact_id " +
                 "WHERE tc.user_id = ?";
 
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
@@ -67,7 +67,7 @@ public class ContactModel {
     }
 
     public boolean updateAlias(int userId, int contactId, String alias) {
-        String sql = "UPDATE trusted_contacts SET alias = ? WHERE user_id = ? AND contact_id = ?";
+        String sql = "UPDATE trusted_contact SET alias = ? WHERE user_id = ? AND contact_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, alias);
             ps.setInt(2, userId);
@@ -81,7 +81,7 @@ public class ContactModel {
     }
 
     public boolean removeContact(int userId, int contactId) {
-        String sql = "DELETE FROM trusted_contacts WHERE user_id = ? AND contact_id = ?";
+        String sql = "DELETE FROM trusted_contact WHERE user_id = ? AND contact_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, contactId);

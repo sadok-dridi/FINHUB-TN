@@ -17,7 +17,7 @@ public class KYCModel {
     }
 
     public void createRequest(KYCRequest request) {
-        String sql = "INSERT INTO kyc_requests (user_id, document_type, document_url, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO kyc_request (user_id, document_type, document_url, status) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, request.getUserId());
             ps.setString(2, request.getDocumentType());
@@ -33,7 +33,7 @@ public class KYCModel {
         List<KYCRequest> requests = new ArrayList<>();
         String sql = """
                     SELECT k.*, u.email
-                    FROM kyc_requests k
+                    FROM kyc_request k
                     JOIN users_local u ON k.user_id = u.user_id
                     WHERE k.status = 'PENDING'
                     ORDER BY k.submission_date ASC
@@ -57,7 +57,7 @@ public class KYCModel {
         List<KYCRequest> requests = new ArrayList<>();
         String sql = """
                     SELECT k.*, u.email
-                    FROM kyc_requests k
+                    FROM kyc_request k
                     JOIN users_local u ON k.user_id = u.user_id
                     ORDER BY CASE WHEN k.status = 'PENDING' THEN 1 ELSE 2 END, k.submission_date DESC
                 """;
@@ -78,7 +78,7 @@ public class KYCModel {
 
     public List<KYCRequest> findByUserId(int userId) {
         List<KYCRequest> requests = new ArrayList<>();
-        String sql = "SELECT * FROM kyc_requests WHERE user_id = ? ORDER BY submission_date DESC";
+        String sql = "SELECT * FROM kyc_request WHERE user_id = ? ORDER BY submission_date DESC";
 
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -94,7 +94,7 @@ public class KYCModel {
     }
 
     public void updateStatus(int requestId, String status) {
-        String sql = "UPDATE kyc_requests SET status = ? WHERE request_id = ?";
+        String sql = "UPDATE kyc_request SET status = ? WHERE request_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, requestId);

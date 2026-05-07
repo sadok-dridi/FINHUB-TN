@@ -16,7 +16,7 @@ public class SupportModel {
     // ==========================================
 
     public void createTicket(SupportTicket ticket) {
-        String sql = "INSERT INTO support_tickets (user_id, subject, category, status, priority) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO support_ticket (user_id, subject, category, status, priority) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, ticket.getUserId());
             stmt.setString(2, ticket.getSubject());
@@ -56,7 +56,7 @@ public class SupportModel {
 
     public List<SupportTicket> getTicketsByUserId(int userId) {
         List<SupportTicket> tickets = new ArrayList<>();
-        String sql = "SELECT * FROM support_tickets WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM support_ticket WHERE user_id = ? ORDER BY created_at DESC";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, userId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -73,7 +73,7 @@ public class SupportModel {
     // ADMIN: Get ALL tickets
     public List<SupportTicket> getAllTickets() {
         List<SupportTicket> tickets = new ArrayList<>();
-        String sql = "SELECT * FROM support_tickets ORDER BY created_at DESC";
+        String sql = "SELECT * FROM support_ticket ORDER BY created_at DESC";
         try (Statement stmt = getConnection().createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
@@ -87,7 +87,7 @@ public class SupportModel {
 
     // ADMIN: Count open tickets
     public int getOpenTicketCount() {
-        String sql = "SELECT COUNT(*) FROM support_tickets WHERE status != 'CLOSED' AND status != 'RESOLVED'";
+        String sql = "SELECT COUNT(*) FROM support_ticket WHERE status != 'CLOSED' AND status != 'RESOLVED'";
         try (Statement stmt = getConnection().createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
@@ -100,7 +100,7 @@ public class SupportModel {
     }
 
     public SupportTicket getTicketById(int ticketId) {
-        String sql = "SELECT * FROM support_tickets WHERE id = ?";
+        String sql = "SELECT * FROM support_ticket WHERE id = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, ticketId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -115,7 +115,7 @@ public class SupportModel {
     }
 
     public void updateTicketStatus(int ticketId, String status) {
-        String sql = "UPDATE support_tickets SET status = ?, resolved_at = ? WHERE id = ?";
+        String sql = "UPDATE support_ticket SET status = ?, resolved_at = ? WHERE id = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setString(1, status);
             if ("RESOLVED".equals(status) || "CLOSED".equals(status)) {
@@ -151,7 +151,7 @@ public class SupportModel {
 
     public void deleteTicketsByUserId(int userId) {
         // 1. Delete Messages for these tickets
-        String sqlMessages = "DELETE FROM support_messages WHERE ticket_id IN (SELECT id FROM support_tickets WHERE user_id = ?)";
+        String sqlMessages = "DELETE FROM support_message WHERE ticket_id IN (SELECT id FROM support_ticket WHERE user_id = ?)";
         try (PreparedStatement stmt = getConnection().prepareStatement(sqlMessages)) {
             stmt.setInt(1, userId);
             stmt.executeUpdate();
@@ -160,7 +160,7 @@ public class SupportModel {
         }
 
         // 2. Delete Tickets
-        String sqlTickets = "DELETE FROM support_tickets WHERE user_id = ?";
+        String sqlTickets = "DELETE FROM support_ticket WHERE user_id = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sqlTickets)) {
             stmt.setInt(1, userId);
             stmt.executeUpdate();
@@ -171,7 +171,7 @@ public class SupportModel {
 
     public void deleteTicket(int ticketId) {
         // 1. Delete Messages for this ticket
-        String sqlMessages = "DELETE FROM support_messages WHERE ticket_id = ?";
+        String sqlMessages = "DELETE FROM support_message WHERE ticket_id = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sqlMessages)) {
             stmt.setInt(1, ticketId);
             stmt.executeUpdate();
@@ -180,7 +180,7 @@ public class SupportModel {
         }
 
         // 2. Delete Ticket
-        String sqlTicket = "DELETE FROM support_tickets WHERE id = ?";
+        String sqlTicket = "DELETE FROM support_ticket WHERE id = ?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sqlTicket)) {
             stmt.setInt(1, ticketId);
             stmt.executeUpdate();
@@ -194,7 +194,7 @@ public class SupportModel {
     // ==========================================
 
     public void createMessage(SupportMessage message) {
-        String sql = "INSERT INTO support_messages (ticket_id, sender_role, message, attachment_path) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO support_message (ticket_id, sender_role, message, attachment_path) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, message.getTicketId());
             stmt.setString(2, message.getSenderRole());
@@ -215,7 +215,7 @@ public class SupportModel {
 
     public List<SupportMessage> getTicketMessages(int ticketId) {
         List<SupportMessage> messages = new ArrayList<>();
-        String sql = "SELECT * FROM support_messages WHERE ticket_id = ? ORDER BY created_at ASC";
+        String sql = "SELECT * FROM support_message WHERE ticket_id = ? ORDER BY created_at ASC";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setInt(1, ticketId);
             try (ResultSet rs = stmt.executeQuery()) {

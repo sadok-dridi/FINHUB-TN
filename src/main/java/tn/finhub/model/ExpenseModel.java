@@ -33,7 +33,7 @@ public class ExpenseModel {
 
     public List<Expense> getExpenses(int userId) {
         List<Expense> expenses = new ArrayList<>();
-        String sql = "SELECT * FROM expenses WHERE user_id = ? ORDER BY created_at DESC";
+        String sql = "SELECT * FROM expense WHERE user_id = ? ORDER BY created_at DESC";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -57,7 +57,7 @@ public class ExpenseModel {
 
     public List<ExpenseItem> getExpenseItems(int expenseId) {
         List<ExpenseItem> items = new ArrayList<>();
-        String sql = "SELECT * FROM expense_items WHERE expense_id = ?";
+        String sql = "SELECT * FROM expense_item WHERE expense_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, expenseId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -77,7 +77,7 @@ public class ExpenseModel {
     }
 
     public double getTotalExpenses(int userId) {
-        String sql = "SELECT SUM(total_amount) FROM expenses WHERE user_id = ?";
+        String sql = "SELECT SUM(total_amount) FROM expense WHERE user_id = ?";
         try (PreparedStatement ps = getConnection().prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
