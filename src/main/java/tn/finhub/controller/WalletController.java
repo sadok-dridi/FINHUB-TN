@@ -665,16 +665,16 @@ public class WalletController {
         contentBox.getChildren().addAll(header, numberBox, footer);
         VBox.setVgrow(footer, javafx.scene.layout.Priority.ALWAYS); // Push footer down
 
-        // --- BLUR EFFECT ---
-        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(30);
-        contentBox.setEffect(blur); // Blurred by default
+        // --- BLUR EFFECT ONLY ON NUMBER ---
+        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(15);
+        numberLabel.setEffect(blur); // Blurred by default
 
         cardNode.getChildren().add(contentBox);
 
         // --- CLICK TO REVEAL (Smooth Animation) ---
         cardNode.setOnMouseClicked(e -> {
             double currentRadius = blur.getRadius();
-            double targetRadius = (currentRadius > 0) ? 0 : 30; // Toggle target
+            double targetRadius = (currentRadius > 0) ? 0 : 15; // Toggle target
 
             // Create Timeline for smooth animation
             javafx.animation.Timeline timeline = new javafx.animation.Timeline();

@@ -863,6 +863,55 @@
     -fx-border-radius: 16px;
 }
 
+/* --- Deposit Tabs --- */
+.deposit-tabs {
+    -fx-background-color: -input-bg;
+    -fx-background-radius: 10px;
+    -fx-padding: 4px;
+}
+
+.deposit-tab-active {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10 24;
+    -fx-cursor: hand;
+}
+
+.deposit-tab-inactive {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-muted;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 8px;
+    -fx-padding: 10 24;
+    -fx-cursor: hand;
+}
+
+.deposit-tab-inactive:hover {
+    -fx-text-fill: white;
+}
+
+.deposit-card-field {
+    -fx-background-color: -input-bg;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-prompt-text-fill: -color-text-muted;
+    -fx-padding: 12 16;
+    -fx-background-radius: 10px;
+    -fx-border-color: -input-border;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+}
+
+.deposit-card-field:focused {
+    -fx-border-color: -color-primary;
+    -fx-effect: dropshadow(gaussian, rgba(139, 92, 246, 0.3), 6, 0, 0, 0);
+}
+
 .section-label {
     -fx-text-fill: -color-text-primary;
     -fx-font-weight: bold;
@@ -967,7 +1016,6 @@
     -fx-font-family: "Consolas", "Monospaced", "Courier New";
     -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-letter-spacing: 3px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 1, 0, 1, 1);
 }
 

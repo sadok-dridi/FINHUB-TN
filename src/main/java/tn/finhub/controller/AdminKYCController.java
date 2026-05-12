@@ -197,7 +197,7 @@ public class AdminKYCController {
             btnOpenVideo.setManaged(true);
             btnOpenVideo.setOnAction(e -> {
                 try {
-                    java.awt.Desktop.getDesktop().browse(new java.net.URI(req.getDocumentUrl()));
+                    tn.finhub.util.BrowserUtil.openUrl(req.getDocumentUrl());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

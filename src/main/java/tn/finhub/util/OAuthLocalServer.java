@@ -5,7 +5,6 @@ import javafx.application.Platform;
 import org.json.JSONObject;
 import io.github.cdimascio.dotenv.Dotenv;
 
-import java.awt.Desktop;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -138,12 +137,7 @@ public class OAuthLocalServer {
                     "%s?client_id=%s&redirect_uri=%s&response_type=code&scope=openid%%20email%%20profile&code_challenge=%s&code_challenge_method=S256",
                     AUTHORIZATION_ENDPOINT, GOOGLE_CLIENT_ID, redirectUri, codeChallenge);
 
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(new URI(authUrl));
-            } else {
-                stopServer();
-                future.completeExceptionally(new RuntimeException("Desktop browsing not supported"));
-            }
+            BrowserUtil.openUrl(authUrl);
 
         } catch (Exception e) {
             future.completeExceptionally(e);

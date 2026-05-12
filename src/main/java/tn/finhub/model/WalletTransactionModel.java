@@ -3,6 +3,7 @@ package tn.finhub.model;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
+import java.time.ZoneOffset;
 
 public class WalletTransactionModel {
 
@@ -22,7 +23,7 @@ public class WalletTransactionModel {
             ps.setString(4, reference);
             ps.setString(5, prevHash);
             ps.setString(6, txHash);
-            ps.setTimestamp(7, Timestamp.valueOf(createdAt));
+            ps.setObject(7, createdAt.atOffset(ZoneOffset.UTC));
             ps.executeUpdate();
         } catch (Exception e) {
             throw new RuntimeException("Transaction insert failed", e);

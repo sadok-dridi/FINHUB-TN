@@ -7,31 +7,60 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
 
-   <VBox spacing="25.0" styleClass="deposit-dialog" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.finhub.controller.DepositController">
-      <children>
-         <HBox alignment="CENTER_LEFT" spacing="10.0">
-             <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                 <Label text="%deposit.title" styleClass="header-text"/>
-                 <Label text="Secure Plaid Bank Verification" styleClass="sub-header-text"/>
-             </VBox>
-             <javafx.scene.shape.SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" styleClass="window-close-icon" onMouseClicked="#handleCancel"/>
+<VBox spacing="20.0" styleClass="deposit-dialog" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.finhub.controller.DepositController">
+   <children>
+      <!-- Header -->
+      <HBox alignment="CENTER_LEFT" spacing="10.0">
+          <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+              <Label text="%deposit.title" styleClass="header-text"/>
+              <Label fx:id="subtitleLabel" text="%deposit.subtitle" styleClass="sub-header-text"/>
+          </VBox>
+          <javafx.scene.shape.SVGPath content="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" styleClass="window-close-icon" onMouseClicked="#handleCancel"/>
+      </HBox>
+      
+      <!-- Tab Buttons -->
+      <HBox spacing="0" alignment="CENTER" styleClass="deposit-tabs">
+          <Button fx:id="plaidTabButton" text="Link Bank Account" onAction="#switchToPlaid" styleClass="deposit-tab-active"/>
+          <Button fx:id="cardTabButton" text="Virtual Card" onAction="#switchToCard" styleClass="deposit-tab-inactive"/>
+      </HBox>
+      
+      <!-- Amount Field (shared) -->
+      <VBox spacing="10.0">
+         <Label text="%deposit.amount" styleClass="section-label"/>
+         <HBox alignment="CENTER_LEFT" spacing="10" styleClass="amount-input-container">
+             <Label text="TND" styleClass="currency-label"/>
+             <TextField fx:id="amountField" promptText="0.00" styleClass="amount-field-large" HBox.hgrow="ALWAYS"/>
          </HBox>
-         
-         <VBox spacing="10.0">
-            <Label text="Amount to Pull from Bank" styleClass="section-label"/>
-            <HBox alignment="CENTER_LEFT" spacing="10" styleClass="amount-input-container">
-                <Label text="TND" styleClass="currency-label"/>
-                <TextField fx:id="amountField" promptText="0.00" styleClass="amount-field-large" HBox.hgrow="ALWAYS"/>
-            </HBox>
-         </VBox>
-   
-         <VBox spacing="10.0" alignment="CENTER">
-            <Label text="Click below to securely connect to your bank via Plaid API Sandbox." styleClass="sub-header-text" style="-fx-text-fill: #9CA3AF; -fx-wrap-text: true; -fx-text-alignment: center;"/>
-         </VBox>
-         
-         <HBox spacing="15.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
-             <Button fx:id="cancelButton" text="%common.cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
-             <Button fx:id="payButton" text="Link Bank Account" onAction="#handleDeposit" styleClass="button-primary" style="-fx-background-color: #111827; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 1px; -fx-border-radius: 5px; -fx-background-radius: 5px;"/>
-         </HBox>
-      </children>
-   </VBox>
+      </VBox>
+
+      <!-- Plaid Section -->
+      <VBox fx:id="plaidSection" spacing="10.0" alignment="CENTER">
+         <Label text="Click below to securely connect to your bank via Plaid API Sandbox." style="-fx-text-fill: #9CA3AF; -fx-wrap-text: true; -fx-text-alignment: center; -fx-font-size: 13px;"/>
+      </VBox>
+
+      <!-- Virtual Card Section (hidden by default) -->
+      <VBox fx:id="cardSection" spacing="12.0" visible="false" managed="false">
+          <VBox spacing="6.0">
+              <Label text="Card Number" styleClass="section-label"/>
+              <TextField fx:id="cardNumberField" promptText="1234 5678 9012 3456" styleClass="deposit-card-field"/>
+          </VBox>
+          <HBox spacing="15.0">
+              <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                  <Label text="Expiry Date" styleClass="section-label"/>
+                  <TextField fx:id="expiryField" promptText="MM/YY" styleClass="deposit-card-field"/>
+              </VBox>
+              <VBox spacing="6.0" HBox.hgrow="ALWAYS">
+                  <Label text="CVV" styleClass="section-label"/>
+                  <TextField fx:id="cvvField" promptText="123" styleClass="deposit-card-field"/>
+              </VBox>
+          </HBox>
+          <Label text="Enter a virtual card to pull funds from its linked wallet." style="-fx-text-fill: #9CA3AF; -fx-wrap-text: true; -fx-font-size: 12px;"/>
+      </VBox>
+      
+      <!-- Buttons -->
+      <HBox spacing="15.0" alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;">
+          <Button fx:id="cancelButton" text="%common.cancel" onAction="#handleCancel" styleClass="button-text-secondary"/>
+          <Button fx:id="payButton" text="Link Bank Account" onAction="#handleDeposit" styleClass="button-primary" style="-fx-background-color: #111827; -fx-text-fill: white; -fx-border-color: white; -fx-border-width: 1px; -fx-border-radius: 5px; -fx-background-radius: 5px;"/>
+      </HBox>
+   </children>
+</VBox>

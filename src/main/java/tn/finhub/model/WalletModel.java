@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -189,10 +191,10 @@ public class WalletModel {
 
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
-                case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
-                        "ESCROW_REFUND" ->
+                    case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
+                        "ESCROW_REFUND", "SAVINGS_CASHOUT" ->
                     sumOthers = sumOthers.add(amt);
-                case "DEBIT", "HOLD", "TRANSFER_SENT" -> sumOthers = sumOthers.subtract(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT", "SAVINGS_ROUNDUP" -> sumOthers = sumOthers.subtract(amt);
             }
         }
 
@@ -204,7 +206,7 @@ public class WalletModel {
         // If Type is DEBIT (adds negative impact), then Amount = -Target_Impact
         // If Type is CREDIT (adds positive impact), then Amount = Target_Impact
         switch (type) {
-            case "DEBIT", "HOLD", "TRANSFER_SENT" -> {
+            case "DEBIT", "HOLD", "TRANSFER_SENT", "SAVINGS_ROUNDUP" -> {
                 return targetImpact.negate();
             }
             default -> {
@@ -259,9 +261,9 @@ public class WalletModel {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
                 case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
-                        "ESCROW_REFUND" ->
+                        "ESCROW_REFUND", "SAVINGS_CASHOUT" ->
                     newBalance = newBalance.add(amt);
-                case "DEBIT", "HOLD", "TRANSFER_SENT" -> newBalance = newBalance.subtract(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT", "SAVINGS_ROUNDUP" -> newBalance = newBalance.subtract(amt);
             }
             if ("HOLD".equals(tx.getType()))
                 newEscrow = newEscrow.add(amt);
@@ -500,7 +502,7 @@ public class WalletModel {
     private final tn.finhub.model.BlockchainManager blockchainManager = new tn.finhub.model.BlockchainManager();
 
     private void recordTransaction(int walletId, String type, BigDecimal amount, String ref) {
-        LocalDateTime now = LocalDateTime.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        LocalDateTime now = ZonedDateTime.now(ZoneOffset.UTC).truncatedTo(java.time.temporal.ChronoUnit.SECONDS).toLocalDateTime();
         String prevHash = getLastHash(walletId);
 
         String data = formatForHash(prevHash, walletId, type, amount, ref, now);
@@ -566,11 +568,6 @@ public class WalletModel {
             throw new RuntimeException("Wallet is frozen due to integrity violation");
         }
         if (isFrozen(walletId)) {
-            // Attempt Self-Healing: If the bug is fixed, the balance might now be valid.
-            if (verifyBalance(walletId) && verifyLedger(walletId)) {
-                unfreezeWallet(walletId);
-                return; // Healed
-            }
             throw new RuntimeException("Wallet is FROZEN. Contact support.");
         }
         if (!verifyLedger(walletId)) {
@@ -641,6 +638,18 @@ public class WalletModel {
             String data = formatForHash(previousHash, tx.getWalletId(), tx.getType(), tx.getAmount(), tx.getReference(),
                     tx.getCreatedAt());
             String expectedHash = HashUtils.sha256(data);
+            
+            // Allow for PHP fallback where 2 decimal places were used instead of 3
+            if (!expectedHash.equals(tx.getTxHash())) {
+                String amountStr2 = tx.getAmount().setScale(2, RoundingMode.HALF_UP).toString();
+                LocalDateTime truncatedTime = tx.getCreatedAt().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+                String dataFallback = previousHash + tx.getWalletId() + tx.getType() + amountStr2 + tx.getReference() + truncatedTime;
+                String expectedHashFallback = HashUtils.sha256(dataFallback);
+                if (expectedHashFallback.equals(tx.getTxHash())) {
+                    expectedHash = expectedHashFallback; // Match found using 2 decimal places
+                }
+            }
+
             if (!expectedHash.equals(tx.getTxHash())) {
                 System.out.println("[DEBUG] TAMPERED TX DETECTED: ID=" + tx.getId() + " Expected=" + expectedHash
                         + " Actual=" + tx.getTxHash());
@@ -651,9 +660,9 @@ public class WalletModel {
                     switch (t.getType()) {
                         case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD",
                                 "ESCROW_FEE",
-                                "ESCROW_REFUND" ->
+                                "ESCROW_REFUND", "SAVINGS_CASHOUT" ->
                             debugCalcBalance = debugCalcBalance.add(amt);
-                        case "DEBIT", "HOLD", "TRANSFER_SENT" -> debugCalcBalance = debugCalcBalance.subtract(amt);
+                        case "DEBIT", "HOLD", "TRANSFER_SENT", "SAVINGS_ROUNDUP" -> debugCalcBalance = debugCalcBalance.subtract(amt);
                     }
                 }
                 System.out.println("[DEBUG] Total Calculated Balance from Transactions: " + debugCalcBalance);
@@ -676,9 +685,9 @@ public class WalletModel {
             BigDecimal amt = tx.getAmount();
             switch (tx.getType()) {
                 case "CREDIT", "DEPOSIT", "RELEASE", "TRANSFER_RECEIVED", "GENESIS", "ESCROW_RCVD", "ESCROW_FEE",
-                        "ESCROW_REFUND" ->
+                        "ESCROW_REFUND", "SAVINGS_CASHOUT" ->
                     calcBalance = calcBalance.add(amt);
-                case "DEBIT", "HOLD", "TRANSFER_SENT" -> calcBalance = calcBalance.subtract(amt);
+                case "DEBIT", "HOLD", "TRANSFER_SENT", "SAVINGS_ROUNDUP" -> calcBalance = calcBalance.subtract(amt);
                 // Fallback for ANY unrecognized transactions
                 default -> {
                 }

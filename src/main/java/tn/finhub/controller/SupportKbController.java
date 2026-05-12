@@ -174,7 +174,7 @@ public class SupportKbController {
                     // Extract just the URL if prefixed with something like "Wikipedia -
                     // https://..."
                     String cleanUrl = url.substring(url.indexOf("http")).trim();
-                    java.awt.Desktop.getDesktop().browse(new java.net.URI(cleanUrl));
+                    tn.finhub.util.BrowserUtil.openUrl(cleanUrl);
                 } catch (Exception ex) {
                     System.err.println("Could not open browser: " + ex.getMessage());
                 }
